@@ -1,0 +1,25 @@
+@tailwind base;
+
+.tab-item {
+    @apply px-6 py-2 cursor-pointer rounded text-lg;
+}
+
+.tab-item:hover {
+    @apply bg-blue-50;
+}
+
+.active {
+    @apply text-blue-600 border-b-4 border-solid border-blue-500 rounded-b-none;
+}
+
+.lists {
+    @apply flex flex-col gap-2 w-full;
+}
+
+.lists-item {
+    @apply flex justify-between items-center w-full py-4 px-2 rounded;
+}
+
+.lists-item:hover {
+    @apply bg-gray-100;
+}

@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation'
 import Message from '@/components/common/message'
 import { useExperimentState } from '@/state/_experiment_atoms'
-import { ChevronLeftIcon, ChevronRightIcon, MixerHorizontalIcon, Cross2Icon } from '@radix-ui/react-icons'
+import { ChevronLeftIcon, ChevronRightIcon, MixerHorizontalIcon, Cross2Icon, FileIcon } from '@radix-ui/react-icons'
 import * as Popover from '@radix-ui/react-popover';
 import LoadingSpin from '@/components/common/loading-spin'
 import './styles.css';
@@ -16,19 +16,18 @@ export default function Input() {
     const MIN_CHAR = 5
     const DISPLAY_NUM = 1
 
+    const imageNumInputRef = useRef(null);
+    const router = useRouter()
+
     const [text, setText] = useState('')
     const [loading, setLoading] = useState(false)
-
     const [open, setOpen] = useState(false)
     const [message, setMessage] = useState({ title: '', msg: '' })
-
     const [num, setNum] = useState(DISPLAY_NUM)
     const [maxNum, setMaxNum] = useState(window.innerWidth > 1280 ? 4 : 2);
     const [list, setList] = useState([])
     const [index, setIndex] = useState(0)
-    const imageNumInputRef = useRef(null);
 
-    const router = useRouter()
     const updateTexts = useExperimentState(state => state.addTexts)
     const texts = useExperimentState(state => state.texts)
 
@@ -154,9 +153,14 @@ export default function Input() {
                             {
                                 list.length === 0 &&
                                 <div className='basis-1/2 xl:basis-1/4 p-2' >
-                                    <div className='flex flex-col justify-center items-center rounded border border-slate-300'>
-                                        <div className='image-holder bg-gray-300 w-full flex justify-center items-center'>
-                                            <div className='w-full h-full'>                                            </div>
+                                    <div className='flex flex-col justify-center items-center rounded border-2 border-slate-300'>
+                                        <div className='image-holder w-full flex justify-center items-center'>
+                                            <div className='w-full h-full flex flex-col gap-8 justify-center items-center'>
+                                                <FileIcon width={72} height={72} />
+                                                <div>
+                                                    暂无历史内容
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

@@ -1,6 +1,4 @@
 @tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 .CheckboxRoot {
     @apply bg-gray-200 border border-gray-400;

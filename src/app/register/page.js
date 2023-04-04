@@ -2,12 +2,59 @@
 import * as Label from '@radix-ui/react-label';
 import * as Checkbox from '@radix-ui/react-checkbox';
 import * as Dialog from '@radix-ui/react-dialog';
+import { useRef } from 'react'
 import { Cross2Icon, CheckIcon } from '@radix-ui/react-icons';
 import Link from 'next/link'
 import './register.css'
 
 
 export default function Register() {
+    const emailRef = useRef(null)
+    const usernameRef = useRef(null)
+    const passwordRef = useRef(null)
+    const qualtricsRef = useRef(null)
+
+    async function register() {
+        // 保证用户名不包含特殊字符
+        const username = usernameRef.current.value
+        const regex = /^[a-zA-Z0-9_]+$/;
+        if (!regex.test(username)) {
+            // 用户名不合法
+            // todo 异常弹窗
+        }
+
+        const password = passwordRef.current.value
+        if (password.length < 6) {
+            // todo 密码长度小于6异常
+        }
+        const email = emailRef.current.value
+        const email_regex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,}$/;
+        if (!email_regex.test(email)) {
+            // 电子邮件地址不合法
+            // todo 异常弹窗
+        }
+
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password,
+                email: email,
+                qualtrics: qualtricsRef.current.value,
+            })
+        })
+        if (!response.ok) {
+            throw new Error('Failed to register user');
+        }
+        const r = await response.json()
+        console.log(r)
+    }
+
+
+
     return (
         <div className='h-screen flex items-center justify-center'>
             <div className='container bg-white rounded-lg' style={{ maxWidth: 768 }}>
@@ -22,26 +69,32 @@ export default function Register() {
                     </Link>
                     <div className='login-form'>
                         <div className='flex flex-col ap-0 items-start'>
-                            <Label.Root className="LabelRoot" htmlFor="account">
+                            <Label.Root className="LabelRoot" htmlFor="qualtrics">
                                 关联
                             </Label.Root>
-                            <input className="Input" type="text" id="firstName" placeholder="请输入Qualtrics账号" />
+                            <input className="Input" type="text" id="qualtrics" placeholder="请输入Qualtrics账号" ref={qualtricsRef} />
+                        </div>
+                        <div className='flex flex-col ap-0 items-start'>
+                            <Label.Root className="LabelRoot" htmlFor="email">
+                                邮箱
+                            </Label.Root>
+                            <input className="Input" type="text" id="email" placeholder="请输入电子邮箱" ref={emailRef} />
                         </div>
                         <div className='flex flex-col ap-0 items-start'>
                             <Label.Root className="LabelRoot" htmlFor="account">
                                 账号
                             </Label.Root>
-                            <input className="Input" type="text" id="firstName" placeholder="请输入用户名或者电子邮箱" />
+                            <input className="Input" type="text" id="account" placeholder="请输入用户名" ref={usernameRef} />
                         </div>
                         <div className='flex flex-col gap-0 items-start'>
                             <Label.Root className="LabelRoot" htmlFor="password">
                                 密码
                             </Label.Root>
-                            <input className="Input" type="text" id="firstName" placeholder="请输入密码" />
+                            <input className="Input" type="password" id="password" placeholder="请输入密码" ref={passwordRef} />
                         </div>
                     </div>
                     <div className='flex flex-col gap-4'>
-                        <button className='primary-btn btn-md' style={{ width: 300 }}>
+                        <button className='primary-btn btn-md' style={{ width: 300 }} onClick={register}>
                             创建账号
                         </button>
                         <div className='flex flex-row items-center'>
