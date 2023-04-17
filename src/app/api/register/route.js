@@ -22,9 +22,9 @@ export async function POST(request) {
     await prisma.psy_user.create({
         data: data
     })
-    
+
     prisma.$disconnect()
-    return NextResponse.json({ 'msg': 'success' });
+    return NextResponse.json({ 'msg': '注册成功' });
 }
 
 async function hash(password) {

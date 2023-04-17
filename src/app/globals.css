@@ -102,7 +102,7 @@ a {
 }
 
 .image-holder {
-  @apply aspect-square object-cover w-full;
+  @apply aspect-square object-cover w-full rounded;
 }
 
 .image-btn {
@@ -159,11 +159,7 @@ a {
 
 
 .login-form {
-  @apply flex flex-col gap-6
-}
-
-input {
-  all: unset;
+  @apply flex flex-col gap-6;
 }
 
 .LabelRoot {
