@@ -39,7 +39,7 @@
     ".next/types/**/*.ts",
     "src/app/page.js",
     "src/app/api/login/route.js",
-    "src/app/(dashboard)/dashboard/page.js",
+    "src/app/(dashboard)/dashboard/page.tsx",
     "src/lib/session.ts"
   ],
   "exclude": [

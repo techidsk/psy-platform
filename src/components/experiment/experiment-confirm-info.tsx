@@ -28,8 +28,8 @@ export function ExperimentConfirmInfo({
                     />
                 </>
             ) : (
-                <div className='text-xl font-bold text-gray-700'>
-                    请选择图片
+                <div className='text-2xl font-bold text-gray-700'>
+                    请选择
                 </div>
             )
 

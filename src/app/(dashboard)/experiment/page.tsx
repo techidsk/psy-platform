@@ -5,28 +5,21 @@ import { Table } from '@/components/table';
 import { dateFormat } from '@/lib/date';
 import { getCurrentUser } from '@/lib/session';
 import { TableConfig } from '@/types/table';
-import { PlayIcon, TrashIcon, PaperPlaneIcon, PlusIcon } from '@radix-ui/react-icons'
+import { PlayIcon, TrashIcon, PaperPlaneIcon } from '@radix-ui/react-icons'
+import { db, convertBigIntToString } from '@/lib/db';
 
 async function getExperiments() {
     const currentUser = await getCurrentUser()
-    const r = await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/api/experiment/list', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            user_id: currentUser?.id
-        }),
-        cache: 'no-store'
-    })
-
-    if (!r.ok) {
-        // This will activate the closest `error.js` Error Boundary
-        throw new Error('Failed to fetch data');
+    if (!currentUser?.id) {
+        return []
     }
-    return r.json();
+    const experiments = await db.psy_experiment.findMany({
+        where: {
+            creator: BigInt(currentUser?.id)
+        }
+    })
+    return experiments.map(e => (convertBigIntToString(e)))
 }
-
 
 /**实验管理 */
 export default async function ExperimentList() {

@@ -91,7 +91,7 @@ export function ExperimentEditor({
                 placeholder='请在文本框内输入，“今天天气真不错”，并按下回车。'
             />
             <button className='btn btn-primary' onClick={submit}>
-                Submit
+                提交
             </button>
         </>
     )

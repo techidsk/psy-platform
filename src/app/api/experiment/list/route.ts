@@ -8,14 +8,16 @@ import { db, convertBigIntToString } from '@/lib/db'
  */
 export async function POST(request: Request) {
     const data = await request.json()
+    console.log(data)
     const experiments = await db.psy_experiment.findMany({
         where: {
             creator: BigInt(data.user_id)
         }
     })
-    if (!experiments) {
-        return NextResponse.json([]);
-    }
+    console.log('experiments : ', experiments)
+    // if (!experiments) {
+    //     return NextResponse.json([]);
+    // }
     // console.log(experiments);
 
     let r = experiments.map(e => (convertBigIntToString(e)))

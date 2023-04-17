@@ -13,7 +13,7 @@ export function ExperimentStyles({
     const selectedEngine = usePreExperimentState(state => state.engine)
     const setEngine = usePreExperimentState(state => state.setEngine)
 
-    return <div className='columns-3 gap-8'>
+    return <div className='columns-3 gap-4 md:gap-8'>
         {
             engines.map(engine => {
                 return <div
