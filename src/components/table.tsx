@@ -10,13 +10,14 @@ interface TableProp {
 export function Table({
     datas,
     configs,
-    children
 }: TableProp) {
     return (
         <table className="table w-full">
             <TableHeader configs={configs} />
             <tbody>
-                {datas.map(data => <TableRow key={data.id} data={data} configs={configs} />)}
+                {datas.map(data => {
+                    return <TableRow key={data.id} data={data} configs={configs} />
+                })}
             </tbody>
         </table>
     )

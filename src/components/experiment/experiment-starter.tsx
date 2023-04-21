@@ -1,14 +1,13 @@
 import { ExperimentIntro } from "./experiment-intro";
 
-interface ExperimentStartProps extends React.HTMLAttributes<HTMLDivElement> {
+interface ExperimentStarterProps extends React.HTMLAttributes<HTMLDivElement> {
     title: string
 }
 
-export function ExperimentStart({
+export function ExperimentStarter({
     title,
     children
-}: ExperimentStartProps) {
-
+}: ExperimentStarterProps) {
 
 
     return <div className="flex flex-col gap-4">
@@ -23,7 +22,7 @@ export function ExperimentStart({
                 当您输入完毕后，点击完成即可完成测验。请注意，您的个人信息和数据将被严格保密，只有研究团队成员才能访问它们。如果您有任何疑问或意见，请随时与我们联系。感谢您的参与！
             </p>
         </ExperimentIntro>
-        <div className="flex justify-center gap-2">
+        <div className="flex justify-center">
             {/* 实验开始button */}
             {children}
         </div>

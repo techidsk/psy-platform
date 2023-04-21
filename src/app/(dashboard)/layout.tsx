@@ -31,6 +31,11 @@ const sidebarNav: SidebarNavItem[] = [
         icon: "engine",
     },
     {
+        title: "实验记录",
+        href: "/history",
+        icon: "history",
+    },
+    {
         title: "设置",
         href: "/settings",
         icon: "settings",

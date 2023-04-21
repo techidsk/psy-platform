@@ -5,5 +5,6 @@ export type ImageResponse = {
     create_time?: string,
     image_url: string,
     update_time?: string,
-    idx: number
+    idx: number,
+    timestamp?: number
 }

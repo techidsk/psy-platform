@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { DashboardHeader } from '@/components/dashboard-header';
-import { ExperimentEditor } from '@/components/experiment/experiment-ediotr';
+import { ExperimentEditor } from '@/components/experiment/experiment-editor';
 import { ImageList } from '@/components/experiment/image-list';
 import { db } from "@/lib/db"
 import { ImageResponse } from '@/types/experiment';
@@ -44,7 +44,7 @@ export default async function PreInput({ params: { id } }: any) {
                 </ImageListServer>
                 <div className='flex flex-col gap-4 w-full'>
                     <ExperimentEditor back='/test/select' nanoId={id} />
-                    <Link href='./experiment/start' className='w-full btn btn-outline btn-secondary '>
+                    <Link href='/experiments' className='w-full btn btn-outline btn-ghost '>
                         <button>跳过教程</button>
                     </Link>
                 </div>

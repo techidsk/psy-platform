@@ -1,6 +1,6 @@
 export const metadata = {
-    title: '引擎管理',
-    description: '管理图像引擎以及相关设置',
+    title: '实验记录',
+    description: '用户实验记录',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

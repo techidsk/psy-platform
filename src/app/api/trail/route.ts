@@ -12,6 +12,7 @@ export async function POST(request: Request) {
     const currentUser = await getCurrentUser()
     data['user_id'] = currentUser?.id
 
+    console.log(data)
     // 插入用户实验表
     const dbExperiment = await db.psy_user_experiments.findFirst({
         where: {

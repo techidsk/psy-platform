@@ -17,10 +17,9 @@ const crypto = require('crypto')
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
 type FormData = z.infer<typeof userAuthSchema>
 
-export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
+export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
     const {
         register,
-        setValue,
         handleSubmit,
         formState: { errors },
     } = useForm<FormData>({
@@ -28,41 +27,23 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     })
 
     const [isLoading, setIsLoading] = useState<boolean>(false)
-    const [savePass, setSavePass] = useState<boolean>(false)
-
     const router = useRouter()
-
-    useEffect(() => {
-        setSavePass(store('savePass') || false)
-        setValue('username', decode('username') || '')
-        setValue('password', decode('password') || '')
-    }, [])
-
-    const searchParams = useSearchParams()
     async function onSubmit(data: FormData) {
-
-        if (savePass) {
-            const key = crypto.randomBytes(32);
-            const iv = crypto.randomBytes(16)
-            store('key', key.toString('hex'))
-            store('iv', iv.toString('hex'))
-            if (data.username) {
-                store('username', encode(data.username, key, iv))
-                store('password', encode(data.password, key, iv))
-            }
-            store('savePass', true)
-        }
-
         setIsLoading(true)
-        const signInResult = await signIn("credentials", {
+        const body = {
             username: data.username,
             password: data.password,
-            redirect: false,
-            callbackUrl: searchParams?.get("from") || "/dashboard",
+        }
+        let url = process.env.NEXT_PUBLIC_BASE_URL + '/api/register'
+        const result = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
         })
         setIsLoading(false)
-
-        if (!signInResult?.ok) {
+        if (!result?.ok) {
             return toast({
                 title: "Something went wrong.",
                 description: "Your sign in request failed. Please try again.",
@@ -70,8 +51,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             })
         }
         // 成功之后跳转登录之前页面或者dashboard
-        router.push(signInResult.url || "/dashboard")
-
+        router.push("/login")
         return toast({
             title: "Check your email",
             description: "We sent you a login link. Be sure to check your spam too.",
@@ -114,44 +94,14 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                             <p className="px-1 text-xs text-red-600">{errors.password.message}</p>
                         )}
                     </div>
-                    <div className="flex gap-2 mb-2">
-                        <input type="checkbox" defaultChecked={savePass} className="checkbox" onChange={() => setSavePass(!savePass)} />
-                        <span>记住密码</span>
-                    </div>
                     <button className={'btn btn-primary'} disabled={isLoading} type="submit">
                         {isLoading && (
                             <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
                         )}
-                        登录
+                        注册
                     </button>
                 </div>
             </form>
         </div>
     )
-}
-
-
-function encode(str: string, key: string, iv: string) {
-    try {
-        const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
-        return cipher.update(str, 'utf8', 'hex') + cipher.final('hex');
-    } catch (err: any) {
-        return err.message || err;
-    }
-}
-
-function decode(name: string) {
-    let str = store(name) || ''
-    if (!str) {
-        return ''
-    }
-    let key = Buffer.from(store('key'), 'hex')
-    let iv = Buffer.from(store('iv'), 'hex');
-
-    try {
-        const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
-        return decipher.update(str, 'hex', 'utf8') + decipher.final('utf8');
-    } catch (err: any) {
-        return err.message || err;
-    }
 }

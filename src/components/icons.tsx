@@ -24,6 +24,9 @@ import {
     X,
     Home,
     Settings2,
+    History,
+    Play,
+    Pause,
     type Icon as LucideIcon,
 } from "lucide-react"
 
@@ -70,4 +73,7 @@ export const Icons = {
     check: Check,
     engine: Box,
     dashboard: Home,
+    history: History,
+    play: Play,
+    pause: Pause,
 }

@@ -3,6 +3,7 @@ import { PlayIcon, TrashIcon, PaperPlaneIcon } from '@radix-ui/react-icons'
 
 import { cn } from "@/lib/utils"
 import { TableConfig } from '@/types/table';
+import TableActions from './table-action';
 
 interface TableRowProp {
     data: object
@@ -16,7 +17,7 @@ export function TableRow({
     children
 }: TableRowProp) {
 
-    const defaultClassName = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500'
+    const defaultClassName = 'px-4 py-2 whitespace-nowrap text-sm text-gray-500'
 
     return (
         <tr>

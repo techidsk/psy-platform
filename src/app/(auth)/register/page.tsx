@@ -1,9 +1,9 @@
 import { Metadata } from "next"
 import Link from 'next/link'
 import { Icons } from "@/components/icons"
-import { UserAuthForm } from "@/components/user-auth-form"
 
 import './register.css'
+import { UserRegisterForm } from "@/components/user-register-form"
 export const metadata: Metadata = {
     title: "登录",
     description: "登录平台",
@@ -27,10 +27,10 @@ export default function RegisterPage() {
                             创建账号
                         </h1>
                         <p className="text-sm text-slate-500 dark:text-slate-400">
-                            输入你的Email以注册账号
+                            输入你的信息以注册账号
                         </p>
                     </div>
-                    <UserAuthForm />
+                    <UserRegisterForm />
                     <p className="px-8 text-center text-sm text-slate-500 dark:text-slate-400">
                         By clicking continue, you agree to our{" "}
                         <Link
