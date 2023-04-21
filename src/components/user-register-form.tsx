@@ -1,18 +1,15 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "@/hooks/use-toast"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { signIn } from "next-auth/react"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import store from 'store2';
 
 import { cn } from "@/lib/utils"
 import { userAuthSchema } from "@/lib/validations/auth"
 import { Icons } from "@/components/icons"
-const crypto = require('crypto')
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
 type FormData = z.infer<typeof userAuthSchema>

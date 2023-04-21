@@ -1,4 +1,3 @@
-import { PlayIcon, TrashIcon, PaperPlaneIcon, PlusIcon } from '@radix-ui/react-icons'
 import Image from 'next/image';
 import { PrismaClient } from '@prisma/client';
 
@@ -90,9 +89,7 @@ const userTableConfig = [
         hidden: true,
         children: (data: any) => {
             return <div className='flex gap-4 items-center ' >
-                <PlayIcon height={24} width={24} />
-                <TrashIcon height={24} width={24} />
-                <PaperPlaneIcon height={20} width={20} />
+
             </div>
         },
     }

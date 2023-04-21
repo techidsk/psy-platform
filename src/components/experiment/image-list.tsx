@@ -1,11 +1,10 @@
 'use client'
-import { ChevronLeftIcon, ChevronRightIcon, FileIcon } from '@radix-ui/react-icons'
 import LoadingSpin from '@/components/common/loading-spin'
 import Image from 'next/image';
 import { ImageResponse } from '@/types/experiment';
 import { useState, useEffect } from 'react';
 import { useSettingState } from '@/state/_setting-atoms';
-
+import { Icons } from '../icons';
 
 interface ImageListProps extends React.HTMLAttributes<HTMLDivElement> {
     experimentList: ImageResponse[]
@@ -51,7 +50,7 @@ export function ImageList({
     return (
         <>
             <div className='cursor-pointer' onClick={prev}>
-                <ChevronLeftIcon width={32} height={32} />
+                <Icons.chevronLeft className="mr-2 h-8 w-8" />
             </div>
             <div className='flex flex-wrap w-full justify-center items-center'>
                 {
@@ -60,7 +59,7 @@ export function ImageList({
                         <div className='flex flex-col justify-center items-center rounded border-2 border-slate-300'>
                             <div className='image-holder w-full flex justify-center items-center'>
                                 <div className='w-full h-full flex flex-col gap-8 justify-center items-center'>
-                                    <FileIcon className='text-gray-400' width={72} height={72} />
+                                    <Icons.folder className="mr-2 h-8 w-8" />
                                     <div className='text-gray-400'>暂无历史内容</div>
                                 </div>
                             </div>
@@ -98,7 +97,7 @@ export function ImageList({
                 }
             </div>
             <div className='cursor-pointer' onClick={next}>
-                <ChevronRightIcon width={32} height={32} />
+                <Icons.chevronRight className="mr-2 h-8 w-8" />
             </div>
         </>
     )

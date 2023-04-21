@@ -1,10 +1,5 @@
-import Image from 'next/image';
-import { PlayIcon, TrashIcon, PaperPlaneIcon } from '@radix-ui/react-icons'
-
 import { cn } from "@/lib/utils"
 import { TableConfig } from '@/types/table';
-import TableActions from './table-action';
-
 interface TableRowProp {
     data: object
     configs: TableConfig[]

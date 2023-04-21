@@ -5,7 +5,6 @@ import { Table } from '@/components/table';
 import { dateFormat } from '@/lib/date';
 import { getCurrentUser } from '@/lib/session';
 import { TableConfig } from '@/types/table';
-import { PlayIcon, TrashIcon, PaperPlaneIcon } from '@radix-ui/react-icons'
 import { db, convertBigIntToString } from '@/lib/db';
 
 async function getExperiments() {
@@ -74,9 +73,7 @@ const experimentTableConfig: TableConfig[] = [
         hidden: true,
         children: (data: any) => {
             return <div className='flex gap-4 items-center'>
-                <PlayIcon height={24} width={24} />
-                <TrashIcon height={24} width={24} />
-                <PaperPlaneIcon height={20} width={20} />
+
             </div>
         },
     }

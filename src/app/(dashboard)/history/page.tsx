@@ -1,9 +1,7 @@
 import { DashboardHeader } from '@/components/dashboard-header';
-import { ExperimentCreateButton } from '@/components/experiment/experiment-create-button';
 import { State } from '@/components/state';
 import { Table } from '@/components/table';
 import { TableConfig } from '@/types/table';
-import { PlayIcon, TrashIcon, PaperPlaneIcon, PlusIcon } from '@radix-ui/react-icons'
 import Image from 'next/image'
 
 import { db } from '@/lib/db';

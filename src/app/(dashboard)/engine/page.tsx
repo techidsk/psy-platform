@@ -1,9 +1,7 @@
 import { DashboardHeader } from '@/components/dashboard-header';
-import { ExperimentCreateButton } from '@/components/experiment/experiment-create-button';
 import { State } from '@/components/state';
 import { Table } from '@/components/table';
 import { TableConfig } from '@/types/table';
-import { PlayIcon, TrashIcon, PaperPlaneIcon, PlusIcon } from '@radix-ui/react-icons'
 import Image from 'next/image'
 
 import { db } from '@/lib/db';
@@ -82,9 +80,7 @@ const experimentTableConfig: TableConfig[] = [
         hidden: true,
         children: (data: any) => {
             return <div className='flex gap-4 items-center'>
-                <PlayIcon height={24} width={24} />
-                <TrashIcon height={24} width={24} />
-                <PaperPlaneIcon height={20} width={20} />
+
             </div>
         },
     }
