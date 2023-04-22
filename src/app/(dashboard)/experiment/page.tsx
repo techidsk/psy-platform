@@ -30,7 +30,9 @@ export default async function ExperimentList() {
                 <DashboardHeader heading="实验管理" text="创建新实验或者更新实验设置">
                     <ExperimentCreateButton className='btn btn-primary btn-sm' />
                 </DashboardHeader>
-                <Table configs={experimentTableConfig} datas={datas} />
+                <div className='w-full overflow-auto'>
+                    <Table configs={experimentTableConfig} datas={datas} />
+                </div>
             </div>
         </div>
     )

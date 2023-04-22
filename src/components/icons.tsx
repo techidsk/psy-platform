@@ -14,9 +14,12 @@ import {
     Pause,
     FolderOpen,
     CreditCard,
+    User,
     ArrowRight,
     type Icon as LucideIcon,
 } from "lucide-react"
+
+
 
 export type Icon = LucideIcon
 
@@ -37,4 +40,5 @@ export const Icons = {
     history: History,
     play: Play,
     pause: Pause,
+    users: User,
 }

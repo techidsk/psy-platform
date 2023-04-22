@@ -33,7 +33,9 @@ export default async function EngineList() {
             <div className='flex flex-col gap-4'>
                 <DashboardHeader heading="引擎管理" text="配置引擎相关设定">
                 </DashboardHeader>
-                <Table configs={experimentTableConfig} datas={datas} />
+                <div className='w-full overflow-auto'>
+                    <Table configs={experimentTableConfig} datas={datas} />
+                </div>
             </div>
         </div>
     )

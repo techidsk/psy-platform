@@ -1,6 +1,4 @@
 "use client"
-import Header from '@/components/header'
-import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation'
 import { GridIcon, FileTextIcon } from '@radix-ui/react-icons'
@@ -8,14 +6,14 @@ import { GridIcon, FileTextIcon } from '@radix-ui/react-icons'
 import { usePreExperimentState } from '@/state/_pre_atoms'
 
 /**预实验输入测试 */
-export default function Result() {
+export default function ArticleResult() {
     const [text, setText] = useState('')
     const [loading, setLoading] = useState(false)
     const router = useRouter()
     const style = usePreExperimentState(state => state.style)
     const updateText = usePreExperimentState(state => state.setText)
 
-    function handleChange(e) {
+    function handleChange(e: any) {
         if (!loading) {
             const value = e.target.value
             if (value.endsWith("。")) {
@@ -26,7 +24,7 @@ export default function Result() {
         }
     }
 
-    function handleKeyDown(event) {
+    function handleKeyDown(event: any) {
         if (event.key === 'Enter') {
             event.preventDefault(); // 阻止默认的按键行为
             setLoading(true) // submit后改为false
@@ -34,7 +32,7 @@ export default function Result() {
         }
     }
 
-    function submit(e) {
+    function submit() {
         setTimeout(() => {
             setLoading(false);
         }, 3000);
@@ -49,7 +47,6 @@ export default function Result() {
 
     return (
         <div className='h-screen bg-white'>
-            <Header />
             <div className='container mx-auto px-8 py-8'>
                 <h3 className='text-2xl mb-8'>
                     完成测验
@@ -66,18 +63,14 @@ export default function Result() {
                     </p>
                 </div>
                 <div className='flex gap-4 w-full justify-center'>
-                    <Link href='./experiment/result/grid'>
-                        <div className='border border-solid border-gray-400 rounded px-8 py-4 cursor-pointer flex flex-col gap-4 justify-center items-center'>
-                            <GridIcon height={36} width={36} />
-                            <div>画廊模式</div>
-                        </div>
-                    </Link>
-                    <Link href='./experiment/result/article'>
-                        <div className='border border-solid border-gray-400 rounded px-8 py-4 cursor-pointer flex flex-col gap-4 justify-center items-center'>
-                            <FileTextIcon height={36} width={36} />
-                            <div>故事模式</div>
-                        </div>
-                    </Link>
+                    <div className='border border-solid border-gray-400 rounded px-8 py-4 cursor-pointer flex flex-col gap-4 justify-center items-center'>
+                        <GridIcon height={36} width={36} />
+                        <div>画廊模式</div>
+                    </div>
+                    <div className='border border-solid border-gray-400 rounded px-8 py-4 cursor-pointer flex flex-col gap-4 justify-center items-center'>
+                        <FileTextIcon height={36} width={36} />
+                        <div>故事模式</div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -17,16 +17,18 @@ export const authOptions: NextAuthOptions = {
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials) {
+                // console.log('credentials: ', credentials);
+
                 const url = new URL('/api/auth/login', process.env.NEXT_PUBLIC_BASE_URL);
                 const authResponse = await fetch(url, {
-                    method: "POST",
+                    method: 'POST',
                     headers: {
-                        "Content-Type": "application/json",
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(credentials),
                 })
                 if (!authResponse.ok) {
-                    // console.log(authResponse.status, await authResponse.json())
+                    console.log(authResponse.status, await authResponse.json())
                     return null
                 }
                 const user = await authResponse.json()
@@ -37,6 +39,9 @@ export const authOptions: NextAuthOptions = {
     ],
     callbacks: {
         async session({ session, token }) {
+            // console.log('--- session ----');
+            // console.log(session, token);
+            
             if (token) {
                 session.user.id = token.id
                 session.user.username = token.username
@@ -46,6 +51,9 @@ export const authOptions: NextAuthOptions = {
             return session
         },
         async jwt({ token, user }) {
+            // console.log('--- jwt ----');
+            // console.log(token, user);
+            
             if (user) {
                 return {
                     ...token,

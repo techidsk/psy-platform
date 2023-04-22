@@ -4,12 +4,13 @@ import { getCurrentUser } from "@/lib/session"
 import Header from "@/components/header"
 import { DashboardNav } from "@/components/sidebar"
 import { SidebarNavItem } from '@/types'
+import { Suspense } from "react"
+import Loading from "./loading"
 
 export const metadata = {
     title: '控制台',
     description: '管理平台所有操作',
 }
-
 
 interface DashboardLayoutProps {
     children?: React.ReactNode
@@ -36,6 +37,11 @@ const sidebarNav: SidebarNavItem[] = [
         icon: "history",
     },
     {
+        title: "用户列表",
+        href: "/users",
+        icon: "users",
+    },
+    {
         title: "设置",
         href: "/settings",
         icon: "settings",
@@ -60,7 +66,9 @@ export default async function DashboardLayout({
                     <DashboardNav items={sidebarNav} />
                 </aside>
                 <main className="flex w-full flex-1 flex-col overflow-hidden">
-                    {children}
+                    <Suspense fallback={<Loading />}>
+                        {children}
+                    </Suspense>
                 </main>
             </div>
         </div>

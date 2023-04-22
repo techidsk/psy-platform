@@ -28,12 +28,13 @@ export async function POST(request) {
                 'Content-Type': 'application/json',
             },
         });
+        console.error(`用户${username}不存在`);
         prisma.$disconnect()
         return res
     }
 
-    const password = user['password']
-    const salt = user['salt']
+    const password = user['password'] || ''
+    const salt = user['salt'] || ''
     const r = await verify(inputPassword, salt, password)
     if (!r) {
         const body = JSON.stringify({ 'msg': '用户名或者密码错误' })
@@ -44,6 +45,7 @@ export async function POST(request) {
                 'Content-Type': 'application/json',
             },
         });
+        console.error(`用户${username}密码错误`);
         prisma.$disconnect()
         return res
     }
