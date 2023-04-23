@@ -12,7 +12,8 @@ type UserExperimentId = {
 }
 
 async function getUserExperiment(userId: BigInt) {
-    const result = await db.$queryRaw<UserExperimentId[]>`select experiment_name, 'description', nano_id
+    const result = await db.$queryRaw<UserExperimentId[]>`
+    select experiment_name, 'description', nano_id
     from psy_experiment
     where id = (select experiment_id
     from psy_user_group g

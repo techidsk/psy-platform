@@ -8,7 +8,7 @@ interface Buttons extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export function ExperimentStarterButtons({
-    experimentId,
+    experimentId, // 实验 nano_id
     children
 }: Buttons) {
 
