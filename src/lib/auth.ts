@@ -1,37 +1,43 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials";
+import { db } from "./db";
+const crypto = require('crypto')
 
 export const authOptions: NextAuthOptions = {
     secret: process.env.JWT_SECRET,
     session: {
         strategy: "jwt",
     },
-    // pages: {
-    //     signIn: "/login",
-    // },
+    pages: {
+        signIn: "/login",
+    },
     providers: [
         CredentialsProvider({
             credentials: {
                 username: { label: "Username", type: "text" },
                 password: { label: "Password", type: "password" }
             },
-            async authorize(credentials) {
-                const url = new URL('/api/auth/login', process.env.NEXT_PUBLIC_BASE_URL);
+            async authorize(credentials: any) {
                 console.log('用户登录: ', credentials)
-                const authResponse = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(credentials),
+                const username = credentials['username']
+                const inputPassword = credentials['password']
+                let dbUser = await db.psy_user.findFirst({
+                    where: {
+                        username: username
+                    }
                 })
-                if (!authResponse.ok) {
-                    console.log(authResponse.status, await authResponse.json())
+                if (!dbUser) {
+                    console.error(`用户${username}不存在`);
                     return null
                 }
-                const user = await authResponse.json()
-                // console.log('real db user: ', user, typeof user)
-                return user
+                const password = dbUser['password'] || ''
+                const salt = dbUser['salt'] || ''
+                const r = await verify(inputPassword, salt, password)
+                if (!r) {
+                    console.error(`用户${username}密码错误`);
+                    return null
+                }
+                return convertBigIntToString(dbUser)
             },
         }),
     ],
@@ -65,4 +71,25 @@ export const authOptions: NextAuthOptions = {
             return token
         },
     },
+}
+
+async function verify(password: string, salt: string, hash: string) {
+    return new Promise((resolve, reject) => {
+        const keyBuffer = Buffer.from(hash, 'hex')
+        crypto.scrypt(password, salt, 24, (err: Error, derivedKey: string) => {
+            if (err) reject(err);
+            resolve(crypto.timingSafeEqual(keyBuffer, derivedKey))
+        })
+    })
+}
+
+function convertBigIntToString(obj: any) {
+    for (let key in obj) {
+        if (typeof obj[key] === "object") {
+            obj[key] = convertBigIntToString(obj[key]);
+        } else if (typeof obj[key] === "bigint") {
+            obj[key] = obj[key].toString();
+        }
+    }
+    return obj;
 }
