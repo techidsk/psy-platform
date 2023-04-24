@@ -16,6 +16,7 @@ import {
     CreditCard,
     User,
     ArrowRight,
+    Grid, Minus, RotateCcw,
     type Icon as LucideIcon,
 } from "lucide-react"
 
@@ -41,4 +42,7 @@ export const Icons = {
     play: Play,
     pause: Pause,
     users: User,
+    grid: Grid,
+    minus: Minus,
+    rotate: RotateCcw
 }

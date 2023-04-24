@@ -1,15 +1,14 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials";
-import { siteConfig } from "@/config/site"
 
 export const authOptions: NextAuthOptions = {
     secret: process.env.JWT_SECRET,
     session: {
         strategy: "jwt",
     },
-    pages: {
-        signIn: "/login",
-    },
+    // pages: {
+    //     signIn: "/login",
+    // },
     providers: [
         CredentialsProvider({
             credentials: {
@@ -17,8 +16,6 @@ export const authOptions: NextAuthOptions = {
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials) {
-                // console.log('credentials: ', credentials);
-
                 const url = new URL('/api/auth/login', process.env.NEXT_PUBLIC_BASE_URL);
                 const authResponse = await fetch(url, {
                     method: 'POST',
@@ -41,7 +38,7 @@ export const authOptions: NextAuthOptions = {
         async session({ session, token }) {
             // console.log('--- session ----');
             // console.log(session, token);
-            
+
             if (token) {
                 session.user.id = token.id
                 session.user.username = token.username
@@ -53,7 +50,7 @@ export const authOptions: NextAuthOptions = {
         async jwt({ token, user }) {
             // console.log('--- jwt ----');
             // console.log(token, user);
-            
+
             if (user) {
                 return {
                     ...token,

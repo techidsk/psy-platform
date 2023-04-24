@@ -31,8 +31,6 @@ export function ExperimentCreateForm({ className, nanoId, ...props }: UserAuthFo
     const searchParams = useSearchParams()
     async function onSubmit(data: FormData) {
         setIsLoading(true)
-        console.log(data)
-        console.log(searchParams)
         let url = process.env.NEXT_PUBLIC_BASE_URL + '/api/experiment/add'
         const createResult = await fetch(url, {
             method: 'POST',
@@ -44,21 +42,22 @@ export function ExperimentCreateForm({ className, nanoId, ...props }: UserAuthFo
                 nano_id: nanoId,
             })
         })
-        console.log('createResult: ', createResult)
         setIsLoading(false)
 
         if (!createResult?.ok) {
             return toast({
-                title: "Something went wrong.",
-                description: "Your sign in request failed. Please try again.",
+                title: "创建失败",
+                description: "请查看系统消息",
                 variant: "destructive",
+                duration: 5000
             })
         }
         router.push("/experiment")
 
         return toast({
-            title: "Check your email",
-            description: "We sent you a login link. Be sure to check your spam too.",
+            title: "创建成功",
+            description: "已成功创建新实验",
+            duration: 3000
         })
     }
 

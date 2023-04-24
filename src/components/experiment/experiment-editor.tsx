@@ -3,6 +3,8 @@ import { useState, useRef, useEffect } from 'react'
 import { usePreExperimentState } from '@/state/_pre_atoms'
 import { useRouter } from 'next/navigation'
 import store from 'store2'
+import { getId } from '@/lib/nano-id'
+import { toast } from "@/hooks/use-toast"
 
 interface ExperimentEditorProps {
     back: string
@@ -13,8 +15,9 @@ interface ExperimentEditorProps {
 type FetchData = {
     prompt?: string;
     engine_id?: string;
-    nano_id: string;
+    nano_id: string; // experiment
     experimentId?: string;
+    promptNanoId?: string
 }
 
 export function ExperimentEditor({
@@ -79,28 +82,51 @@ export function ExperimentEditor({
             return
         }
         let value = ref.current?.value.trim()
-        if (value) {
-            let data: FetchData = {
-                prompt: ref.current?.value.trim(),
-                engine_id: engineId,
-                nano_id: nanoId
-            }
-            if (!trail && experimentId) {
-                data['experimentId'] = experimentId
-            }
-
-            let url = process.env.NEXT_PUBLIC_BASE_URL + '/api/trail'
-            await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-                cache: 'no-store'
-            })
-            ref.current!.value = '';
+        if (!value) {
+            return
         }
+        if (value.length < 5) {
+            return toast({
+                title: "输入文字过少",
+                description: "请至少输入5个字符",
+                variant: "destructive",
+                duration: 3000
+            })
+        }
+
+        let promptNanoId = getId()
+        let data: FetchData = {
+            prompt: value,
+            engine_id: engineId,
+            nano_id: nanoId, // 本次实验id
+            promptNanoId: promptNanoId
+        }
+        // 判断是否是正式实验
+        if (!trail && experimentId) {
+            data['experimentId'] = experimentId
+        }
+
+        let url = process.env.NEXT_PUBLIC_BASE_URL + '/api/trail'
+        await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+            cache: 'no-store'
+        })
+        ref.current!.value = '';
         setLoading(false)
+        router.refresh()
+        let generateUrl = process.env.NEXT_PUBLIC_BASE_URL + '/api/generate'
+        await fetch(generateUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+            cache: 'no-store'
+        })
         router.refresh()
     }
 

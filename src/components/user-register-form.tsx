@@ -42,16 +42,18 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
         setIsLoading(false)
         if (!result?.ok) {
             return toast({
-                title: "Something went wrong.",
-                description: "Your sign in request failed. Please try again.",
+                title: "注册失败",
+                description: "用户名已注册",
                 variant: "destructive",
+                duration: 5000
             })
         }
         // 成功之后跳转登录之前页面或者dashboard
         router.push("/login")
         return toast({
-            title: "Check your email",
-            description: "We sent you a login link. Be sure to check your spam too.",
+            title: "注册成功",
+            description: "请在登录页面登录",
+            duration: 3000
         })
     }
 

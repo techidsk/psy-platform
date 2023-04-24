@@ -1,9 +1,9 @@
 "use client"
 import { useState } from 'react';
 import { useRouter } from 'next/navigation'
-import { GridIcon, FileTextIcon } from '@radix-ui/react-icons'
 
 import { usePreExperimentState } from '@/state/_pre_atoms'
+import { Icons } from '@/components/icons';
 
 /**预实验输入测试 */
 export default function ArticleResult() {
@@ -64,11 +64,11 @@ export default function ArticleResult() {
                 </div>
                 <div className='flex gap-4 w-full justify-center'>
                     <div className='border border-solid border-gray-400 rounded px-8 py-4 cursor-pointer flex flex-col gap-4 justify-center items-center'>
-                        <GridIcon height={36} width={36} />
+                        <Icons.grid className="mr-2 h-8 w-8" />
                         <div>画廊模式</div>
                     </div>
                     <div className='border border-solid border-gray-400 rounded px-8 py-4 cursor-pointer flex flex-col gap-4 justify-center items-center'>
-                        <FileTextIcon height={36} width={36} />
+                        <Icons.folder className="mr-2 h-8 w-8" />
                         <div>故事模式</div>
                     </div>
                 </div>

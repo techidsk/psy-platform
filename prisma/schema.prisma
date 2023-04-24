@@ -22,7 +22,7 @@ model psy_experiment {
   create_time     DateTime? @default(now()) @db.DateTime(0)
   available       Int?      @default(1) @db.UnsignedTinyInt
   description     String?   @db.Text
-  nano_id         String?   @db.VarChar(16)
+  nano_id         String?   @unique(map: "psy_experiment_nano_id_uindex") @db.VarChar(16)
 }
 
 model psy_experiment_setting {
@@ -54,7 +54,7 @@ model psy_user_experiments {
   id            BigInt    @id @unique(map: "psy_user_experiments_id_uindex") @default(autoincrement())
   user_id       BigInt?
   nano_id       String?   @unique(map: "psy_user_experiments_nano_id_uindex") @db.VarChar(16)
-  experiment_id BigInt?
+  experiment_id String?   @db.VarChar(16)
   type          String?   @default("TRAIL") @db.VarChar(30)
   engine_id     Int?
   start_time    DateTime? @default(now()) @db.DateTime(0)
@@ -67,6 +67,7 @@ model psy_user_group {
   id            BigInt  @id @default(autoincrement())
   group_name    String? @db.VarChar(50)
   experiment_id Int?
+  state         Int?    @default(1) @db.UnsignedTinyInt
 }
 
 model psy_trail {
@@ -79,20 +80,25 @@ model psy_trail {
   engine_id          Int?
   image_url          String?   @db.VarChar(200)
   update_time        DateTime? @db.DateTime(0)
+  nano_id            String?   @unique(map: "psy_trail_nano_id_uindex") @db.VarChar(16)
 
   @@index([state], map: "idx_state")
   @@index([user_id], map: "idx_user_id")
-  @@index([user_experiment_id], map: "idx_nano_id")
+  @@index([user_experiment_id], map: "idx_exp_nano_id")
 }
 
 model psy_map_user_group {
   id       Int     @id @default(autoincrement())
-  user_id  BigInt?
+  user_id  BigInt? @unique(map: "psy_map_user_group_user_id_uindex")
   group_id BigInt?
+
+  @@index([group_id], map: "idx_group_id")
 }
 
 model psy_user_setting {
   id        Int     @id @default(autoincrement())
   user_id   BigInt? @unique(map: "psy_user_setting_user_id_uindex")
   engine_id Int?
+
+  @@index([engine_id], map: "idx_engine_id")
 }

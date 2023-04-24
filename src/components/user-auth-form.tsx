@@ -64,17 +64,19 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
 
         if (!signInResult?.ok) {
             return toast({
-                title: "Something went wrong.",
-                description: "Your sign in request failed. Please try again.",
+                title: "登陆失败",
+                description: "用户名或者密码错误",
                 variant: "destructive",
+                duration: 5000
             })
         }
         // 成功之后跳转登录之前页面或者dashboard
         router.push(signInResult.url || "/dashboard")
 
         return toast({
-            title: "Check your email",
-            description: "We sent you a login link. Be sure to check your spam too.",
+            title: "已成功登录",
+            description: "登陆成功将会跳转至控制台",
+            duration: 3000
         })
     }
 

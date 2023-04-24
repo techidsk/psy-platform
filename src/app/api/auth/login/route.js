@@ -10,6 +10,8 @@ const prisma = new PrismaClient()
  * @returns 
  */
 export async function POST(request) {
+    console.log('api/auth/login');
+
     // 判断用户输入用户名或者email
     const data = await request.json()
     const username = data['username']

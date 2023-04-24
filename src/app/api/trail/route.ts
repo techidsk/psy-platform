@@ -11,37 +11,46 @@ export async function POST(request: Request) {
     const data = await request.json()
     const currentUser = await getCurrentUser()
     data['user_id'] = currentUser?.id
-
-    console.log(data)
+    const experimentId = data['nano_id']
+    const experimentNanoId = data['experimentId'] || undefined
     // 插入用户实验表
     const dbExperiment = await db.psy_user_experiments.findFirst({
         where: {
-            nano_id: data['nano_id']
+            nano_id: experimentId
         }
     })
-    console.log('dbExperiment : ', dbExperiment)
+    let d: any = {
+        nano_id: experimentId,
+        type: 'TRAIL',
+        engine_id: parseInt(data['engine_id']),
+        user_id: BigInt(data['user_id']),
+    }
+
+    if (experimentNanoId) {
+        d = {
+            ...d,
+            experiment_id: experimentNanoId
+        }
+    }
+
     if (!dbExperiment) {
         await db.psy_user_experiments.create({
-            data: {
-                nano_id: data['nano_id'],
-                type: 'TRAIL',
-                engine_id: parseInt(data['engine_id']),
-                user_id: BigInt(data['user_id']),
-            }
+            data: d
         })
     }
 
+    let trailNanoId = data['promptNanoId']
     // 插入用户submit记录用以生成图片
     await db.psy_trail.create({
         data: {
-            user_experiment_id: data['nano_id'],
+            user_experiment_id: experimentId,
             user_id: BigInt(data['user_id']),
             prompt: data['prompt'],
             engine_id: parseInt(data['engine_id']),
-            state: 'GENERATING'
+            state: 'GENERATING',
+            nano_id: trailNanoId
         }
     })
 
-    db.$disconnect()
-    return NextResponse.json({ 'msg': '注册成功' });
+    return NextResponse.json({ 'msg': '发布成功' });
 }

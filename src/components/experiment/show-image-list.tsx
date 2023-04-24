@@ -19,6 +19,7 @@ export function ShowImageList({
     const [index, setIndex] = useState(0)
     const [pause, setPause] = useState<boolean>(true)
     const [seconds, setSeconds] = useState<number>(0);
+    const [speed, setSpeed] = useState(1)
     const totalLength = (experimentList.length > 1) ? (experimentList[experimentList.length - 1]?.timestamp || 0) - (experimentList[0]?.timestamp || 0) : 0
 
     const displayNum = useSettingState(state => state.displayNum)
@@ -27,17 +28,18 @@ export function ShowImageList({
             if (!pause) {
                 if (seconds >= totalLength) {
                     setPause(true)
+                    setSeconds(totalLength)
                     clearInterval(intervalId);
                     return
                 }
-                setSeconds(seconds => seconds + 1);
+                setSeconds(seconds => Math.min(seconds + 1 * speed, totalLength));
             }
         }, 1000);
 
         return () => {
             clearInterval(intervalId);
         };
-    }, [pause])
+    }, [pause, speed, seconds])
 
     useEffect(() => {
         let temp: ImageResponse[] = experimentList.filter(item => (item.timestamp || 0) < seconds)
@@ -67,6 +69,46 @@ export function ShowImageList({
         let e = Math.min(s + displayNum, experimentList.length)
         setList(tmp.slice(s, e).map((item: ImageResponse, idx: number) => ({ ...item, idx: idx + s })))
         setIndex(Math.max(newIndex, 0))
+    }
+
+    function increment() {
+        switch (speed) {
+            case 1:
+                setSpeed(1.5)
+                return
+            case 1.5:
+                setSpeed(2)
+                return
+            case 2:
+                setSpeed(4)
+                return
+            case 4:
+                setSpeed(8)
+                return
+            case 8:
+                setSpeed(16)
+                return
+        }
+    }
+
+    function decrement() {
+        switch (speed) {
+            case 1.5:
+                setSpeed(1)
+                return
+            case 2:
+                setSpeed(1.5)
+                return
+            case 4:
+                setSpeed(2)
+                return
+            case 8:
+                setSpeed(4)
+                return
+            case 16:
+                setSpeed(8)
+                return
+        }
     }
 
     return (
@@ -123,11 +165,18 @@ export function ShowImageList({
                     <Icons.chevronRight className="mr-2 h-8 w-8" />
                 </div>
             </div>
-            <div className='flex gap-4 justify-center items-center'>
-                <h1 className='text-xl text-center'>当前时间戳： {` `}{formatTime(seconds)}{` / `}{formatTime(totalLength)}</h1>
-                <button className={`btn btn-sm ${pause ? 'btn-primary' : 'btn-ghost btn-outline'}`} onClick={() => setPause(!pause)}>{pause ? <><Icons.play />开始</> : <><Icons.pause />暂停</>}</button>
+            <div className='flex flex-col gap-4 justify-center items-center'>
+                <h1 className='text-xl text-center select-none'>当前时间戳： {` `}{formatTime(seconds)}{` / `}{formatTime(totalLength)}</h1>
+                <div className='flex gap-4 justify-center items-center'>
+                    <button className={`btn btn-sm rounded ${pause ? 'btn-primary' : 'btn-ghost btn-outline border-solid'}`} onClick={() => setPause(!pause)}>{pause ? <><Icons.play />开始</> : <><Icons.pause />暂停</>}</button>
+                    <div className='flex gap-2 justify-center items-center border border-solid border-gray-800 rounded py-2 px-4'>
+                        <Icons.add className='cursor-pointer' onClick={increment} />
+                        <h2 className='text-center select-none'>速度 x {speed}</h2>
+                        <Icons.minus className='cursor-pointer' onClick={decrement} />
+                    </div>
+                    <button className='btn btn-sm btn-outline btn-ghost border-solid rounded' onClick={() => setSeconds(0)}><><Icons.rotate />重新开始</></button>
+                </div>
             </div>
         </div>
     )
 }
-

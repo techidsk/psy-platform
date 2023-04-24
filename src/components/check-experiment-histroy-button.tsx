@@ -14,7 +14,10 @@ export default function CheckExperimentHistoryButton({
         router.push(`/history/${id}`)
     }
 
-    return <button className='btn btn-ghost btn-sm' onClick={() => openExperimentPage(data?.nano_id)}>
-        查看详情
-    </button>
+
+    return <div className="flex gap-2">
+        <button className='btn btn-ghost btn-sm' onClick={() => openExperimentPage(data?.nano_id)}>
+            查看详情
+        </button>
+    </div>
 };

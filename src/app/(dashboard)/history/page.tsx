@@ -22,14 +22,16 @@ interface ExperimentProps {
     avatar?: string,
     engine_name: string,
     engine_image: string,
+    experiment_name?: string
 }
 
 async function getHistory() {
     const experiments = await db.$queryRaw<ExperimentProps[]>`
-        select e.*, u.username, u.avatar, n.engine_name, n.engine_image
+        select e.*, u.username, u.avatar, n.engine_name, n.engine_image, eper.experiment_name
         from psy_user_experiments e
         left join psy_user u on u.id = e.user_id
         left join psy_engine n on n.id = e.engine_id
+        left join psy_experiment eper on eper.nano_id = e.experiment_id
         order by e.id desc
         limit 15
     `
@@ -103,6 +105,15 @@ const experimentTableConfig: TableConfig[] = [
                 <div className='text-gray-700'>
                     {data.username}
                 </div>
+            </div>
+        },
+    },
+    {
+        key: 'experiment_name',
+        label: '所属实验',
+        children: (data: any) => {
+            return <div className='flex flex-col gap-2'>
+                <span>{data.experiment_name}</span>
             </div>
         },
     },

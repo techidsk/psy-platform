@@ -37,12 +37,10 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/app/page.js",
-    "src/app/api/login/route.js",
-    "src/app/(dashboard)/dashboard/page.tsx",
-    "src/lib/session.ts"
-, "src/pages/api/test.js", "src/pages/api/_login.js"  ],
+    "src/**/*"
+  ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "**/*.spec.ts"
   ]
 }

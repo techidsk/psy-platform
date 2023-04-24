@@ -7,17 +7,20 @@ import Image from 'next/image'
 import { db } from '@/lib/db';
 
 async function getEngines() {
-    const engines = await db.psy_engine.findMany({
-        where: {
+    const engines = await db.$queryRaw<any[]>`
+        select e.*, count(s.engine_id ) as num
+        from psy_engine e
+        left join psy_user_setting s on s.engine_id = e.id
+        group by e.id
+    `
 
-        }
-    })
     let formatResult = engines.map(engine => {
         return {
             ...engine,
             id: engine.id.toString(),
             engine_description: engine.engine_description ?? undefined,
-            state: Boolean(engine.state)
+            state: Boolean(engine.state),
+            num: Number(engine.num)
         }
     })
     return formatResult;
@@ -74,6 +77,15 @@ const experimentTableConfig: TableConfig[] = [
             return <State type='success'>
                 {text}
             </State>
+        },
+    },
+    {
+        key: 'num',
+        label: '用户数量',
+        children: (data: any) => {
+            return <div className='flex flex-col gap-2'>
+                {data.num}
+            </div>
         },
     },
     {
