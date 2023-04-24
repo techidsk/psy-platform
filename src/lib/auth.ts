@@ -17,6 +17,7 @@ export const authOptions: NextAuthOptions = {
             },
             async authorize(credentials) {
                 const url = new URL('/api/auth/login', process.env.NEXT_PUBLIC_BASE_URL);
+                console.log('用户登录: ', credentials)
                 const authResponse = await fetch(url, {
                     method: 'POST',
                     headers: {
