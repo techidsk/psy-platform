@@ -10,7 +10,8 @@ async function getUsers() {
     const formattedUsers = users.map((user) => ({
         ...user,
         create_time: dateFormat(user['create_time']),
-        id: user['id'].toString()
+        id: user['id'].toString(),
+        user_group_id: user['user_group_id'].toString(),
     }));
     return formattedUsers
 }
