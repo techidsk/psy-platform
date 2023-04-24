@@ -35,6 +35,7 @@ export default function Header({ user }: HeaderProps) {
                                     alt=''
                                     width={48}
                                     height={48}
+                                    style={{ width: 48, height: 48 }}
                                 />
                             </div>
                         </div>

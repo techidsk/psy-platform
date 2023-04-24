@@ -33,6 +33,8 @@ export default async function MainInput({ params: { id } }: any) {
     // 获取用户实验prompt信息
     const list = await getExperimentInfos(id)
 
+    
+
     return (
         <div className='h-screen bg-white'>
             <div className='container mx-auto flex flex-col gap-8'>
@@ -43,7 +45,7 @@ export default async function MainInput({ params: { id } }: any) {
                     <ImageList experimentList={list} />
                 </ImageListServer>
                 <div className='flex flex-col gap-4 w-full'>
-                    <ExperimentEditor back='/experiments/engine' nanoId={id} trail={false} />
+                    <ExperimentEditor back='/experiments/engine' nanoId={id} trail={false} experimentList={list} />
                     <ExperimentFinishButton nanoId={id} experimentList={list} />
                 </div>
             </div>

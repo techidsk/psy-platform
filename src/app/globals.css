@@ -102,7 +102,7 @@ a {
 }
 
 .image-holder {
-  @apply aspect-square object-cover w-full rounded;
+  @apply aspect-square object-cover rounded ;
 }
 
 .image-btn {

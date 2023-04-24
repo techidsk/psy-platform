@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation'
 import store from 'store2'
 import { getId } from '@/lib/nano-id'
 import { toast } from "@/hooks/use-toast"
+import { ImageResponse } from '@/types/experiment'
 
 interface ExperimentEditorProps {
     back: string
     nanoId: string
     trail?: boolean
+    experimentList?: ImageResponse[]
 }
 
 type FetchData = {
@@ -23,7 +25,8 @@ type FetchData = {
 export function ExperimentEditor({
     back,
     nanoId,
-    trail = true
+    trail = true,
+    experimentList
 }: ExperimentEditorProps) {
     const router = useRouter()
     const ref = useRef<HTMLTextAreaElement>(null)
@@ -118,6 +121,10 @@ export function ExperimentEditor({
         ref.current!.value = '';
         setLoading(false)
         router.refresh()
+        await generate(data)
+    }
+
+    async function generate(data: any) {
         let generateUrl = process.env.NEXT_PUBLIC_BASE_URL + '/api/generate'
         await fetch(generateUrl, {
             method: 'POST',
@@ -129,6 +136,8 @@ export function ExperimentEditor({
         })
         router.refresh()
     }
+
+
 
     return (
 

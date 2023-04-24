@@ -13,6 +13,7 @@ export async function POST(request: Request) {
     console.log('----------- generate ------------');
 
     const data = await request.json()
+
     let promptNanoId = data['promptNanoId']
     // 生成图片并上传oss
     let imageData = await generate(data['prompt'])
