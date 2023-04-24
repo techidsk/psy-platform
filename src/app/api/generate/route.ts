@@ -21,19 +21,21 @@ export async function POST(request: Request) {
         let imageUrl = imageData.data[0].url
         console.log('生成图片url: ', imageUrl)
         // project/_psy_/avatar-2.jpg?x-oss-process=style/wb
-        let target = `project/_psy_/image/${data['nano_id']}/${promptNanoId}.png`
-        let img = process.env.OSS_URL + target + '?x-oss-process=style/wb'
-        await uploadImage(imageUrl, target)
+
+        // 上传OSS
+        // let target = `project/_psy_/image/${data['nano_id']}/${promptNanoId}.png`
+        // let img = process.env.OSS_URL + target + '?x-oss-process=style/wb'
+        // await uploadImage(imageUrl, target)'
         await db.psy_trail.update({
             where: {
                 nano_id: promptNanoId
             },
             data: {
                 state: 'SUCCESS',
-                image_url: img
+                image_url: imageUrl
             }
         })
-        return NextResponse.json({ 'msg': '发布成功', 'url': img });
+        return NextResponse.json({ 'msg': '发布成功', 'url': imageUrl });
     } else {
         await db.psy_trail.update({
             where: {

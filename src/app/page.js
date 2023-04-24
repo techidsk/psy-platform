@@ -1,18 +1,12 @@
-import { db } from '@/lib/db'
 import { getCurrentUser } from '@/lib/session'
 import Link from 'next/link.js'
 
 // import './register/register.css'
-async function check() {
-  const user = await db.psy_user.findFirst()
-  return user
-}
+
 
 export default async function Home() {
 
   const currentUser = await getCurrentUser()
-  const firstUser = await check()
-  console.log(firstUser);
 
   return (
     <div className='h-screen'>
