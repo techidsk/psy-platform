@@ -6,6 +6,7 @@ import store from 'store2'
 import { getId } from '@/lib/nano-id'
 import { toast } from "@/hooks/use-toast"
 import { ImageResponse } from '@/types/experiment'
+import { getUrl } from '@/lib/url'
 
 interface ExperimentEditorProps {
     back: string
@@ -36,7 +37,7 @@ export function ExperimentEditor({
     const currentEngine = usePreExperimentState(state => state.engine)
 
     async function getExperimentInfo(nano_id: string) {
-        await fetch(process.env.NEXT_PUBLIC_BASE_URL + '/api/experiment/log', {
+        await fetch(getUrl('/api/experiment/log'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', },
             body: JSON.stringify({
@@ -109,9 +110,7 @@ export function ExperimentEditor({
             data['experimentId'] = experimentId
         }
 
-        let url = process.env.NEXT_PUBLIC_BASE_URL + '/api/trail'
-        console.log(process.env.NEXT_PUBLIC_BASE_URL, url)
-        await fetch(url, {
+        await fetch(getUrl('/api/trail'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -126,8 +125,7 @@ export function ExperimentEditor({
     }
 
     async function generate(data: any) {
-        let generateUrl = process.env.NEXT_PUBLIC_BASE_URL + '/api/generate'
-        await fetch(generateUrl, {
+        await fetch(getUrl('/api/generate'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

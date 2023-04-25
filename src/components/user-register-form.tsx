@@ -10,6 +10,7 @@ import * as z from "zod"
 import { cn } from "@/lib/utils"
 import { userAuthSchema } from "@/lib/validations/auth"
 import { Icons } from "@/components/icons"
+import { getUrl } from "@/lib/url"
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
 type FormData = z.infer<typeof userAuthSchema>
@@ -31,8 +32,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
             username: data.username,
             password: data.password,
         }
-        let url = process.env.NEXT_PUBLIC_BASE_URL + '/api/register'
-        const result = await fetch(url, {
+        const result = await fetch(getUrl('/api/register'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

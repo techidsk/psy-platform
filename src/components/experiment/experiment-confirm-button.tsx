@@ -2,6 +2,7 @@
 import { useRouter } from 'next/navigation';
 import { usePreExperimentState } from '@/state/_pre_atoms'
 import { getId } from '@/lib/nano-id';
+import { getUrl } from '@/lib/url';
 
 interface ExperimentConfirmProps extends React.HTMLAttributes<HTMLButtonElement> {
     goto: string
@@ -18,8 +19,7 @@ export function ExperimentConfirmButton({
 
     async function start() {
         if (selectedEngine?.id) {
-            let url = process.env.NEXT_PUBLIC_BASE_URL + '/api/user/setting'
-            await fetch(url, {
+            await fetch(getUrl('/api/user/setting'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

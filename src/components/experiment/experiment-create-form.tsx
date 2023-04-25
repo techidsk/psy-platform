@@ -10,6 +10,7 @@ import * as z from "zod"
 import { cn } from "@/lib/utils"
 import { exprimentSchema } from "@/lib/validations/auth"
 import { Icons } from "@/components/icons"
+import { getUrl } from "@/lib/url"
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
     nanoId: string
@@ -31,8 +32,7 @@ export function ExperimentCreateForm({ className, nanoId, ...props }: UserAuthFo
     const searchParams = useSearchParams()
     async function onSubmit(data: FormData) {
         setIsLoading(true)
-        let url = process.env.NEXT_PUBLIC_BASE_URL + '/api/experiment/add'
-        const createResult = await fetch(url, {
+        const createResult = await fetch(getUrl('/api/experiment/add'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

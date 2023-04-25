@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation';
 import { usePreExperimentState } from '@/state/_pre_atoms'
 import { ImageResponse } from '@/types/experiment';
+import { getUrl } from '@/lib/url';
 
 interface ExperimentFinishProps extends React.HTMLAttributes<HTMLButtonElement> {
     nanoId: string
@@ -31,8 +32,7 @@ export function ExperimentFinishButton({
 
     async function finish() {
         // 完成实验
-        let url = process.env.NEXT_PUBLIC_BASE_URL + '/api/experiment/finish'
-        await fetch(url, {
+        await fetch(getUrl('/api/experiment/finish'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
