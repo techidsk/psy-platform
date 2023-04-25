@@ -125,7 +125,9 @@ export function ExperimentEditor({
     }
 
     async function generate(data: any) {
-        await fetch(getUrl('/api/generate'), {
+        // 远程vercel的服务器发送请求
+        let generateUrl = 'http://psy.kexunshe.com/api/generate'
+        let response = await fetch(generateUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -133,7 +135,26 @@ export function ExperimentEditor({
             body: JSON.stringify(data),
             cache: 'no-store'
         })
-        router.refresh()
+        let d = await response.json()
+        if (response.ok) {
+            await fetch(getUrl('/api/upload/oss'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ ...data, imamgeUrl: d.url }),
+                cache: 'no-store'
+            })
+            router.refresh()
+        } else {
+            toast({
+                title: "发送失败",
+                description: d.msg,
+                variant: "destructive",
+                duration: 3000
+            })
+        }
+
     }
 
 
