@@ -1,6 +1,5 @@
 import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
-import { generate } from '@/lib/generate';
 import { uploadImage } from '@/lib/upload';
 require('dotenv').config()
 
@@ -10,7 +9,7 @@ require('dotenv').config()
  * @returns 
  */
 export async function POST(request: Request) {
-    console.log('----------- generate ------------');
+    console.log('----------- upload to oss ------------');
 
     const data = await request.json()
 
