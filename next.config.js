@@ -33,6 +33,20 @@ const nextConfig = {
     });
     return [apiProxy];
   },
+  async headers() {
+    return [
+      {
+        // 允许的来源域名
+        source: '/',
+        headers: [
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: 'http://psy1.kexunshe.com:4545, https://psy.kexunshe.com',
+          },
+        ],
+      },
+    ];
+  },
 }
 
 module.exports = nextConfig
