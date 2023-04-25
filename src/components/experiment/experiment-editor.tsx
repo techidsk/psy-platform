@@ -121,10 +121,10 @@ export function ExperimentEditor({
         ref.current!.value = '';
         setLoading(false)
         router.refresh()
-        await generate(promptNanoId)
+        await generate(promptNanoId, data.nano_id)
     }
 
-    async function generate(promptNanoId: string) {
+    async function generate(promptNanoId: string, experimentId: string) {
         // 远程vercel的服务器发送请求
         let response = await fetch(getUrl(`/api/generate/openai?id=${promptNanoId}`))
 
@@ -135,7 +135,7 @@ export function ExperimentEditor({
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ promptNanoId: promptNanoId, imamgeUrl: d.url }),
+                body: JSON.stringify({ promptNanoId: promptNanoId, imamgeUrl: d.url, nano_id: experimentId }),
                 cache: 'no-store'
             })
             router.refresh()
