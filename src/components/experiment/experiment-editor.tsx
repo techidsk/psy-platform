@@ -110,6 +110,7 @@ export function ExperimentEditor({
         }
 
         let url = process.env.NEXT_PUBLIC_BASE_URL + '/api/trail'
+        console.log(process.env.NEXT_PUBLIC_BASE_URL, url)
         await fetch(url, {
             method: 'POST',
             headers: {
