@@ -20,8 +20,8 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/openai/:path*',
-        destination: '/openai-proxy/:path*',
+        source: '/api/generate/:path*',
+        destination: 'https://psy.kexunshe.com/api/generate/:path*',
       },
     ];
   },

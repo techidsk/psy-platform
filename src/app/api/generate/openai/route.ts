@@ -2,10 +2,33 @@ import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { generate } from '@/lib/generate';
 import { uploadImage } from '@/lib/upload';
+import type { NextApiRequest, NextApiResponse } from 'next'
+import Cors from 'cors'
 require('dotenv').config()
 
+
+const cors = Cors({
+    methods: ['POST', 'GET', 'HEAD'],
+})
+
+function runMiddleware(
+    req: NextApiRequest,
+    res: NextApiResponse,
+    fn: Function
+) {
+    return new Promise((resolve, reject) => {
+        fn(req, res, (result: any) => {
+            if (result instanceof Error) {
+                return reject(result)
+            }
+
+            return resolve(result)
+        })
+    })
+}
+
 /**
- * /api/generate
+ * /api/generate/openai
  * 用户测试引擎效果
  * @returns 
  */

@@ -126,8 +126,7 @@ export function ExperimentEditor({
 
     async function generate(data: any) {
         // 远程vercel的服务器发送请求
-        let generateUrl = '/openai-proxy/api/generate'
-        let response = await fetch(generateUrl, {
+        let response = await fetch(getUrl('/api/generate/openai'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
