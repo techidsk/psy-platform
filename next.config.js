@@ -20,7 +20,7 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/generate/:path*',
+        source: '/api/proxy/generate/:path*',
         destination: 'https://psy.kexunshe.com/api/generate/:path*',
       },
     ];
