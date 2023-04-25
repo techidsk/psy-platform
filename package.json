@@ -19,7 +19,6 @@
     "ali-oss": "^6.17.1",
     "class-variance-authority": "^0.5.2",
     "clsx": "^1.2.1",
-    "cors": "^2.8.5",
     "daisyui": "^2.51.5",
     "dayjs": "^1.11.7",
     "dotenv": "^16.0.3",

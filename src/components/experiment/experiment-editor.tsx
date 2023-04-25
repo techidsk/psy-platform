@@ -126,7 +126,7 @@ export function ExperimentEditor({
 
     async function generate(promptNanoId: string) {
         // 远程vercel的服务器发送请求
-        let response = await fetch(`https://psy.kexunshe.com/api/generate/openai?id=${promptNanoId}`)
+        let response = await fetch(getUrl(`/api/generate/openai?id=${promptNanoId}`))
 
         let d = await response.json()
         if (response.ok) {
@@ -147,12 +147,7 @@ export function ExperimentEditor({
                 duration: 3000
             })
         }
-
     }
-
-    // async function test() {
-    //     await fetch('https://psy.kexunshe.com/api/hello')
-    // }
 
 
     return (
@@ -169,7 +164,6 @@ export function ExperimentEditor({
             <button className='btn btn-primary' onClick={submit}>
                 提交
             </button>
-            {/* <button className='btn btn-ghost' onClick={test}>Hi</button> */}
         </>
     )
 
