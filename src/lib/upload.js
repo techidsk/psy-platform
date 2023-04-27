@@ -1,4 +1,4 @@
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 require('dotenv').config()
 
 const OSS = require('ali-oss');
@@ -11,6 +11,7 @@ const client = new OSS({
 });
 
 async function downloadImage(url) {
+    console.log('开始下载: ', url)
     try {
         const response = await fetch(url);
         const buffer = await response.arrayBuffer();
@@ -23,6 +24,7 @@ async function downloadImage(url) {
 async function uploadImage(url, object) {
     try {
         const buffer = await downloadImage(url)
+        console.log('开始上传: ', url, object)
         await client.put(object, buffer);
     } catch (e) {
         console.log(`Error uploading image: ${e.message}`);
