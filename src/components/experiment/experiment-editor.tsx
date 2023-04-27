@@ -136,7 +136,7 @@ export function ExperimentEditor({
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ promptNanoId: promptNanoId, imamgeUrl: d.url, nano_id: experimentId }),
+                body: JSON.stringify({ promptNanoId: promptNanoId, imageUrl: d.url, nano_id: experimentId }),
                 cache: 'no-store'
             })
             router.refresh()
