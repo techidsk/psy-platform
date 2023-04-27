@@ -14,7 +14,29 @@ export async function POST(request: Request) {
     const data = await request.json()
 
     let promptNanoId = data['promptNanoId']
+    if (!promptNanoId) {
+        const body = JSON.stringify({ 'msg': 'promptNanoId为空' })
+        const res = new Response(body, {
+            status: 401,
+            statusText: 'Unauthorized',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        return res
+    }
     let imageUrl = data['imageUrl']
+    if (!imageUrl) {
+        const body = JSON.stringify({ 'msg': 'imageUrl为空' })
+        const res = new Response(body, {
+            status: 401,
+            statusText: 'Unauthorized',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        return res
+    }
     let target = `project/_psy_/image/${data['nano_id']}/${promptNanoId}.png`
     let img = process.env.OSS_URL + target + '?x-oss-process=style/wb'
     await uploadImage(imageUrl, target)
