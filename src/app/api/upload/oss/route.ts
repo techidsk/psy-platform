@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
-import { uploadImage } from '@/lib/upload';
+import { uploadImage } from '@/lib/upload.js';
 require('dotenv').config()
 
 /**
