@@ -129,7 +129,7 @@ export function ExperimentEditor({
         let response = await fetch(getUrl(`/api/generate/openai?id=${promptNanoId}`))
 
         let d = await response.json()
-        console.log(d)
+        console.log('upload data is :', d)
         if (response.ok) {
             await fetch(getUrl('/api/upload/oss'), {
                 method: 'POST',
