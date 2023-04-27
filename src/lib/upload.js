@@ -12,7 +12,10 @@ const client = new OSS({
 
 function downloadImageAsBuffer(url) {
     return new Promise((resolve, reject) => {
-        https.get(url, (response) => {
+        const options = {
+            rejectUnauthorized: false // 添加这个选项以允许使用自签名证书的HTTPS网站
+        };
+        https.get(url, options, (response) => {
             if (response.statusCode < 200 || response.statusCode >= 300) {
                 return reject(new Error(`Failed to load image, status code: ${response.statusCode}`));
             }
