@@ -23,7 +23,7 @@ async function translate(prompt) {
     let text = `将一下语句翻译成英文: ${prompt}`
     try {
         const response = await openai.createCompletion({
-            model: "text-davinci-003",
+            model: "gpt-3.5-turbo",
             prompt: text,
             temperature: 0.3,
             max_tokens: 1024,
