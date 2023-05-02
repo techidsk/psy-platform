@@ -29,7 +29,7 @@ async function translate(prompt) {
     try {
 
         const message = [
-            { role: "system", content: `As an Chinese-English translator, your task is to accurately translate text between the two languages. When translating from Chinese to English or vice versa. Just reply the translated content to me.` },
+            { role: "system", content: `As an Chinese-English translator, your task is to accurately translate text and just reply the translated content.` },
             { role: "user", content: text },
         ];
         const response = await openai.createChatCompletion({
@@ -41,8 +41,19 @@ async function translate(prompt) {
             frequency_penalty: 0,
             presence_penalty: 0,
         })
-        console.log('prompt: ', response.data.choices[0].message.content)
-        return response.data.choices[0].message.content
+        let c = response.data.choices[0].message.content
+        const keyword = "translated to";
+        const index = c.indexOf(keyword); // 获取关键词的索引
+        if (index !== -1) {
+            c = c.substring(index + keyword.length); // 获取索引之后的字符
+        }
+        const regex = /.*?\"(.*?)\"/; // 匹配双引号内的内容
+        const match = c.match(regex);
+        if (match) {
+            c = match[1]; // 获取双引号内的内容
+        } 
+        console.log('prompt: ', c)
+        return c
     } catch (error) {
         if (error.response) {
             console.log(error.response.status);
@@ -55,9 +66,9 @@ async function translate(prompt) {
 }
 
 
-export {
-    generate,
-    translate
-}
+// export {
+//     generate,
+//     translate
+// }
 
-// generate('长着翅膀的女孩')
+translate('一直感受不到爱的兔子')
