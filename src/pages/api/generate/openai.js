@@ -13,6 +13,7 @@ export default async function handler(
 ) {
     console.log('----------- generate ------------');
     const promptNanoId = req?.query?.id;
+    const engineId = req?.query?.engineId;
     if (!promptNanoId) {
         console.error('未找到对应promptNanoId数据')
         return
@@ -26,7 +27,10 @@ export default async function handler(
     }
     // 生成图片并上传oss
     console.log(data['prompt']);
-    let imageData = await generate(data['prompt'])
+    let setting = await db.psy_engine.findFirst({
+        where: { id: BigInt(engineId) }
+    })
+    let imageData = await generate(data['prompt'], setting.engine_description)
     if (imageData.data.length > 0) {
         let imageUrl = imageData.data[0].url
         console.log('生成图片url: ', imageUrl)

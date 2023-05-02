@@ -1,4 +1,5 @@
 const { Configuration, OpenAIApi } = require("openai");
+
 require('dotenv').config()
 
 const configuration = new Configuration({
@@ -7,15 +8,18 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-async function generate(prompt) {
+async function generate(prompt, intro) {
     console.log('发送prompt到dall.E');
     let text = await translate(prompt)
+    console.log(intro)
+    text += intro
     const response = await openai.createImage({
         prompt: text,
         n: 1,
         size: "512x512",
         // size: "1024x1024",
     });
+    console.log(response.data.data[0].url)
     return response.data
 }
 
@@ -51,9 +55,9 @@ async function translate(prompt) {
 }
 
 
-// export {
-//     generate,
-//     translate
-// }
+export {
+    generate,
+    translate
+}
 
-translate('对影成三人')
+// generate('长着翅膀的女孩')
