@@ -18,6 +18,7 @@ async function downloadImage(url) {
         return buffer;
     } catch (error) {
         console.error(`Error downloading image: ${error}`);
+        return null;
     }
 }
 
@@ -26,9 +27,15 @@ async function uploadImage(url, object) {
         const buffer = await downloadImage(url)
         console.log(typeof buffer)
         console.log('开始上传: ', url, object)
-        await client.put(object, buffer);
+        if (buffer) {
+            await client.put(object, buffer);
+            return true
+        } else {
+            return false
+        }
     } catch (e) {
         console.log(`Error uploading image: ${e.message}`);
+        return false
     }
 }
 

@@ -39,14 +39,15 @@ export async function POST(request: Request) {
     }
     let target = `project/_psy_/image/${data['nano_id']}/${promptNanoId}.png`
     let img = process.env.OSS_URL + target + '?x-oss-process=style/wb'
-    await uploadImage(imageUrl, target)
+    let r = await uploadImage(imageUrl, target)
+
     await db.psy_trail.update({
         where: {
             nano_id: promptNanoId
         },
         data: {
             state: 'SUCCESS',
-            image_url: img
+            image_url: r ? img : imageUrl
         }
     })
     return NextResponse.json({ 'msg': '发布成功', 'url': img });
