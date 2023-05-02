@@ -66,9 +66,9 @@ async function translate(prompt) {
 }
 
 
-// export {
-//     generate,
-//     translate
-// }
+export {
+    generate,
+    translate
+}
 
-translate('一直感受不到爱的兔子')
+// translate('一直感受不到爱的兔子')
