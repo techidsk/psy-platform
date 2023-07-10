@@ -31,8 +31,9 @@ export default async function handler(
         where: { id: BigInt(engineId) }
     })
     let imageData = await generate(data['prompt'], setting.engine_description)
+    console.log(imageData, imageData.data)
     if (imageData.data.length > 0) {
-        let imageUrl = imageData.data[0].url
+        let imageUrl = imageData.data[0]
         console.log('生成图片url: ', imageUrl)
         return res.status(200).json({ 'msg': '发布成功', 'url': imageUrl });
     } else {

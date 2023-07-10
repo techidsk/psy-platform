@@ -8,19 +8,26 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
+let url = 'http://127.0.0.1/generate';
+
 async function generate(prompt, intro) {
-    console.log('发送prompt到dall.E');
-    let text = await translate(prompt)
-    console.log(intro)
-    text += intro
-    const response = await openai.createImage({
-        prompt: text,
-        n: 1,
-        size: "512x512",
-        // size: "1024x1024",
+    console.log('发送prompt到webui');
+    console.log('prompt: ' + prompt);
+    console.log('intro: ' + intro);
+    let data = { note: prompt, hint: intro };
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
     });
-    console.log(response.data.data[0].url)
-    return response.data
+
+    if (!response.ok) {
+        const message = `An error has occurred: ${response.status}`;
+        throw new Error(message);
+    }
+    return response.json();
 }
 
 
@@ -29,8 +36,9 @@ async function translate(prompt) {
     try {
 
         const message = [
-            { role: "system", content: `As an Chinese-English translator, your task is to accurately translate text and just reply the translated content.` },
-            { role: "user", content: text },
+            // { role: "system", content: `As an Chinese-English translator, your task is to accurately translate text and just reply the translated content.` },
+            { role: "system", content: `A tired and overwhelmed doctor stands in a hospital corridor surrounded by masked patients, questioning the meaning of their work and worrying about contracting the virus.` },
+            { role: "user", content: prompt },
         ];
         const response = await openai.createChatCompletion({
             model: "gpt-3.5-turbo",
@@ -51,7 +59,7 @@ async function translate(prompt) {
         const match = c.match(regex);
         if (match) {
             c = match[1]; // 获取双引号内的内容
-        } 
+        }
         console.log('prompt: ', c)
         return c
     } catch (error) {
@@ -71,4 +79,4 @@ export {
     translate
 }
 
-// translate('一直感受不到爱的兔子')
+// translate('窗外的天空是蓝色的，我却感觉像是在监狱')

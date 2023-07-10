@@ -3,7 +3,6 @@ import Link from 'next/link.js'
 
 // import './register/register.css'
 
-
 export default async function Home() {
 
   const currentUser = await getCurrentUser()
