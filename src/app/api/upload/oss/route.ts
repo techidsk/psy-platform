@@ -37,9 +37,10 @@ export async function POST(request: Request) {
         });
         return res
     }
-    let target = `project/_psy_/image/${data['nano_id']}/${promptNanoId}.png`
-    let img = process.env.OSS_URL + target + '?x-oss-process=style/wb'
-    let r = await uploadImage(imageUrl, target)
+
+    // let target = `project/_psy_/image/${data['nano_id']}/${promptNanoId}.png`
+    // let img = process.env.OSS_URL + target + '?x-oss-process=style/wb'
+    // let r = await uploadImage(imageUrl, target)
 
     await db.psy_trail.update({
         where: {
@@ -47,8 +48,8 @@ export async function POST(request: Request) {
         },
         data: {
             state: 'SUCCESS',
-            image_url: r ? img : imageUrl
+            image_url: imageUrl
         }
     })
-    return NextResponse.json({ 'msg': '发布成功', 'url': img });
+    return NextResponse.json({ 'msg': '发布成功', 'url': imageUrl });
 }
