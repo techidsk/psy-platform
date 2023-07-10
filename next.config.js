@@ -12,6 +12,11 @@ const nextConfig = {
         hostname: 'techidsk.oss-cn-hangzhou.aliyuncs.com',
         port: '',
       },
+      {
+        protocol: 'https',
+        hostname: 'yuansun-psy.oss-cn-beijing.aliyuncs.com',
+        port: '',
+      },
     ],
   },
   env: {
