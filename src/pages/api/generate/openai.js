@@ -32,7 +32,7 @@ export default async function handler(
     })
     let imageData = await generate(data['prompt'], setting.engine_description)
     if (imageData.length > 0) {
-        let imageUrl = imageData.data[0]
+        let imageUrl = imageData[0]
         console.log('生成图片url: ', imageUrl)
         return res.status(200).json({ 'msg': '发布成功', 'url': imageUrl });
     } else {
