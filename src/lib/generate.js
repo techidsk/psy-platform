@@ -8,7 +8,7 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-let url = 'http://127.0.0.1/generate';
+let url = 'http://192.168.0.135:5454/generate';
 
 async function generate(prompt, intro) {
     console.log('发送prompt到webui');
