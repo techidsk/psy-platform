@@ -1,5 +1,5 @@
 // flask生成地址
-let url = 'http://192.168.0.135:5454/generate';
+let url = 'http://192.168.0.136:5454/generate';
 
 async function generate(prompt, intro) {
     console.log('发送prompt到webui');
