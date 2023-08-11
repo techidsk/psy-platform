@@ -30,7 +30,7 @@ export default async function handler(
     let setting = await db.psy_engine.findFirst({
         where: { id: BigInt(engineId) }
     })
-    let imageData = await generate(data['prompt'], setting.engine_description)
+    let imageData = await generate(data['prompt'], setting.engine_description, setting.engine_profile_name)
     if (imageData.length > 0) {
         let imageUrl = imageData[0]
         console.log('生成图片url: ', imageUrl)

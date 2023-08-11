@@ -8,11 +8,12 @@ datasource db {
 }
 
 model psy_engine {
-  id                 BigInt  @id @default(autoincrement())
-  engine_name        String  @db.VarChar(50)
-  engine_description String? @db.VarChar(200)
-  engine_image       String  @db.VarChar(200)
-  state              Int     @default(1) @db.UnsignedTinyInt
+  id                  BigInt  @id @default(autoincrement())
+  engine_name         String  @db.VarChar(50)
+  engine_description  String? @db.VarChar(1000)
+  engine_image        String  @db.VarChar(200)
+  state               Int     @default(1) @db.UnsignedTinyInt
+  engine_profile_name String? @db.VarChar(50)
 }
 
 model psy_experiment {

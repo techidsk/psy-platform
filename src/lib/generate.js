@@ -1,9 +1,9 @@
 // flask生成地址
-let url = 'http://192.168.0.135:5454/generate';
+let url = 'http://192.168.0.137:5000/generate';
 
-async function generate(prompt, intro) {
+async function generate(prompt, intro, select) {
     console.log('发送prompt到webui');
-    let data = { note: prompt, hint: intro };
+    let data = { note: prompt, hint: intro, select: select };
     const response = await fetch(url, {
         method: 'POST',
         headers: {
