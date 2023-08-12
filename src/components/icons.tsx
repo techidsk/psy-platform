@@ -17,12 +17,7 @@ import {
     User,
     ArrowRight,
     Grid, Minus, RotateCcw,
-    type Icon as LucideIcon,
 } from "lucide-react"
-
-
-
-export type Icon = LucideIcon
 
 export const Icons = {
     billing: CreditCard,
