@@ -1,11 +1,36 @@
 import { db } from '@/lib/db';
 import { generate } from '@/lib/generate';
+import { OpenAIClient, AzureKeyCredential } from "@azure/openai"
+
 require('dotenv').config()
+const endpoint = process.env.OPENAI_ENDPOINT
+const azureApiKey = process.env.OPENAI_API_KEY
+
 
 /**
- * /api/generate/openai
- * 用户测试引擎效果
- * @returns 
+ * Translates the given messages using OpenAI API.
+ * @param {string} systemPrompt - The system prompt.
+ * @param {string} userPrompt - The messages to be translated.
+ * @returns {Promise<string>} - The translated message.
+ */
+async function translate(systemPrompt, userPrompt) {
+    const messages = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+    ]
+    const client = new OpenAIClient(endpoint, new AzureKeyCredential(azureApiKey))
+    const deploymentId = "0605chatgpt"
+    const result = await client.getChatCompletions(deploymentId, messages)
+    return result.choices[0].message.content
+}
+
+
+/**
+ * @api {get} /api/generate/openai 生成图片
+ * Handles the generation of an image based on a prompt and engine settings.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @returns {Promise<Object|Response>} - A promise that resolves to a JSON object or a Response object.
  */
 export default async function handler(
     req,
@@ -30,6 +55,7 @@ export default async function handler(
     let setting = await db.psy_engine.findFirst({
         where: { id: BigInt(engineId) }
     })
+
     let imageData = await generate(data['prompt'], setting.engine_description, setting.engine_profile_name)
     if (imageData.length > 0) {
         let imageUrl = imageData[0]
