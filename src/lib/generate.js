@@ -1,5 +1,8 @@
+require('dotenv').config()
 // TODO comfyui生成地址
-const url = 'http://172.16.3.15:8080/generate/creative';
+const url = `http://${process.env.COMFYUI_HOST}/generate/creative`;
+
+console.log(url)
 
 /**
  * Generates data by sending a prompt, intro, and select options to a web UI.
@@ -8,17 +11,15 @@ const url = 'http://172.16.3.15:8080/generate/creative';
  * @returns {Promise<Object>} - The response data from the web UI.
  * @throws {Error} - If an error occurs during the fetch request.
  */
-async function generate(userPrompt, systemPrompt, select) {
-    console.log('发送prompt到webui');
+async function generate(prompt) {
+    console.log('Send request to Comfyui');
     const data = {
-        "taskType": "CREATIVE",
-        "negPrompts": "nsfw",
-        "prompt": systemPrompt,
+        "taskType": "BASE",
+        "negativePrompt": "nsfw",
+        "prompt": prompt,
         "gptCreative": 1.0,
-        "aspectRatio": "1:1",
-        "userPrompt": userPrompt
+        "aspectRatio": "1:1"
     }
-
     const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -26,8 +27,7 @@ async function generate(userPrompt, systemPrompt, select) {
         },
         body: JSON.stringify(data),
     });
-
-    if (!response.ok) {
+    if (!response.status === 200) {
         const message = `An error has occurred: ${response.status}`;
         throw new Error(message);
     }

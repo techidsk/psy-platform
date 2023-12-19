@@ -126,7 +126,14 @@ export function ExperimentEditor({
 
     async function generate(promptNanoId: string, experimentId: string, engineId: string) {
         // 远程vercel的服务器发送请求
-        let response = await fetch(getUrl(`/api/generate/openai?id=${promptNanoId}&engineId=${engineId}`))
+        let response = await fetch(getUrl(`/api/generate/`), {
+            method: 'POST',
+            body: JSON.stringify({
+                id: promptNanoId,
+                engineId: engineId,
+            }),
+            headers: { 'Content-Type': 'application/json' }
+        })
 
         let d = await response.json()
         console.log('upload data is :', d)
