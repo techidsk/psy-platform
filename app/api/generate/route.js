@@ -51,7 +51,8 @@ export async function POST(request) {
     })
 
     const prompt = await translate(setting.engine_description, data['prompt'])
-    console.log(prompt)
+    console.log(`GPT的System指令： ${setting.engine_description}`)
+    console.log(`GPT翻譯結果： ${prompt}`)
     let response = await generate(prompt)
     let imageData = response.data?.images
     if (imageData.length > 0) {

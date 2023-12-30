@@ -6,6 +6,11 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'zju-queen-psy.oss-cn-shanghai.aliyuncs.com',
+        port: '',
+      },
+      {
+        protocol: 'https',
         hostname: 'techidsk.oss-cn-hangzhou.aliyuncs.com',
         port: '',
       },

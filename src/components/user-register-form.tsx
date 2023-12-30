@@ -15,6 +15,8 @@ import { getUrl } from "@/lib/url"
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
 type FormData = z.infer<typeof userAuthSchema>
 
+
+
 export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
     const {
         register,
@@ -26,6 +28,14 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
 
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const router = useRouter()
+
+
+    /**
+     * 用户注册请求
+     * 
+     * @param data - The form data containing the username and password.
+     * @returns A toast notification indicating the success or failure of the registration.
+     */
     async function onSubmit(data: FormData) {
         setIsLoading(true)
         const body = {
@@ -93,7 +103,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
                             <p className="px-1 text-xs text-red-600">{errors.password.message}</p>
                         )}
                     </div>
-                    <button className={'btn btn-primary'} disabled={isLoading} type="submit">
+                    <button className='btn btn-outline btn-primary' disabled={isLoading} type="submit">
                         {isLoading && (
                             <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
                         )}

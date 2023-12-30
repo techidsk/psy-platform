@@ -42,6 +42,11 @@ const sidebarNav: SidebarNavItem[] = [
         icon: "users",
     },
     {
+        title: "用户组",
+        href: "/usergroup",
+        icon: "usergroup",
+    },
+    {
         title: "设置",
         href: "/settings",
         icon: "settings",

@@ -32,19 +32,19 @@ export default function RegisterPage() {
                     </div>
                     <UserRegisterForm />
                     <p className="px-8 text-center text-sm text-slate-500 dark:text-slate-400">
-                        By clicking continue, you agree to our{" "}
+                        点击继续即表示您同意我们的{" "}
                         <Link
                             href="/terms"
                             className="hover:text-brand underline underline-offset-4"
                         >
-                            Terms of Service
+                            服务条款
                         </Link>{" "}
-                        and{" "}
+                        和{" "}
                         <Link
                             href="/privacy"
                             className="hover:text-brand underline underline-offset-4"
                         >
-                            Privacy Policy
+                            隐私政策
                         </Link>
                         .
                     </p>

@@ -101,7 +101,7 @@ const experimentTableConfig: TableConfig[] = [
     },
     {
         key: 'user_role',
-        label: '角色和分组',
+        label: '角色',
         children: (data: any) => {
             let obj = Boolean(data.user_role === 'USER') ? {
                 text: '测试者',
@@ -110,6 +110,15 @@ const experimentTableConfig: TableConfig[] = [
                 text: '管理员',
                 state: 'error'
             }
+            return <div className='flex flex-col gap-2 items-start'>
+                <State type={obj.state}>{obj.text}</State>
+            </div>
+        },
+    },
+    {
+        key: 'user_group',
+        label: '分组',
+        children: (data: any) => {
             let group = Boolean(data?.user_group_name) ? {
                 text: data.user_group_name,
                 state: 'pending'
@@ -117,8 +126,7 @@ const experimentTableConfig: TableConfig[] = [
                 text: '暂无分组',
                 state: 'warn'
             }
-            return <div className='flex flex-col gap-2 items-center'>
-                <State type={obj.state}>{obj.text}</State>
+            return <div className='flex flex-col gap-2 items-start'>
                 <State type={group.state}>{group.text}</State>
             </div>
         },
@@ -129,7 +137,8 @@ const experimentTableConfig: TableConfig[] = [
         hidden: true,
         children: (data: any) => {
             return <div className='flex gap-4 items-center'>
-
+                <button className="btn btn-ghost btn-sm">编辑</button>
+                <button className="btn btn-ghost btn-sm">删除</button>
             </div>
         },
     }

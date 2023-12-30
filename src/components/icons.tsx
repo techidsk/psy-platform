@@ -17,6 +17,7 @@ import {
     User,
     ArrowRight,
     Grid, Minus, RotateCcw,
+    UsersRound,
 } from "lucide-react"
 
 export const Icons = {
@@ -37,6 +38,7 @@ export const Icons = {
     play: Play,
     pause: Pause,
     users: User,
+    usergroup: UsersRound,
     grid: Grid,
     minus: Minus,
     rotate: RotateCcw
