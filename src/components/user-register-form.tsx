@@ -29,7 +29,6 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const router = useRouter()
 
-
     /**
      * 用户注册请求
      * 
@@ -41,17 +40,12 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
             return
         }
         setIsLoading(true)
-        const body = {
-            username: data.username,
-            password: data.password,
-            qualtrics: data.qualtrics
-        }
         const result = await fetch(getUrl('/api/register'), {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(body)
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ...data,
+            })
         })
         setIsLoading(false)
         if (!result?.ok) {

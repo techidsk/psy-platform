@@ -85,10 +85,11 @@ const experimentTableConfig: TableConfig[] = [
     },
     {
         key: 'email',
-        label: '邮箱',
+        label: '联系方式',
         children: (data: any) => {
             return <div className='flex flex-col gap-2'>
                 <span>{data.email}</span>
+                <span>{data.tel}</span>
             </div>
         },
     },
@@ -97,7 +98,7 @@ const experimentTableConfig: TableConfig[] = [
         label: 'Qualtrics',
         children: (data: any) => {
             return <div className='flex flex-col gap-2'>
-                <span>{data.qualtrics}</span>
+                <a className="dooom-link" href={data.qualtrics}>{data.qualtrics}</a>
             </div>
         },
     },

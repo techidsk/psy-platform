@@ -10,6 +10,11 @@ interface HashResult {
     hashedPassword: string;
 }
 
+interface UserGroup {
+    id: number;
+    group_user_num: number;
+}
+
 /**
  * /api/register
  * 用户注册
@@ -19,6 +24,32 @@ interface HashResult {
 export async function POST(request: Request) {
     try {
         const data = await request.json();
+        // 判断是否有用户存在
+        const user = await db.user.findFirst({
+            where: {
+                username: data['username'],
+            },
+        });
+        if (user) {
+            return NextResponse.json({ msg: '用户名已存在' }, { status: 409 });
+        }
+        // 获取用户分组
+        const userGroup = await db.$queryRaw<UserGroup[]>`
+            select g.id, count(u.id) as group_user_num
+            from user_group g
+            left join user u on u.user_group_id = g.id
+            where g.state = 1
+            group by g.id
+            ORDER BY group_user_num ASC
+        `;
+        if (userGroup.length === 0) {
+            return NextResponse.json({ msg: '用户组不存在' }, { status: 400 });
+        }
+
+        // 默认头像
+        const setting = await db.platform_setting.findFirst();
+        const defaultAvatar = setting?.default_image;
+
         const nanoId = nanoid(16);
         const { salt, hashedPassword }: HashResult = await hash(data.password);
         await db.user.create({
@@ -28,6 +59,8 @@ export async function POST(request: Request) {
                 user_role: 'USER',
                 password: hashedPassword,
                 salt: salt,
+                avatar: defaultAvatar,
+                user_group_id: userGroup[0].id,
             },
         });
         return NextResponse.json({ msg: '注册成功' });

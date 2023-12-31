@@ -10,7 +10,8 @@ import { Modal } from "../ui/modal"
 import { UserCreateForm } from "./user-create-form"
 
 
-interface CreateUserButtonProps extends React.HTMLAttributes<HTMLButtonElement> { }
+interface CreateUserButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
+}
 
 /**
  * 创建用户，管理员有权限创建学生管理
@@ -40,6 +41,13 @@ export function CreateUserButton({
         setOpen(true)
     }
 
+    function close() {
+        setOpen(false)
+        setIsLoading(false)
+
+        router.refresh()
+    }
+
     return (
         <>
             <button
@@ -62,7 +70,7 @@ export function CreateUserButton({
             </button>
             <Modal className="flex flex-col gap-4" open={open} onClose={handleToggle} disableClickOutside={!open}>
                 <h1 className="text-2xl">创建用户</h1>
-                <UserCreateForm nano_id={nanoId} user={user} />
+                <UserCreateForm nano_id={nanoId} user={user} closeModal={close} />
             </Modal>
         </>
     )

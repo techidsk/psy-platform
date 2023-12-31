@@ -22,10 +22,15 @@ export async function POST(request: Request) {
         return NextResponse.json({ msg: '出现异常,请重新登录进行操作' }, { status: 500 });
     }
 
+    if (currentUser.role !== 'ADMIN') {
+        return NextResponse.json({ msg: '没有权限' }, { status: 403 });
+    }
+
     const data = await request.json();
     if (!data['nano_id']) {
         data['nano_id'] = nanoid(16);
     }
+
     // 判断是否有用户存在
     const user = await db.user.findFirst({
         where: {
@@ -33,7 +38,7 @@ export async function POST(request: Request) {
         },
     });
     if (user) {
-        return NextResponse.json({ msg: '用户名已存在' }, { status: 400 });
+        return NextResponse.json({ msg: '用户名已存在' }, { status: 409 });
     }
 
     // 判断是否有邮箱存在

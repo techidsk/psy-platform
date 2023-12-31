@@ -7,13 +7,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model platform_setting {
   id            Int     @id @default(autoincrement())
   default_image String? @db.VarChar(200)
-
-  @@ignore
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -84,9 +81,10 @@ model user {
   user_role     String?  @db.VarChar(15)
   create_time   DateTime @default(now()) @db.DateTime(0)
   salt          String?  @db.VarChar(32)
-  user_group_id BigInt?
+  user_group_id Int?
   qualtrics     String?  @db.VarChar(50)
   nano_id       String?  @unique(map: "psy_user_nano_id_uindex") @db.VarChar(16)
+  manager_id    Int?
 
   @@index([email], map: "idx_email")
   @@index([username], map: "idx_username")
@@ -131,4 +129,7 @@ model experiment_steps {
   type          Int?
   title         String? @db.VarChar(50)
   content       Json?
+
+  @@unique([experiment_id, order], map: "idx_experiment_order_id")
+  @@index([experiment_id], map: "idx_experiment_id")
 }

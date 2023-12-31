@@ -1,10 +1,8 @@
 // import dynamic from 'next/dynamic'
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { promisify } from 'util';
 import crypto from 'crypto';
-
-const prisma = new PrismaClient();
+import { db } from '@/lib/db';
 
 /**
  * /api/auth/login
@@ -16,7 +14,7 @@ export async function POST(request: Request) {
     const data = await request.json();
     const username = data['username'];
     const inputPassword = data['password'];
-    const user = await prisma.user.findFirst({
+    const user = await db.user.findFirst({
         where: {
             username: username,
         },
@@ -33,6 +31,16 @@ export async function POST(request: Request) {
     if (!r) {
         return NextResponse.json({ msg: '用户名或者密码错误' }, { status: 401 });
     }
+
+    // 更新用户最后登录时间
+    await db.user.update({
+        where: {
+            id: user.id,
+        },
+        data: {
+            last_login_time: new Date(),
+        },
+    });
 
     return NextResponse.json(user);
 }
