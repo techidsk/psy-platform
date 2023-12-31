@@ -9,7 +9,7 @@ import { db, convertBigIntToString } from '@/lib/db'
  */
 export async function POST(request: Request) {
     const data = await request.json()
-    const infomations = await db.psy_user_experiments.findFirst({
+    const infomations = await db.user_experiments.findFirst({
         where: {
             nano_id: data.nano_id
         }

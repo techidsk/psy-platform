@@ -18,6 +18,8 @@ import {
     ArrowRight,
     Grid, Minus, RotateCcw,
     UsersRound,
+    Wrench,
+    Undo2,
 } from "lucide-react"
 
 export const Icons = {
@@ -41,5 +43,7 @@ export const Icons = {
     usergroup: UsersRound,
     grid: Grid,
     minus: Minus,
-    rotate: RotateCcw
+    rotate: RotateCcw,
+    wrench: Wrench,
+    back: Undo2
 }

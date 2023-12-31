@@ -7,16 +7,16 @@ import Link from 'next/link';
 import { getId } from '@/lib/nano-id';
 
 async function getUserDefaultEngine(userId: string) {
-    const userSetting = await db.psy_user_setting.findFirst({
+    const userSetting = await db.user_setting.findFirst({
         where: {
-            user_id: BigInt(userId)
+            user_id: parseInt(userId)
         }
     })
     let engine = undefined
     if (userSetting?.engine_id) {
-        engine = await db.psy_engine.findFirst({
+        engine = await db.engine.findFirst({
             where: {
-                id: BigInt(userSetting.engine_id)
+                id: userSetting.engine_id
             }
         })
     }

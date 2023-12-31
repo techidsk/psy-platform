@@ -8,7 +8,7 @@ import { ExperimentSetting } from '@/components/experiment/experiment-setting';
 import { ShowImageList } from '@/components/experiment/show-image-list';
 
 async function getExperimentInfos(experimentId: string) {
-    const result = await db.psy_trail.findMany({
+    const result = await db.trail.findMany({
         where: {
             user_experiment_id: experimentId
         }

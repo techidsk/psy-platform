@@ -6,7 +6,7 @@ import { ExperimentConfirmInfo } from '@/components/experiment/experiment-confir
 import { getId } from '@/lib/nano-id';
 
 async function getEngines() {
-    const engines = await db.psy_engine.findMany({
+    const engines = await db.engine.findMany({
         where: {
 
         }

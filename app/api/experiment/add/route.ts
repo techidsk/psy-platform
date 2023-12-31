@@ -12,12 +12,12 @@ export async function POST(request: Request) {
     const currentUser = await getCurrentUser()
 
     if (currentUser) {
-        await db.psy_experiment.create({
+        await db.experiment.create({
             data: {
                 experiment_name: data.name,
                 description: data.description,
                 nano_id: data.nano_id,
-                creator: BigInt(currentUser.id)
+                creator: parseInt(currentUser.id)
             }
         })
     }

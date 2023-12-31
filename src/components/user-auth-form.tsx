@@ -10,12 +10,12 @@ import * as z from "zod"
 import store from 'store2';
 
 import { cn } from "@/lib/utils"
-import { userAuthSchema } from "@/lib/validations/auth"
+import { loginSchema } from "@/lib/validations/auth"
 import { Icons } from "@/components/icons"
 const crypto = require('crypto')
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
-type FormData = z.infer<typeof userAuthSchema>
+type FormData = z.infer<typeof loginSchema>
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     const {
@@ -24,7 +24,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         handleSubmit,
         formState: { errors },
     } = useForm<FormData>({
-        resolver: zodResolver(userAuthSchema),
+        resolver: zodResolver(loginSchema),
     })
 
     const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -120,7 +120,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                         <input type="checkbox" defaultChecked={savePass} className="checkbox" onChange={() => setSavePass(!savePass)} />
                         <span>记住密码</span>
                     </div>
-                    <button className={'btn btn-primary'} disabled={isLoading} type="submit">
+                    <button className={'btn btn-outline btn-primary'} disabled={isLoading} type="submit">
                         {isLoading && (
                             <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
                         )}

@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     // let img = process.env.OSS_URL + target + '?x-oss-process=style/wb'
     // let r = await uploadImage(imageUrl, target)
 
-    await db.psy_trail.update({
+    await db.trail.update({
         where: {
             nano_id: promptNanoId
         },

@@ -1,15 +1,35 @@
-import * as z from "zod"
+import * as z from 'zod';
 
-export const userAuthSchema = z.object({
-    username: z.string().min(1, "Username is required").max(100),
-    password: z.string().min(6, { message: "Must be 6 or more characters long" })
-})
+/**
+ *  用户注册验证表单
+ */
+export const registerSchema = z.object({
+    username: z.string().min(5, '请输入用户名').max(100),
+    password: z.string().min(6, { message: '密码长度必须大于6位' }),
+    qualtrics: z.string().optional(),
+});
+
+/**
+ * 登录用验证表达
+ */
+export const loginSchema = z.object({
+    username: z.string().min(5, '请输入用户名').max(100),
+    password: z.string().min(6, { message: '密码长度必须大于6位' }),
+});
 
 export const exprimentSchema = z.object({
-    name: z.string().min(1, "实验名称不能为空").max(100),
-    description: z.string()
-})
+    name: z.string().min(1, '实验名称不能为空').max(100),
+    description: z.string(),
+});
 
 export const exprimentSettingSchema = z.object({
     display_num: z.number().min(1).max(4, '不能超过4张'),
-})
+});
+
+
+export const userFormSchema = z.object({
+    username: z.string().min(5, '请输入用户名').max(100),
+    password: z.string().min(6, { message: '密码长度必须大于6位' }),
+    email: z.string().email().optional(),
+    tel: z.string().optional(),
+});

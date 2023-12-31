@@ -1,26 +1,27 @@
 import { DashboardHeader } from '@/components/dashboard-header';
-import { ExperimentCreateButton } from '@/components/experiment/experiment-create-button';
 import { State } from '@/components/state';
 import { Table } from '@/components/table';
 import { dateFormat } from '@/lib/date';
 import { getCurrentUser } from '@/lib/session';
-import { TableConfig } from '@/types/table';
 import { db, convertBigIntToString } from '@/lib/db';
+import { TableConfig } from '@/types/table';
+import { ExperimentDetailButton } from '@/components/experiment/experiment-detail-button';
+import { ExperimentCreateButton } from '@/components/experiment/experiment-create-button';
 
 async function getExperiments() {
     const currentUser = await getCurrentUser()
     if (!currentUser?.id) {
         return []
     }
-    const experiments = await db.psy_experiment.findMany({
+    const experiments = await db.experiment.findMany({
         where: {
-            creator: BigInt(currentUser?.id)
+            creator: parseInt(currentUser?.id)
         }
     })
     return experiments.map(e => (convertBigIntToString(e)))
 }
 
-/**实验管理 */
+/** 实验流程设计与管理 */
 export default async function ExperimentList() {
     const datas = await getExperiments()
 
@@ -75,7 +76,7 @@ const experimentTableConfig: TableConfig[] = [
         hidden: true,
         children: (data: any) => {
             return <div className='flex gap-4 items-center'>
-
+                <ExperimentDetailButton experiment={data} />
             </div>
         },
     }

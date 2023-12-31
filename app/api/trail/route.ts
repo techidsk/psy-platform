@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     const experimentId = data['nano_id']
     const experimentNanoId = data['experimentId'] || undefined
     // 插入用户实验表
-    const dbExperiment = await db.psy_user_experiments.findFirst({
+    const dbExperiment = await db.user_experiments.findFirst({
         where: {
             nano_id: experimentId
         }
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
         nano_id: experimentId,
         type: 'TRAIL',
         engine_id: parseInt(data['engine_id']),
-        user_id: BigInt(data['user_id']),
+        user_id: data['user_id'],
     }
 
     if (experimentNanoId) {
@@ -34,17 +34,17 @@ export async function POST(request: Request) {
     }
 
     if (!dbExperiment) {
-        await db.psy_user_experiments.create({
+        await db.user_experiments.create({
             data: d
         })
     }
 
     let trailNanoId = data['promptNanoId']
     // 插入用户submit记录用以生成图片
-    await db.psy_trail.create({
+    await db.trail.create({
         data: {
             user_experiment_id: experimentId,
-            user_id: BigInt(data['user_id']),
+            user_id: data['user_id'],
             prompt: data['prompt'],
             engine_id: parseInt(data['engine_id']),
             state: 'GENERATING',

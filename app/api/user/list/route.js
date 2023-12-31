@@ -5,7 +5,7 @@ import { dateFormat } from '@/lib/date';
 const prisma = new PrismaClient()
 
 async function getUsers() {
-    const users = await prisma.psy_user.findMany()
+    const users = await prisma.user.findMany()
     prisma.$disconnect()
     const formattedUsers = users.map((user) => ({
         ...user,

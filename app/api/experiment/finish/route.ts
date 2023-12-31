@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     const data = await request.json()
     console.log(data.id);
 
-    await db.psy_user_experiments.update({
+    await db.user_experiments.update({
         where: {
             nano_id: data.id
         },

@@ -20,36 +20,34 @@ const sidebarNav: SidebarNavItem[] = [
         title: "首页",
         href: "/dashboard",
         icon: "dashboard",
-    },
-    {
+    }, {
         title: "实验管理",
         href: "/experiment",
         icon: "billing",
-    },
-    {
+    }, {
         title: "引擎管理",
         href: "/engine",
         icon: "engine",
-    },
-    {
+    }, {
         title: "实验记录",
         href: "/history",
         icon: "history",
-    },
-    {
+    }, {
         title: "用户列表",
         href: "/users",
         icon: "users",
-    },
-    {
+    }, {
         title: "用户组",
         href: "/usergroup",
         icon: "usergroup",
-    },
-    {
-        title: "设置",
+    }, {
+        title: "用户设置",
         href: "/settings",
         icon: "settings",
+    }, {
+        title: "平台设置",
+        href: "/platform/settings",
+        icon: "wrench",
     },
 ]
 export default async function DashboardLayout({

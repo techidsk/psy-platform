@@ -8,22 +8,26 @@ import { useForm } from "react-hook-form"
 import * as z from "zod"
 
 import { cn } from "@/lib/utils"
-import { registerSchema } from "@/lib/validations/auth"
+import { userFormSchema } from "@/lib/validations/auth"
 import { Icons } from "@/components/icons"
 import { getUrl } from "@/lib/url"
 
-interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
-type FormData = z.infer<typeof registerSchema>
+import type { user as User } from '@prisma/client'
 
+interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
+    user: User | null
+    nano_id: string
+}
 
+type FormData = z.infer<typeof userFormSchema>
 
-export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
+export function UserCreateForm({ className, user, nano_id, ...props }: UserAuthFormProps) {
     const {
         register,
         handleSubmit,
         formState: { errors },
     } = useForm<FormData>({
-        resolver: zodResolver(registerSchema),
+        resolver: zodResolver(userFormSchema),
     })
 
     const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -31,42 +35,39 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
 
 
     /**
-     * 用户注册请求
-     * 
-     * @param data - The form data containing the username and password.
-     * @returns A toast notification indicating the success or failure of the registration.
+     * 创建用户
+     * @param data 新实验信息
+     * @returns 
      */
     async function onSubmit(data: FormData) {
         if (isLoading) {
             return
         }
         setIsLoading(true)
-        const body = {
-            username: data.username,
-            password: data.password,
-            qualtrics: data.qualtrics
-        }
-        const result = await fetch(getUrl('/api/register'), {
+        const createResult = await fetch(getUrl('/api/user/add'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(body)
+            body: JSON.stringify({
+                ...data,
+                nano_id: nano_id,
+                user_role: 'ASSISTANT',
+            })
         })
         setIsLoading(false)
-        if (!result?.ok) {
+        if (!createResult?.ok) {
             return toast({
-                title: "注册失败",
-                description: "用户名已注册",
+                title: "创建失败",
+                description: "请查看系统消息",
                 variant: "destructive",
                 duration: 5000
             })
         }
-        // 成功之后跳转登录之前页面或者dashboard
-        router.push("/login")
+        router.push("/users")
         return toast({
-            title: "注册成功",
-            description: "请在登录页面登录",
+            title: "创建成功",
+            description: "已成功创建新用户",
             duration: 3000
         })
     }
@@ -76,55 +77,65 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="grid gap-2">
                     <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="username">用户名</label>
+                        <label className="sr-only" htmlFor="name">用户名</label>
                         <input
-                            id="username"
+                            id="name"
                             placeholder="请输入用户名"
                             type="text"
                             autoCapitalize="none"
-                            autoComplete="username"
                             autoCorrect="off"
                             disabled={isLoading}
                             className="input input-bordered w-full"
                             {...register("username")}
                         />
-                        {errors?.username && <p className="px-1 text-xs text-red-600">{errors.username.message}</p>}
-                    </div>
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="password">密码</label>
-                        <input
-                            id="password"
-                            placeholder="请输入密码"
-                            type="password"
-                            autoCapitalize="none"
-                            autoComplete="password"
-                            autoCorrect="off"
-                            disabled={isLoading}
-                            className="input input-bordered w-full"
-                            {...register("password")}
-                        />
-                        {errors?.password && (
-                            <p className="px-1 text-xs text-red-600">{errors.password.message}</p>
+                        {errors?.username && (
+                            <p className="px-1 text-xs text-red-600">{errors.username.message}</p>
                         )}
                     </div>
                     <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="password">Qualtrics账号</label>
+                        <label className="sr-only" htmlFor="password">登录密码</label>
                         <input
-                            id="qualtrics"
-                            placeholder="请输入Qualtrics账号"
-                            type="text"
+                            id="password"
+                            placeholder="请输入登录密码"
+                            type="password"
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
-                            {...register("qualtrics")}
+                            className="textarea textarea-bordered w-full"
+                            {...register("password")}
                         />
                     </div>
-                    <button className='btn btn-outline btn-primary' disabled={isLoading} type="submit">
+                    <div className="grid gap-1">
+                        <label className="sr-only" htmlFor="email">Email</label>
+                        <input
+                            id="email"
+                            placeholder="请输入email"
+                            autoCapitalize="none"
+                            autoComplete="email"
+                            autoCorrect="off"
+                            disabled={isLoading}
+                            className="textarea textarea-bordered w-full"
+                            {...register("email")}
+                        />
+                    </div>
+                    <div className="grid gap-1">
+                        <label className="sr-only" htmlFor="tel">联系电话</label>
+                        <input
+                            id="tel"
+                            placeholder="请输入联系电话"
+                            autoCapitalize="none"
+                            autoComplete="tel"
+                            autoCorrect="off"
+                            disabled={isLoading}
+                            className="textarea textarea-bordered w-full"
+                            {...register("tel")}
+                        />
+                    </div>
+                    <button className={'btn btn-primary'} disabled={isLoading} type="submit">
                         {isLoading && (
                             <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
                         )}
-                        注册
+                        创建
                     </button>
                 </div>
             </form>

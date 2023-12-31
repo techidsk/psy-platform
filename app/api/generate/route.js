@@ -38,7 +38,7 @@ export async function POST(request) {
         console.error('未找到对应promptNanoId数据')
         return
     }
-    const data = await db.psy_trail.findFirst({
+    const data = await db.trail.findFirst({
         where: { nano_id: promptNanoId }
     })
     if (!data) {
@@ -46,8 +46,8 @@ export async function POST(request) {
         return
     }
     // 生成图片并上传oss
-    let setting = await db.psy_engine.findFirst({
-        where: { id: BigInt(engineId) }
+    let setting = await db.engine.findFirst({
+        where: { id: engineId }
     })
 
     const prompt = await translate(setting.engine_description, data['prompt'])
@@ -60,7 +60,7 @@ export async function POST(request) {
         console.log('生成图片url: ', imageUrl)
         return NextResponse.json({ 'msg': '发布成功', 'url': imageUrl })
     } else {
-        await db.psy_trail.update({
+        await db.trail.update({
             where: { nano_id: promptNanoId },
             data: { state: 'FAILED' }
         })

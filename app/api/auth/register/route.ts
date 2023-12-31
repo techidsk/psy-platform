@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     const inputPassword = data['password']
 
     console.log('POST: ', data)
-    const user = await db.psy_user.findFirst({
+    const user = await db.user.findFirst({
         where: {
             username: username
         }
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     }
     const { salt, hashedPassword }: any = await hash(inputPassword)
 
-    await db.psy_user.create({
+    await db.user.create({
         data: {
             username: username,
             user_role: 'USER',

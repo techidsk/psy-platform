@@ -22,8 +22,10 @@ export function ExperimentSetting() {
     })
     const [displayNum, setDisplayNum] = useState(2)
     const [open, setOpen] = useState(false);
+
     const handleToggle = () => setOpen((prev) => !prev);
     const updateDisplayNum = useSettingState(state => state.setDisplayNum)
+    
     async function onSubmit(data: FormData) {
         store('display_num', data.display_num)
         updateDisplayNum(data.display_num)

@@ -12,12 +12,16 @@ import { exprimentSchema } from "@/lib/validations/auth"
 import { Icons } from "@/components/icons"
 import { getUrl } from "@/lib/url"
 
+import type { experiment } from '@prisma/client'
+
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
-    nanoId: string
+    experiment: experiment | null
+    nano_id: string
 }
+
 type FormData = z.infer<typeof exprimentSchema>
 
-export function ExperimentCreateForm({ className, nanoId, ...props }: UserAuthFormProps) {
+export function ExperimentCreateForm({ className, experiment, nano_id, ...props }: UserAuthFormProps) {
     const {
         register,
         handleSubmit,
@@ -30,7 +34,16 @@ export function ExperimentCreateForm({ className, nanoId, ...props }: UserAuthFo
     const router = useRouter()
 
     const searchParams = useSearchParams()
+
+    /**
+     * 创建实验
+     * @param data 新实验信息
+     * @returns 
+     */
     async function onSubmit(data: FormData) {
+        if (isLoading) {
+            return
+        }
         setIsLoading(true)
         const createResult = await fetch(getUrl('/api/experiment/add'), {
             method: 'POST',
@@ -39,7 +52,7 @@ export function ExperimentCreateForm({ className, nanoId, ...props }: UserAuthFo
             },
             body: JSON.stringify({
                 ...data,
-                nano_id: nanoId,
+                nano_id: nano_id,
             })
         })
         setIsLoading(false)

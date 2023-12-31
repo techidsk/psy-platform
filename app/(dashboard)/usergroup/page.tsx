@@ -5,6 +5,7 @@ import { Table } from '@/components/table';
 import { TableConfig } from '@/types/table';
 import { State } from '@/components/state';
 import { dateFormat } from '@/lib/date';
+import { Icons } from "@/components/icons"
 
 
 type UserGroupProps = {
@@ -16,7 +17,7 @@ type UserGroupProps = {
 
 
 async function getUserGroup() {
-    const userGroups = await db.psy_user_group.findMany()
+    const userGroups = await db.user_group.findMany()
     return userGroups
 }
 
@@ -27,7 +28,7 @@ export default async function UserGroup() {
         <div className='container mx-auto'>
             <div className='flex flex-col gap-4'>
                 <DashboardHeader heading="用户组列表" text="管理相关用户组">
-                    <button className="btn btn-ghost btn-sm">新增</button>
+                    <button className="btn btn-primary btn-sm"><Icons.add />新增</button>
                 </DashboardHeader>
                 <div className='w-full overflow-auto'>
                     <Table configs={userGroupTableConfig} datas={datas} />

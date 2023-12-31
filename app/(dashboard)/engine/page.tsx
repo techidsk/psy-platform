@@ -3,14 +3,15 @@ import { State } from '@/components/state';
 import { Table } from '@/components/table';
 import { TableConfig } from '@/types/table';
 import Image from 'next/image'
+import { Icons } from "@/components/icons"
 
 import { db } from '@/lib/db';
 
 async function getEngines() {
     const engines = await db.$queryRaw<any[]>`
         select e.*, count(s.engine_id ) as num
-        from psy_engine e
-        left join psy_user_setting s on s.engine_id = e.id
+        from engine e
+        left join user_setting s on s.engine_id = e.id
         group by e.id
     `
 
@@ -35,6 +36,7 @@ export default async function EngineList() {
         <div className='container mx-auto'>
             <div className='flex flex-col gap-4'>
                 <DashboardHeader heading="引擎管理" text="配置引擎相关设定">
+                    <button className="btn btn-primary btn-sm"><Icons.add />新增</button>
                 </DashboardHeader>
                 <div className='w-full overflow-auto'>
                     <Table configs={experimentTableConfig} datas={datas} />

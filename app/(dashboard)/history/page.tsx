@@ -10,10 +10,10 @@ import TableActions from '@/components/table-action';
 import CheckExperimentHistoryButton from '@/components/check-experiment-histroy-button';
 
 interface ExperimentProps {
-    id: BigInt
-    user_id: BigInt
+    id: number
+    user_id: number
     nano_id: string
-    experiment_id: BigInt
+    experiment_id: number
     type: string
     engine_id: number
     start_time: Date
@@ -28,10 +28,10 @@ interface ExperimentProps {
 async function getHistory() {
     const experiments = await db.$queryRaw<ExperimentProps[]>`
         select e.*, u.username, u.avatar, n.engine_name, n.engine_image, eper.experiment_name
-        from psy_user_experiments e
-        left join psy_user u on u.id = e.user_id
-        left join psy_engine n on n.id = e.engine_id
-        left join psy_experiment eper on eper.nano_id = e.experiment_id
+        from user_experiments e
+        left join user u on u.id = e.user_id
+        left join engine n on n.id = e.engine_id
+        left join experiment eper on eper.nano_id = e.experiment_id
         order by e.id desc
         limit 15
     `

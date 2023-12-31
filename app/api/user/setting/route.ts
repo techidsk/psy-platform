@@ -4,28 +4,28 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 /**
  * /api/user/setting
- * @returns 
+ * @returns
  */
 export async function POST(request: Request) {
     const data = await request.json();
     const engineId = data.engineId;
-    const currentUser = await getCurrentUser()
+    const currentUser = await getCurrentUser();
     if (currentUser) {
-        await db.psy_user_setting.upsert({
+        await db.user_setting.upsert({
             where: {
-                user_id: BigInt(currentUser.id)
+                user_id: parseInt(currentUser.id),
             },
             update: {
-                engine_id: parseInt(engineId)
+                engine_id: parseInt(engineId),
             },
             create: {
-                user_id: BigInt(currentUser.id),
-                engine_id: parseInt(engineId)
-            }
-        })
+                user_id: parseInt(currentUser.id),
+                engine_id: parseInt(engineId),
+            },
+        });
     }
 
     return NextResponse.json({
-        'msg': 'success'
-    })
+        msg: 'success',
+    });
 }

@@ -9,7 +9,7 @@ import { dateFormat } from '@/lib/date';
 import { ExperimentSetting } from '@/components/experiment/experiment-setting';
 
 async function getExperimentInfos(experimentId: string) {
-    const result = await db.psy_trail.findMany({
+    const result = await db.trail.findMany({
         where: {
             user_experiment_id: experimentId
         }

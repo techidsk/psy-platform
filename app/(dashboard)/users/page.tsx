@@ -5,6 +5,7 @@ import { Table } from '@/components/table';
 import { TableConfig } from '@/types/table';
 import { State } from '@/components/state';
 import { dateFormat } from '@/lib/date';
+import { CreateUserButton } from '@/components/user/user-create-button';
 
 
 type UserTableProps = {
@@ -15,7 +16,7 @@ type UserTableProps = {
     avatar: string
     user_role: string
     create_time: Date
-    user_group_id: BigInt
+    user_group_id: number
     qualtrics?: string
     user_group_name: string
     user_engine_name: string
@@ -27,12 +28,12 @@ async function getUsers() {
     const users = await db.$queryRaw<UserTableProps[]>`
         select u.id, u.username, u.email, u.tel, u.avatar, u.user_role, u.create_time, u.qualtrics,
         g.group_name as user_group_name, e.engine_name as user_engine_name, e.engine_image
-        from psy_user u
-        left join psy_user_group g on g.id = u.user_group_id
-        left join psy_user_setting s on s.user_id = u.id
-        left join psy_engine e on e.id = s.engine_id
+        from user u
+        left join user_group g on g.id = u.user_group_id
+        left join user_setting s on s.user_id = u.id
+        left join engine e on e.id = s.engine_id
     `
-
+    console.log(users)
     let formatResult = users.map(user => {
         return {
             ...user,
@@ -51,6 +52,7 @@ export default async function User() {
         <div className='container mx-auto'>
             <div className='flex flex-col gap-4'>
                 <DashboardHeader heading="用户列表" text="管理相关用户">
+                    <CreateUserButton className='btn btn-primary btn-sm' />
                 </DashboardHeader>
                 <div className='w-full overflow-auto'>
                     <Table configs={experimentTableConfig} datas={datas} />

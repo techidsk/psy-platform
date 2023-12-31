@@ -17,6 +17,9 @@ export function ExperimentCreateButton({
     const router = useRouter()
     const [isLoading, setIsLoading] = React.useState<boolean>(false)
 
+    /**
+     * 创建新实验
+     */
     async function onClick() {
         const id = getId()
         router.push(`/experiment/${id}`)
@@ -35,11 +38,11 @@ export function ExperimentCreateButton({
             {...props}
         >
             {isLoading ? (
-                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                <Icons.spinner className="h-4 w-4 animate-spin" />
             ) : (
-                <Icons.add className="mr-2 h-4 w-4" />
+                <Icons.add className="h-4 w-4" />
             )}
-            添加
+            创建
         </button>
     )
 }
