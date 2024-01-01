@@ -23,6 +23,7 @@ import {
     Pencil,
     Trash,
     AlertTriangle,
+    Search,
 } from "lucide-react"
 
 export const Icons = {
@@ -51,5 +52,6 @@ export const Icons = {
     back: Undo2,
     edit: Pencil,
     delete: Trash,
-    alert: AlertTriangle
+    alert: AlertTriangle,
+    search: Search,
 }

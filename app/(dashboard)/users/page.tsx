@@ -8,6 +8,9 @@ import { getCurrentUser } from '@/lib/session'
 import { dateFormat } from '@/lib/date';
 import { CreateUserButton } from '@/components/user/user-create-button';
 import { UserTableEditButtons } from '@/components/user/user-table-edit-buttons';
+import Pagination from '@/components/pagination';
+import { UserTableSearch } from '@/components/user/user-table-search';
+import { Prisma } from '@prisma/client';
 
 type UserRole = 'USER' | 'ADMIN' | 'ASSISTANT';
 type UserTableProps = {
@@ -27,7 +30,7 @@ type UserTableProps = {
     manager_count: number
 }
 
-async function getUsers() {
+async function getUsers(searchParams: { [key: string]: string | undefined }, page: number = 1, pageSize: number = 10) {
     const currentUser = await getCurrentUser()
     if (!currentUser) {
         return []
@@ -37,34 +40,33 @@ async function getUsers() {
         return []
     }
 
+    const username = searchParams?.username || ''
+    const email = searchParams?.email || ''
+    const tel = searchParams?.tel || ''
+    const qualtrics = searchParams?.qualtrics || ''
+    const group_name = searchParams?.group_name || ''
+    const user_role = searchParams?.role || ''
+
     // 判断当前用户角色
-    let users = undefined
-    if (role === 'ADMIN') {
-        users = await db.$queryRaw<UserTableProps[]>`
-            select u.id, u.username, u.email, u.tel, u.avatar, u.user_role, u.create_time, u.qualtrics, u.last_login_time,
-            g.group_name as user_group_name, e.engine_name as user_engine_name, e.engine_image, count(m.id) as manager_count
-            from user u
-            LEFT JOIN user m ON u.id = m.manager_id
-            left join user_group g on g.id = u.user_group_id
-            left join user_setting s on s.user_id = u.id
-            left join engine e on e.id = s.engine_id
-            where u.deleted = 0
-            GROUP BY u.id, u.manager_id
-        `;
-    } else {
-        users = await db.$queryRaw<UserTableProps[]>`
-            select u.id, u.username, u.email, u.tel, u.avatar, u.user_role, u.create_time, u.qualtrics, u.last_login_time,
-            g.group_name as user_group_name, e.engine_name as user_engine_name, e.engine_image, count(m.id) as manager_count
-            from user u
-            LEFT JOIN user m ON u.id = m.manager_id
-            left join user_group g on g.id = u.user_group_id
-            left join user_setting s on s.user_id = u.id
-            left join engine e on e.id = s.engine_id
-            where u.manager_id = ${currentUser.id}
-            and u.deleted = 0
-            GROUP BY u.id, u.manager_id
-        `;
-    }
+    const users = await db.$queryRaw<UserTableProps[]>`
+        select u.id, u.username, u.email, u.tel, u.avatar, u.user_role, u.create_time, u.qualtrics, u.last_login_time,
+        g.group_name as user_group_name, e.engine_name as user_engine_name, e.engine_image, count(m.id) as manager_count
+        from user u
+        LEFT JOIN user m ON u.id = m.manager_id
+        left join user_group g on g.id = u.user_group_id
+        left join user_setting s on s.user_id = u.id
+        left join engine e on e.id = s.engine_id
+        where u.deleted = 0
+        ${role !== 'ADMIN' ? Prisma.sql`AND u.manager_id = ${Prisma.raw(currentUser.id)}` : Prisma.empty}
+        ${username ? Prisma.sql`AND u.username LIKE '%${Prisma.raw(username)}%'` : Prisma.empty}
+        ${email ? Prisma.sql`AND u.email LIKE '%${Prisma.raw(email)}%'` : Prisma.empty}
+        ${tel ? Prisma.sql`AND u.tel LIKE '%${Prisma.raw(tel)}%'` : Prisma.empty}
+        ${qualtrics ? Prisma.sql`AND u.qualtrics LIKE '%${Prisma.raw(qualtrics)}%'` : Prisma.empty}
+        ${group_name ? Prisma.sql`AND g.group_name LIKE '%${Prisma.raw(group_name)}%'` : Prisma.empty}
+        ${user_role ? Prisma.sql`AND u.user_role = ${Prisma.raw(user_role)}` : Prisma.empty}
+        GROUP BY u.id, u.manager_id
+        LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
+    `;
 
     return users.map(user => {
         return {
@@ -76,8 +78,19 @@ async function getUsers() {
     })
 }
 
-export default async function User() {
-    const datas = await getUsers();
+export default async function User({ searchParams }: {
+    searchParams: { [key: string]: string }
+}) {
+    console.log(searchParams)
+    const currentPage = searchParams.page ? parseInt(searchParams.page) || 1 : 1
+    const currentPageSize = searchParams.pagesize ? parseInt(searchParams.pagesize) || 10 : 10
+    const datas = await getUsers(searchParams, currentPage, currentPageSize);
+
+    let end = currentPage
+    if (datas.length === currentPageSize) {
+        end = currentPage + 1
+    }
+
 
     return (
         <div className='container mx-auto'>
@@ -86,13 +99,13 @@ export default async function User() {
                     <CreateUserButton className='btn btn-primary btn-sm' />
                 </DashboardHeader>
                 <div className='w-full overflow-auto'>
-                    <Table configs={userTableConfig} datas={datas} />
-                    <div className="join">
-                        <button className="join-item btn">1</button>
-                        <button className="join-item btn btn-active">2</button>
-                        <button className="join-item btn">3</button>
-                        <button className="join-item btn">4</button>
-                    </div>
+                    <Table
+                        configs={userTableConfig}
+                        datas={datas}
+                        headerChildren={<UserTableSearch defaultParams={searchParams} />}
+                    >
+                        <Pagination path='./users' current={currentPage} pageSize={currentPageSize} end={end} />
+                    </Table>
                 </div>
             </div>
         </div>
