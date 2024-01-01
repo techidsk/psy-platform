@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form"
 import * as z from "zod"
 
 import { cn } from "@/lib/utils"
-import { userFormSchema } from "@/lib/validations/auth"
+import { userPatchFormSchema } from "@/lib/validations/auth"
 import { Icons } from "@/components/icons"
 import { getUrl } from "@/lib/url"
 
@@ -17,9 +17,9 @@ interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
     userId?: number
     nano_id?: string
 }
-type FormData = z.infer<typeof userFormSchema>
+type FormData = z.infer<typeof userPatchFormSchema>
 
-export function UserCreateForm({ className, nano_id, closeModal, edit, userId, ...props }: UserAuthFormProps) {
+export function UserPatchForm({ className, nano_id, closeModal, edit, userId, ...props }: UserAuthFormProps) {
     const {
         register,
         handleSubmit,
@@ -27,9 +27,8 @@ export function UserCreateForm({ className, nano_id, closeModal, edit, userId, .
         reset,
         setValue
     } = useForm<FormData>({
-        resolver: zodResolver(userFormSchema),
+        resolver: zodResolver(userPatchFormSchema),
         defaultValues: {
-            username: '',
             password: '',
             email: '',
             tel: ''
@@ -37,16 +36,16 @@ export function UserCreateForm({ className, nano_id, closeModal, edit, userId, .
     })
 
     const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [userName, setUserName] = useState('')
 
-    async function addUser(data: FormData) {
+    async function saveUser(data: FormData) {
         try {
-            const result = await fetch(getUrl('/api/user/add'), {
-                method: 'POST',
+            const result = await fetch(getUrl('/api/user/patch'), {
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...data,
-                    nano_id: nano_id,
-                    user_role: 'ASSISTANT',
+                    id: userId,
                 })
             })
             if (result.ok) {
@@ -80,7 +79,7 @@ export function UserCreateForm({ className, nano_id, closeModal, edit, userId, .
 
     /**
      * 创建用户
-     * @param data 
+     * @param data 新实验信息
      * @returns 
      */
     async function onSubmit(data: FormData) {
@@ -88,13 +87,38 @@ export function UserCreateForm({ className, nano_id, closeModal, edit, userId, .
             return
         }
         setIsLoading(true)
-        addUser(data)
+        saveUser(data)
         setIsLoading(false);
     }
 
+    async function getUser() {
+        // 获取用户信息
+        if (userId === undefined) {
+            return
+        }
+
+        await fetch(getUrl(`/api/user/${userId}`), {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        }).then(res => res.json()).then(data => {
+            setValue('email', data.email)
+            setValue('tel', data.tel)
+            setUserName(data.username)
+        })
+    }
+
     useEffect(() => {
-        reset()
+        console.log(Boolean(!nano_id))
+        console.log(Boolean(!nano_id) || isLoading)
+        if (!nano_id) {
+            getUser()
+        } else {
+            reset()
+        }
     }, [userId])
+
 
     return (
         <div className={cn("grid gap-6", className)} {...props}>
@@ -108,13 +132,10 @@ export function UserCreateForm({ className, nano_id, closeModal, edit, userId, .
                             type="text"
                             autoCapitalize="none"
                             autoCorrect="off"
-                            disabled={isLoading}
+                            disabled={true}
+                            value={userName}
                             className="input input-bordered w-full"
-                            {...register("username")}
                         />
-                        {errors?.username && (
-                            <p className="px-1 text-xs text-red-600">{errors.username.message}</p>
-                        )}
                     </div>
                     <div className="grid gap-1">
                         <label className="sr-only" htmlFor="password">登录密码</label>
@@ -125,7 +146,7 @@ export function UserCreateForm({ className, nano_id, closeModal, edit, userId, .
                             autoCapitalize="none"
                             autoComplete="password"
                             autoCorrect="off"
-                            disabled={isLoading}
+                            disabled={Boolean(!nano_id) || isLoading}
                             className="input input-bordered w-full"
                             {...register("password")}
                         />
@@ -165,7 +186,8 @@ export function UserCreateForm({ className, nano_id, closeModal, edit, userId, .
                     <button className={'btn btn-primary'} type="submit">
                         {isLoading && (
                             <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                        )}创建
+                        )}
+                        保存
                     </button>
                 </div>
             </form>

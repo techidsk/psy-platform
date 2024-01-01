@@ -20,6 +20,9 @@ import {
     UsersRound,
     Wrench,
     Undo2,
+    Pencil,
+    Trash,
+    AlertTriangle,
 } from "lucide-react"
 
 export const Icons = {
@@ -45,5 +48,8 @@ export const Icons = {
     minus: Minus,
     rotate: RotateCcw,
     wrench: Wrench,
-    back: Undo2
+    back: Undo2,
+    edit: Pencil,
+    delete: Trash,
+    alert: AlertTriangle
 }

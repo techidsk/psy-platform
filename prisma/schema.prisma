@@ -72,22 +72,26 @@ model trail {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model user {
-  id            Int      @id @default(autoincrement())
-  username      String?  @db.VarChar(50)
-  password      String?  @db.VarChar(50)
-  email         String?  @db.VarChar(50)
-  tel           String?  @db.VarChar(15)
-  avatar        String?  @db.VarChar(100)
-  user_role     String?  @db.VarChar(15)
-  create_time   DateTime @default(now()) @db.DateTime(0)
-  salt          String?  @db.VarChar(32)
-  user_group_id Int?
-  qualtrics     String?  @db.VarChar(50)
-  nano_id       String?  @unique(map: "psy_user_nano_id_uindex") @db.VarChar(16)
-  manager_id    Int?
+  id              Int       @id @default(autoincrement())
+  username        String?   @db.VarChar(50)
+  password        String?   @db.VarChar(50)
+  email           String?   @db.VarChar(50)
+  tel             String?   @db.VarChar(15)
+  avatar          String?   @db.VarChar(100)
+  user_role       String?   @db.VarChar(15)
+  create_time     DateTime  @default(now()) @db.DateTime(0)
+  salt            String?   @db.VarChar(32)
+  user_group_id   Int?
+  qualtrics       String?   @db.VarChar(50)
+  nano_id         String?   @unique(map: "psy_user_nano_id_uindex") @db.VarChar(16)
+  manager_id      Int?
+  last_login_time DateTime? @db.DateTime(0)
+  state           Int?      @default(1) @db.TinyInt
+  deleted         Int?      @default(0)
 
   @@index([email], map: "idx_email")
   @@index([username], map: "idx_username")
+  @@index([manager_id], map: "idx_manager_id")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments

@@ -27,7 +27,6 @@ export function CreateUserButton({
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [open, setOpen] = useState(false);
     const [nanoId, setNanoId] = useState("")
-    const [user, setUser] = useState(null)
 
     function handleToggle() {
         setOpen(!open)
@@ -70,7 +69,7 @@ export function CreateUserButton({
             </button>
             <Modal className="flex flex-col gap-4" open={open} onClose={handleToggle} disableClickOutside={!open}>
                 <h1 className="text-2xl">创建用户</h1>
-                <UserCreateForm nano_id={nanoId} user={user} closeModal={close} />
+                <UserCreateForm nano_id={nanoId} closeModal={close} />
             </Modal>
         </>
     )

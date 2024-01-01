@@ -1,6 +1,5 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { promisify } from 'util';
 import { db } from './db';
 const crypto = require('crypto');
 
@@ -19,6 +18,7 @@ export const authOptions: NextAuthOptions = {
                 password: { label: 'Password', type: 'password' },
             },
             async authorize(credentials: any) {
+                // 在这里进行登录判断
                 console.log('用户登录: ', credentials);
                 const username = credentials['username'];
                 const inputPassword = credentials['password'];
@@ -38,6 +38,13 @@ export const authOptions: NextAuthOptions = {
                     console.error(`用户${username}密码错误`);
                     return null;
                 }
+                console.log('成功登录');
+                // 更新用户最后登录时间
+                console.log(dbUser.id, new Date());
+                await db.user.update({
+                    where: { id: dbUser.id },
+                    data: { last_login_time: new Date() },
+                });
                 return convertBigIntToString(dbUser);
             },
         }),

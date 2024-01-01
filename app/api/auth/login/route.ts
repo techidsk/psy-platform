@@ -33,6 +33,7 @@ export async function POST(request: Request) {
     }
 
     // 更新用户最后登录时间
+    console.log(user.id, new Date())
     await db.user.update({
         where: {
             id: user.id,

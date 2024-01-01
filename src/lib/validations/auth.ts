@@ -32,3 +32,9 @@ export const userFormSchema = z.object({
     email: z.string().email({ message: '请输入合法的电子邮件地址' }).optional().or(z.literal('')),
     tel: z.string().optional(),
 });
+
+export const userPatchFormSchema = z.object({
+    password: z.string().min(6, { message: '密码长度必须大于6位' }).optional().or(z.literal('')),
+    email: z.string().email({ message: '请输入合法的电子邮件地址' }).optional().or(z.literal('')),
+    tel: z.string().optional(),
+});

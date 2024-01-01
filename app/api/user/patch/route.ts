@@ -1,6 +1,5 @@
 // import dynamic from 'next/dynamic'
 import { NextResponse } from 'next/server';
-import { nanoid } from 'nanoid';
 import { promisify } from 'util';
 import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/session';
@@ -13,10 +12,12 @@ interface HashResult {
 }
 
 /**
- * /api/user/add
+ * /api/user/patch
+ * 更新用户信息
+ *
  * @returns
  */
-export async function POST(request: Request) {
+export async function PATCH(request: Request) {
     const currentUser = await getCurrentUser();
     if (!currentUser) {
         return NextResponse.json({ msg: '出现异常,请重新登录进行操作' }, { status: 401 });
@@ -25,47 +26,30 @@ export async function POST(request: Request) {
     if (currentUser.role !== 'ADMIN') {
         return NextResponse.json({ msg: '没有权限' }, { status: 403 });
     }
-
-    const data = await request.json();
-    if (!data['nano_id']) {
-        data['nano_id'] = nanoid(16);
-    }
-
-    // 判断是否有用户存在
-    const user = await db.user.findFirst({
-        where: {
-            username: data['username'],
-        },
-    });
-    if (user) {
-        return NextResponse.json({ msg: '用户名已存在' }, { status: 409 });
-    }
-
-    // 判断是否有邮箱存在
-    if (data['email']) {
-        const emailUser = await db.user.findFirst({
-            where: {
-                email: data['email'],
-            },
-        });
-        if (emailUser) {
-            return NextResponse.json({ msg: '邮箱已存在' }, { status: 400 });
+    try {
+        const data = await request.json();
+        if (!data.id) {
+            return NextResponse.json({ msg: '用户 ID 不能为空' }, { status: 400 });
         }
+
+        if (data.password) {
+            const { salt, hashedPassword } = await hash(data.password);
+            data.salt = salt;
+            data.password = hashedPassword;
+        } else {
+            delete data.password;
+        }
+
+        await db.user.update({
+            where: { id: data['id'] },
+            data: data,
+        });
+
+        return NextResponse.json({ msg: '添加成功' });
+    } catch (error) {
+        console.error('更新失败:', error);
+        return NextResponse.json({ msg: '服务器错误' }, { status: 500 });
     }
-
-    // 密码加密
-    let old_password = data['password'];
-    const { salt, hashedPassword } = await hash(old_password);
-    data['salt'] = salt;
-    data['password'] = hashedPassword;
-    await db.user.create({
-        data: {
-            ...data,
-            manager_id: parseInt(currentUser.id),
-        },
-    });
-
-    return NextResponse.json({ msg: '添加成功' });
 }
 
 const scryptAsync = promisify(crypto.scrypt);

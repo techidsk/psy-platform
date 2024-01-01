@@ -15,6 +15,12 @@ interface UserGroup {
     group_user_num: number;
 }
 
+interface UserManager {
+    id: number;
+    manager_id: number;
+    manager_count: number;
+}
+
 /**
  * /api/register
  * 用户注册
@@ -50,6 +56,19 @@ export async function POST(request: Request) {
         const setting = await db.platform_setting.findFirst();
         const defaultAvatar = setting?.default_image;
 
+        // 默认所属管理助手
+        const manager = await db.$queryRaw<UserManager[]>`
+            SELECT u.id, u.manager_id, COUNT(m.id) as manager_count
+            FROM user u
+                    LEFT JOIN user m ON u.id = m.manager_id
+            where u.user_role = 'ASSISTANT'
+            and u.state = 1
+            GROUP BY u.id, u.manager_id
+            order by manager_count, rand()
+            limit 1 
+        `;
+        const managerId = manager[0].id;
+
         const nanoId = nanoid(16);
         const { salt, hashedPassword }: HashResult = await hash(data.password);
         await db.user.create({
@@ -61,6 +80,7 @@ export async function POST(request: Request) {
                 salt: salt,
                 avatar: defaultAvatar,
                 user_group_id: userGroup[0].id,
+                manager_id: managerId,
             },
         });
         return NextResponse.json({ msg: '注册成功' });
