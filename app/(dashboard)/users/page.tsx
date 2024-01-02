@@ -81,7 +81,6 @@ async function getUsers(searchParams: { [key: string]: string | undefined }, pag
 export default async function User({ searchParams }: {
     searchParams: { [key: string]: string }
 }) {
-    console.log(searchParams)
     const currentPage = searchParams.page ? parseInt(searchParams.page) || 1 : 1
     const currentPageSize = searchParams.pagesize ? parseInt(searchParams.pagesize) || 10 : 10
     const datas = await getUsers(searchParams, currentPage, currentPageSize);
