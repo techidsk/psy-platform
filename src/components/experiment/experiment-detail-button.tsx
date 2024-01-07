@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { usePreExperimentState } from '@/state/_pre_atoms';
-import type { experiment as Experiment } from '@prisma/client';
+import type { experiment as Experiment, experiment_steps } from '@prisma/client';
 
 import { Modal } from '../ui/modal';
 import { dateFormat } from '@/lib/date';
@@ -13,9 +13,13 @@ interface ExperimentDetailProps extends React.HTMLAttributes<HTMLButtonElement> 
     experiment: Experiment;
 }
 
+interface ExperimentSteps extends experiment_steps {
+    content_obj: object;
+}
+
 export function ExperimentDetailButton({ experiment }: ExperimentDetailProps) {
     const [open, setOpen] = useState(false);
-    const [steps, setSteps] = useState([]);
+    const [steps, setSteps] = useState<ExperimentSteps[]>([]);
 
     const selectedEngine = usePreExperimentState((state) => state.engine);
 
@@ -42,7 +46,16 @@ export function ExperimentDetailButton({ experiment }: ExperimentDetailProps) {
         })
             .then((res) => res.json())
             .then((data) => {
-                setSteps(data);
+                const templateJson = data?.content;
+                const templateJsonString = JSON.stringify(templateJson);
+                const content = JSON.parse(templateJsonString);
+                setSteps({
+                    ...data,
+                    content_obj: {
+                        ...content,
+                        content: content?.content || '',
+                    },
+                });
             });
     }
 
@@ -88,7 +101,7 @@ export function ExperimentDetailButton({ experiment }: ExperimentDetailProps) {
                                     <th>顺序</th>
                                     <th>步骤类型</th>
                                     <th>标题</th>
-                                    <th>内容</th>
+                                    {/* <th>内容</th> */}
                                 </tr>
                             </thead>
                             <tbody>
@@ -97,7 +110,6 @@ export function ExperimentDetailButton({ experiment }: ExperimentDetailProps) {
                                         <td>{step.order}</td>
                                         <td>{step.type}</td>
                                         <td>{step.title}</td>
-                                        <td>{step.content.content}</td>
                                     </tr>
                                 ))}
                             </tbody>
