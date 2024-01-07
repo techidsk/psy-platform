@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     await db.trail.create({
         data: {
             user_experiment_id: experimentId,
-            user_id: data['user_id'],
+            user_id: parseInt(data['user_id']),
             prompt: data['prompt'],
             engine_id: parseInt(data['engine_id']),
             state: 'GENERATING',
