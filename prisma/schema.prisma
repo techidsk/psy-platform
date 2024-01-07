@@ -15,12 +15,14 @@ model platform_setting {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model engine {
-  id                  Int     @id @default(autoincrement())
-  engine_name         String  @db.VarChar(50)
-  engine_description  String? @db.VarChar(1000)
-  engine_image        String  @db.VarChar(200)
-  state               Int     @default(1) @db.UnsignedTinyInt
-  engine_profile_name String? @db.VarChar(50)
+  id                 Int     @id @default(autoincrement())
+  engine_name        String  @db.VarChar(50)
+  engine_description String? @db.VarChar(1000)
+  engine_image       String  @db.VarChar(200)
+  state              Int     @default(1) @db.UnsignedTinyInt
+  gpt_prompt         String? @db.Text
+  gpt_settings       Json?
+  template           Json?
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments

@@ -1,34 +1,30 @@
-'use client'
+'use client';
 // 查看实验详情按钮
 
-import { useState, useEffect } from "react"
-import { usePreExperimentState } from '@/state/_pre_atoms'
+import { useState, useEffect } from 'react';
+import { usePreExperimentState } from '@/state/_pre_atoms';
 import type { experiment as Experiment } from '@prisma/client';
 
-import { Modal } from "../ui/modal"
-import { dateFormat } from "@/lib/date";
-import { getUrl } from "@/lib/url";
+import { Modal } from '../ui/modal';
+import { dateFormat } from '@/lib/date';
+import { getUrl } from '@/lib/url';
 
 interface ExperimentDetailProps extends React.HTMLAttributes<HTMLButtonElement> {
-    experiment: Experiment
+    experiment: Experiment;
 }
 
-
-export function ExperimentDetailButton({
-    experiment
-}: ExperimentDetailProps) {
-
+export function ExperimentDetailButton({ experiment }: ExperimentDetailProps) {
     const [open, setOpen] = useState(false);
-    const [steps, setSteps] = useState([])
+    const [steps, setSteps] = useState([]);
 
-    const selectedEngine = usePreExperimentState(state => state.engine)
+    const selectedEngine = usePreExperimentState((state) => state.engine);
 
     function showDetail() {
-        setOpen(true)
+        setOpen(true);
     }
 
     function handleToggle() {
-        setOpen(!open)
+        setOpen(!open);
     }
 
     /**
@@ -38,66 +34,77 @@ export function ExperimentDetailButton({
         await fetch(getUrl('/api/experiment/steps'), {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                experiment_id: experiment.id
-            })
-        }).then(res => res.json()).then(data => {
-            setSteps(data)
+                experiment_id: experiment.id,
+            }),
         })
+            .then((res) => res.json())
+            .then((data) => {
+                setSteps(data);
+            });
     }
 
     useEffect(() => {
         if (open) {
-            findSteps()
+            findSteps();
         }
-    }, [open])
+    }, [open]);
 
+    return (
+        selectedEngine && (
+            <div className="flex gap-4">
+                <button className="btn btn-ghost" onClick={showDetail}>
+                    查看详情
+                </button>
 
-
-    return selectedEngine && <div className='flex gap-4'>
-        <button className='btn btn-ghost' onClick={showDetail}>查看详情</button>
-
-        <Modal className="flex flex-col gap-4" open={open} onClose={handleToggle} disableClickOutside={!open}>
-            <h3 className="font-bold text-lg">实验内设置</h3>
-            <div className="flex flex-col gap-2">
-                <span className="text-gray-700">实验名称</span>
-                <span className="text-sm">{experiment.experiment_name}</span>
-            </div>
-            <div className="flex flex-col gap-2">
-                <span className="text-gray-700">实验说明</span>
-                <span className="text-sm">{experiment.description}</span>
-            </div>
-            <div className="flex flex-col gap-2">
-                <span className="text-gray-700">创建时间</span>
-                <span className="text-sm">{experiment.create_time ? dateFormat(experiment.create_time) : null}</span>
-            </div>
-            <div className="flex flex-col gap-2">
-                <span className="text-gray-700">实验流程</span>
-                <table className="table table-xs">
-                    <thead>
-                        <tr>
-                            <th>顺序</th>
-                            <th>步骤类型</th>
-                            <th>标题</th>
-                            <th>内容</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {
-                            steps.map((step, index) => (
-                                <tr key={index}>
-                                    <td>{step.order}</td>
-                                    <td>{step.type}</td>
-                                    <td>{step.title}</td>
-                                    <td>{step.content.content}</td>
+                <Modal
+                    className="flex flex-col gap-4"
+                    open={open}
+                    onClose={handleToggle}
+                    disableClickOutside={!open}
+                >
+                    <h3 className="font-bold text-lg">实验内设置</h3>
+                    <div className="flex flex-col gap-2">
+                        <span className="text-gray-700">实验名称</span>
+                        <span className="text-sm">{experiment.experiment_name}</span>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <span className="text-gray-700">实验说明</span>
+                        <span className="text-sm">{experiment.description}</span>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <span className="text-gray-700">创建时间</span>
+                        <span className="text-sm">
+                            {experiment.create_time ? dateFormat(experiment.create_time) : null}
+                        </span>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <span className="text-gray-700">实验流程</span>
+                        <table className="table table-xs">
+                            <thead>
+                                <tr>
+                                    <th>顺序</th>
+                                    <th>步骤类型</th>
+                                    <th>标题</th>
+                                    <th>内容</th>
                                 </tr>
-                            ))
-                        }
-                    </tbody>
-                </table>
+                            </thead>
+                            <tbody>
+                                {steps.map((step, index) => (
+                                    <tr key={index}>
+                                        <td>{step.order}</td>
+                                        <td>{step.type}</td>
+                                        <td>{step.title}</td>
+                                        <td>{step.content.content}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </Modal>
             </div>
-        </Modal>
-    </div >
+        )
+    );
 }
