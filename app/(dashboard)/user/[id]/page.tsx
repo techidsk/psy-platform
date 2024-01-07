@@ -36,7 +36,7 @@ export default async function UserForm({ params: { id } }: any) {
             </div>
             <div className="flex flex-col gap-4">
                 <UserCreateHeader heading={`${user?.id ? '编辑用户' : '创建新用户'}`} />
-                <UserCreateForm className="w-full px-2" user={user} nano_id={id} />
+                <UserCreateForm className="w-full px-2" nano_id={id} />
             </div>
         </div>
     );
