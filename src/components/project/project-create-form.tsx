@@ -13,12 +13,17 @@ import { getUrl } from '@/lib/url';
 import { DatePickerComponent } from '../datepicker/datepicker';
 import dayjs from 'dayjs';
 import { zhCN } from 'date-fns/locale';
-
-interface ProjectAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
+import { useRouter } from 'next/navigation';
+import { projects, project_group } from '@prisma/client';
+import { JsonValue } from '@prisma/client/runtime/library';
+import { useTableState } from '@/state/_table_atom';
+interface ProjectFormProps extends React.HTMLAttributes<HTMLDivElement> {
     closeModal?: Function;
     edit?: boolean;
-    projectId?: number;
     id?: string;
+    project?: projects;
+    projectGroups?: project_group[];
+    projectGroupsIds?: number[];
 }
 type FormData = z.infer<typeof projectFormSchema>;
 
@@ -27,9 +32,11 @@ export function ProjectCreateForm({
     id,
     closeModal,
     edit,
-    projectId,
+    project,
+    projectGroups,
+    projectGroupsIds,
     ...props
-}: ProjectAuthFormProps) {
+}: ProjectFormProps) {
     const {
         register,
         handleSubmit,
@@ -43,11 +50,16 @@ export function ProjectCreateForm({
             project_description: '',
         },
     });
+    const router = useRouter();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(dayjs().add(1, 'day').toDate());
 
+    const setSelectIds = useTableState((state) => state.setSelectIds);
+    const itemName = 'project-group-ids';
+
+    // 创建项目
     async function addProject(data: FormData) {
         try {
             const result = await fetch(getUrl('/api/project/add'), {
@@ -92,11 +104,30 @@ export function ProjectCreateForm({
             setValue('start_time', day);
         }
     }
+
     function pickEndDate(day: Date | undefined) {
         if (day) {
             setEndDate(day);
             setValue('end_time', day);
         }
+    }
+
+    function addProjectGroups(event: any, engines: JsonValue | undefined) {
+        event.preventDefault();
+        // TODO 添加实验
+        const enginesArray = engines as number[];
+        setSelectIds(enginesArray, itemName);
+        router.push('/project/group');
+    }
+
+    function showProjectGroup(event: any, id: number) {
+        event.preventDefault();
+        console.log('show experiment', id);
+    }
+
+    function removeGroupFromProject(event: any, id: number) {
+        event.preventDefault();
+        console.log('remove experiment', id);
     }
 
     /**
@@ -105,17 +136,33 @@ export function ProjectCreateForm({
      * @returns
      */
     async function onSubmit(data: FormData) {
+        console.log(data);
+
         if (isLoading) {
             return;
         }
-        setIsLoading(true);
-        await addProject(data);
-        setIsLoading(false);
+
+        // setIsLoading(true);
+        // await addProject(data);
+        // setIsLoading(false);
+    }
+
+    function initForm() {
+        if (project) {
+            setValue('project_name', project.project_name || '');
+            setValue('project_description', project.project_description || '');
+            setStartDate(project.start_time || new Date());
+            setEndDate(project.end_time || new Date());
+        }
     }
 
     useEffect(() => {
-        reset();
-    }, [projectId]);
+        if (edit) {
+            reset();
+        } else {
+            initForm();
+        }
+    }, []);
 
     return (
         <div className={cn('grid gap-6', className)} {...props}>
@@ -131,7 +178,7 @@ export function ProjectCreateForm({
                             type="text"
                             autoCapitalize="none"
                             autoCorrect="off"
-                            disabled={isLoading}
+                            disabled={isLoading || !edit}
                             className="input input-bordered w-full"
                             {...register('project_name')}
                         />
@@ -150,7 +197,7 @@ export function ProjectCreateForm({
                             placeholder="请输入项目描述"
                             autoCapitalize="none"
                             autoCorrect="off"
-                            disabled={isLoading}
+                            disabled={isLoading || !edit}
                             className="textarea textarea-bordered w-full"
                             {...register('project_description')}
                         />
@@ -160,52 +207,116 @@ export function ProjectCreateForm({
                             </p>
                         )}
                     </div>
-                    <div className="flex gap-2 justify-start">
-                        <div>
-                            <div className="flex justify-between">
-                                <div className="flex gap-1">
-                                    <label className="px-4" htmlFor="start_time">
-                                        项目开始时间 :
-                                    </label>
-                                    <div>{format(startDate, 'PP', { locale: zhCN })}</div>
+                    <div className="grid gap-2">
+                        <div className="flex gap-2 items-center">
+                            <label className="flex items-center" htmlFor="start_time">
+                                项目开始时间
+                            </label>
+                            <input
+                                disabled={true}
+                                className="input input-bordered input-sm"
+                                value={format(startDate, 'PP', { locale: zhCN })}
+                                onChange={(e) => {}}
+                            />
+                            {edit && (
+                                <details className="dropdown dropdown-end">
+                                    <summary className="m-1 btn btn-sm">选择开始日期</summary>
+                                    <div className="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-[320px]">
+                                        <DatePickerComponent
+                                            selected={startDate}
+                                            setSelected={(day: Date | undefined) =>
+                                                pickStartDate(day)
+                                            }
+                                        />
+                                    </div>
+                                </details>
+                            )}
+                        </div>
+                    </div>
+                    <div className="grid gap-2">
+                        <div className="flex gap-2 items-center">
+                            <label className="flex items-center" htmlFor="end_time">
+                                项目结束时间
+                            </label>
+                            <input
+                                disabled={true}
+                                className="input input-bordered input-sm"
+                                value={format(endDate, 'PP', { locale: zhCN })}
+                                onChange={() => {}}
+                            />
+                            {edit && (
+                                <details className="dropdown dropdown-end">
+                                    <summary className="m-1 btn btn-sm">选择结束日期</summary>
+                                    <div className="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-[320px]">
+                                        <DatePickerComponent
+                                            selected={startDate}
+                                            setSelected={(day: Date | undefined) =>
+                                                pickEndDate(day)
+                                            }
+                                        />
+                                    </div>
+                                </details>
+                            )}
+                        </div>
+                    </div>
+                    <div className="grid gap-2">
+                        <div className="flex gap-2 items-center">
+                            <label className="" htmlFor="project_groups">
+                                项目包含分组
+                            </label>
+                            {edit && (
+                                <div className="flex">
+                                    <button
+                                        className="btn btn-ghost btn-sm"
+                                        onClick={(e) => addProjectGroups(e, projectGroupsIds)}
+                                    >
+                                        <Icons.add />
+                                        添加
+                                    </button>
                                 </div>
-                            </div>
-                            <DatePickerComponent
-                                selected={startDate}
-                                setSelected={(day: Date | undefined) => pickStartDate(day)}
-                                {...register('start_time')}
-                            />
-                            {errors?.start_time && (
-                                <p className="px-1 text-xs text-red-600">
-                                    {errors.start_time.message}
-                                </p>
                             )}
                         </div>
-                        <div>
-                            <div className="flex gap-1">
-                                <label className="px-4" htmlFor="end_time">
-                                    项目结束时间 :
-                                </label>
-                                <div>{format(endDate, 'PP', { locale: zhCN })}</div>
-                            </div>
-                            <DatePickerComponent
-                                selected={endDate}
-                                setSelected={(day: Date | undefined) => pickEndDate(day)}
-                                {...register('end_time')}
-                            />
-                            {errors?.end_time && (
-                                <p className="px-1 text-xs text-red-600">
-                                    {errors.end_time.message}
-                                </p>
-                            )}
+                        <div className="flex gap-4 flex-wrap">
+                            {projectGroups?.map((group, i) => (
+                                <div className="stats shadow" key={i}>
+                                    <div className="p-4 px-6 rounded-xs flex flex-col gap-2">
+                                        <div className="stat-title">{group.group_name}</div>
+                                        <div className="stat-desc">{group.description}</div>
+                                        <div className="flex justify-end mt-2 gap-2">
+                                            <button
+                                                className="btn btn-xs"
+                                                onClick={(e) => showProjectGroup(e, i)}
+                                            >
+                                                <Icons.history size={16} />
+                                            </button>
+                                            <button
+                                                className="btn btn-xs"
+                                                onClick={(e) => removeGroupFromProject(e, i)}
+                                            >
+                                                <Icons.delete size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
-                    <div className="flex justify-end">
-                        <button className="btn btn-primary" type="submit" disabled={isLoading}>
-                            {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
-                            创建
-                        </button>
-                    </div>
+                    {edit && (
+                        <div className="flex justify-end">
+                            <button
+                                className="btn btn-primary btn-sm"
+                                type="submit"
+                                disabled={isLoading}
+                            >
+                                {isLoading ? (
+                                    <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Icons.save />
+                                )}
+                                创建
+                            </button>
+                        </div>
+                    )}
                 </div>
             </form>
         </div>

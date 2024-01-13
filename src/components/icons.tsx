@@ -27,6 +27,9 @@ import {
     AlertTriangle,
     Search,
     FolderKanban,
+    ListMinus,
+    Save,
+    Group,
 } from 'lucide-react';
 
 export const Icons = {
@@ -58,4 +61,7 @@ export const Icons = {
     alert: AlertTriangle,
     search: Search,
     projects: FolderKanban,
+    list: ListMinus,
+    save: Save,
+    projectGroups: Group,
 };

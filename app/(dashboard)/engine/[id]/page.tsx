@@ -3,6 +3,7 @@ import { Icons } from '@/components/icons';
 import { EngineAddForm } from '@/components/engine/engine-form';
 
 import { db } from '@/lib/db';
+import SubpageHeader from '@/components/subpage-header';
 
 /**
  * 获取对应的生成引擎
@@ -26,11 +27,7 @@ export default async function EngineForm({ params: { id } }: any) {
 
     return (
         <div className="container h-screen lg:max-w-none bg-white">
-            <div className="mb-4">
-                <button className="btn btn-ghost">
-                    <Icons.back /> 返回
-                </button>
-            </div>
+            <SubpageHeader />
             <div className="flex flex-col gap-4">
                 <UserCreateHeader heading={`${engine?.id ? '编辑用户' : '创建新用户'}`} />
                 <EngineAddForm className="w-full px-2" engine={engine} engine_id={id} />

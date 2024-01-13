@@ -68,7 +68,9 @@ export default async function Projects({
         <div className="container mx-auto">
             <div className="flex flex-col gap-4">
                 <DashboardHeader heading="项目列表" text="管理测试项目">
-                    <CreateProjectButton className="btn btn-primary btn-sm" />
+                    <div className="flex gap-2">
+                        <CreateProjectButton className="btn btn-primary btn-sm" />
+                    </div>
                 </DashboardHeader>
                 <div className="w-full overflow-auto">
                     <Table

@@ -47,6 +47,11 @@ const sidebarNav: SidebarNavItem[] = [
         icon: 'projects',
     },
     {
+        title: '项目分组列表',
+        href: '/project/groups',
+        icon: 'projectGroups',
+    },
+    {
         title: '用户组',
         href: '/usergroup',
         icon: 'usergroup',
@@ -70,8 +75,8 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
     }
 
     return (
-        <div className="mx-auto flex flex-col space-y-6 items-center bg-white">
-            <header className="container sticky top-0 z-40 w-full bg-white">
+        <div className="mx-auto flex flex-col space-y-4 items-center bg-white">
+            <header className="container sticky top-0 w-full bg-white">
                 <Header user={user} />
             </header>
             <div className="container grid gap-12 md:grid-cols-[200px_1fr] px-8">

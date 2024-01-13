@@ -6,7 +6,9 @@ import { getCurrentUser } from '@/lib/session';
 import { db } from '@/lib/db';
 import { TableConfig } from '@/types/table';
 import { ExperimentDetailButton } from '@/components/experiment/experiment-detail-button';
-import { ExperimentCreateButton } from '@/components/experiment/experiment-create-button';
+import SubpageHeader from '@/components/subpage-header';
+import TableCheckbox from '@/components/table-checkbox';
+import { ExperimentTableConfirmButton } from '@/components/experiment/experiment-table-comfirm-button';
 
 async function getExperiments() {
     const currentUser = await getCurrentUser();
@@ -20,16 +22,21 @@ async function getExperiments() {
     });
     return experiments;
 }
+const itemName = 'project-group-add-experiment';
 
-/** 实验流程设计与管理 */
-export default async function ExperimentList() {
+// 获取实验列表用于关联对应的项目
+export default async function ProjectAddExperiment() {
     const datas = await getExperiments();
 
     return (
         <div className="container mx-auto">
+            <SubpageHeader />
             <div className="flex flex-col gap-4">
-                <DashboardHeader heading="实验管理" text="创建新实验或者更新实验设置">
-                    <ExperimentCreateButton className="btn btn-primary btn-sm" />
+                <DashboardHeader heading="添加项目实验" text="选择项目关联实验">
+                    <ExperimentTableConfirmButton
+                        className="btn btn-primary btn-sm"
+                        itemName={itemName}
+                    />
                 </DashboardHeader>
                 <div className="w-full overflow-auto">
                     <Table configs={experimentTableConfig} datas={datas} />
@@ -40,6 +47,13 @@ export default async function ExperimentList() {
 }
 
 const experimentTableConfig: TableConfig[] = [
+    {
+        key: 'checkbox',
+        label: '',
+        children: (data: any) => {
+            return <TableCheckbox data={data} itemName={itemName} />;
+        },
+    },
     {
         key: 'experiment_name',
         label: '实验名称',
