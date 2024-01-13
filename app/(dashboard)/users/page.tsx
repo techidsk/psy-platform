@@ -12,7 +12,7 @@ import Pagination from '@/components/pagination';
 import { UserTableSearch } from '@/components/user/user-table-search';
 import { Prisma } from '@prisma/client';
 
-type UserRole = 'USER' | 'ADMIN' | 'ASSISTANT';
+type UserRole = 'USER' | 'ADMIN' | 'ASSISTANT' | 'GUEST';
 type UserTableProps = {
     id: string;
     username: string;
@@ -188,6 +188,10 @@ const userTableConfig: TableConfig[] = [
                 ASSISTANT: {
                     text: '助教',
                     state: 'pending',
+                },
+                GUEST: {
+                    text: '访客',
+                    state: 'warn',
                 },
             };
 

@@ -98,9 +98,9 @@ model user {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model user_experiments {
-  id            Int       @id @unique(map: "psy_user_experiments_id_uindex") @default(autoincrement())
+  id            Int       @id @unique(map: "user_experiments_id_uindex") @default(autoincrement())
   user_id       Int?
-  nano_id       String?   @unique(map: "psy_user_experiments_nano_id_uindex") @db.VarChar(16)
+  nano_id       String?   @unique(map: "user_experiments_nano_id_uindex") @db.VarChar(16)
   experiment_id String?   @db.VarChar(16)
   type          String?   @default("TRAIL") @db.VarChar(30)
   engine_id     Int?
@@ -138,4 +138,25 @@ model experiment_steps {
 
   @@unique([experiment_id, order], map: "idx_experiment_order_id")
   @@index([experiment_id], map: "idx_experiment_id")
+}
+
+model project_group {
+  id          Int     @id @default(autoincrement())
+  project_id  Int?
+  group_name  String? @db.VarChar(30)
+  description String? @db.Text
+  status      Int?    @db.UnsignedTinyInt
+
+  @@index([project_id], map: "idx_project_id")
+}
+
+model projects {
+  id                  Int       @id @default(autoincrement())
+  project_name        String?   @db.VarChar(50)
+  project_description String?   @db.VarChar(500)
+  engines             Json?
+  state               String?   @db.VarChar(50)
+  settings            Json?
+  start_time          DateTime? @db.Date
+  end_time            DateTime? @db.Date
 }

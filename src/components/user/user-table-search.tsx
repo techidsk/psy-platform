@@ -1,26 +1,29 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { useRouter } from 'next/navigation'
-import { Icons } from "../icons";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Icons } from '../icons';
 
 interface FormValues {
-    value: string
-    label: string
+    value: string;
+    label: string;
 }
 
 interface SearchProps {
-    name: string
-    type: string
-    placeholder?: string
-    values?: FormValues[]
+    name: string;
+    type: string;
+    placeholder?: string;
+    values?: FormValues[];
 }
 
-
-const SearchForm = ({ searchDatas, onInputChange, defaultParams }: {
-    searchDatas: SearchProps[],
-    onInputChange: Function
-    defaultParams: { [key: string]: string }
+const SearchForm = ({
+    searchDatas,
+    onInputChange,
+    defaultParams,
+}: {
+    searchDatas: SearchProps[];
+    onInputChange: Function;
+    defaultParams: { [key: string]: string };
 }) => {
     const renderField = (field: SearchProps) => {
         switch (field.type) {
@@ -59,66 +62,70 @@ const SearchForm = ({ searchDatas, onInputChange, defaultParams }: {
 
     return (
         <div className="grid gap-4 grid-cols-4">
-            {searchDatas.map(field => (
-                <div key={field.name}>
-                    {renderField(field)}
-                </div>
+            {searchDatas.map((field) => (
+                <div key={field.name}>{renderField(field)}</div>
             ))}
         </div>
     );
 };
 
-
-export function UserTableSearch({ defaultParams }: {
-    defaultParams: { [key: string]: string }
-}) {
-    const router = useRouter()
+export function UserTableSearch({ defaultParams }: { defaultParams: { [key: string]: string } }) {
+    const router = useRouter();
     const [searchParams, setSearchParams] = useState(defaultParams);
 
     const handleInputChange = (name: string, value: string) => {
-        setSearchParams(prevParams => ({ ...prevParams, [name]: value }));
+        setSearchParams((prevParams) => ({ ...prevParams, [name]: value }));
     };
 
     const resetSearch = () => {
         setSearchParams({});
-        search(true)
+        search(true);
     };
 
     const search = (reset: boolean = false) => {
         let oldSearchParams = new URLSearchParams(window.location.search);
-        let hasChanged = false
+        let hasChanged = false;
 
         if (reset) {
-            let newSearchParams = new URLSearchParams()
-            newSearchParams.set('page', (oldSearchParams.get('page') || 1).toString())
-            newSearchParams.set('pagesize', (oldSearchParams.get('pagesize') || 15).toString())
+            let newSearchParams = new URLSearchParams();
+            newSearchParams.set('page', (oldSearchParams.get('page') || 1).toString());
+            newSearchParams.set('pagesize', (oldSearchParams.get('pagesize') || 15).toString());
             const newUrl = `./users?${newSearchParams.toString()}`;
-            router.push(newUrl)
+            router.push(newUrl);
         } else {
             Object.entries(searchParams).forEach(([key, value]) => {
                 if (typeof value === 'string') {
-                    oldSearchParams.set(key, value.toString())
-                    hasChanged = true
+                    oldSearchParams.set(key, value.toString());
+                    hasChanged = true;
                 }
-            })
+            });
 
             if (hasChanged) {
                 // 构造新的URL，保留现有的查询参数
                 const newUrl = `./users?${oldSearchParams.toString()}`;
-                router.push(newUrl)
+                router.push(newUrl);
             }
         }
-    }
+    };
 
     return (
         <div>
-            <SearchForm searchDatas={searchDatas} onInputChange={handleInputChange} defaultParams={defaultParams} />
+            <SearchForm
+                searchDatas={searchDatas}
+                onInputChange={handleInputChange}
+                defaultParams={defaultParams}
+            />
             <div className="flex justify-end gap-4">
-                <button className="btn btn-outline btn-sm" onClick={resetSearch}>重置搜索</button>
-                <button className="btn btn-primary btn-sm" onClick={() => search(false)}><Icons.search />搜索</button>
+                <button className="btn btn-outline btn-sm" onClick={resetSearch}>
+                    重置搜索
+                </button>
+                <button className="btn btn-primary btn-sm" onClick={() => search(false)}>
+                    <Icons.search />
+                    搜索
+                </button>
             </div>
         </div>
-    )
+    );
 }
 
 const searchDatas = [
@@ -136,6 +143,7 @@ const searchDatas = [
             { value: 'ADMIN', label: '管理员' },
             { value: 'ASSISTANT', label: '助教' },
             { value: 'USER', label: '测试者' },
-        ]
+            { value: 'GUEST', label: '访客' },
+        ],
     },
-]
+];

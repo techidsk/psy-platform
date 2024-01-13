@@ -16,7 +16,9 @@ import {
     CreditCard,
     User,
     ArrowRight,
-    Grid, Minus, RotateCcw,
+    Grid,
+    Minus,
+    RotateCcw,
     UsersRound,
     Wrench,
     Undo2,
@@ -24,7 +26,8 @@ import {
     Trash,
     AlertTriangle,
     Search,
-} from "lucide-react"
+    FolderKanban,
+} from 'lucide-react';
 
 export const Icons = {
     billing: CreditCard,
@@ -54,4 +57,5 @@ export const Icons = {
     delete: Trash,
     alert: AlertTriangle,
     search: Search,
-}
+    projects: FolderKanban,
+};
