@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import { db } from '@/lib/db';
 import { DashboardHeader } from '@/components/dashboard-header';
-import { Table } from '@/components/table';
+import { Table } from '@/components/table/table';
 import { TableConfig } from '@/types/table';
 import { State } from '@/components/state';
 import { getCurrentUser } from '@/lib/session';
@@ -9,7 +9,7 @@ import { dateFormat } from '@/lib/date';
 import { CreateUserButton } from '@/components/user/user-create-button';
 import { UserTableEditButtons } from '@/components/user/user-table-edit-buttons';
 import Pagination from '@/components/pagination';
-import { UserTableSearch } from '@/components/user/user-table-search';
+import { TableSearch } from '@/components/table/table-search';
 import { Prisma } from '@prisma/client';
 
 type UserRole = 'USER' | 'ADMIN' | 'ASSISTANT' | 'GUEST';
@@ -50,7 +50,6 @@ async function getUsers(
     const qualtrics = searchParams?.qualtrics || '';
     const group_name = searchParams?.group_name || '';
     const user_role = searchParams?.role || '';
-
     // 判断当前用户角色
     const users = await db.$queryRaw<UserTableProps[]>`
         select u.id, u.username, u.email, u.tel, u.avatar, u.user_role, u.create_time, u.qualtrics, u.last_login_time,
@@ -75,7 +74,7 @@ async function getUsers(
                 ? Prisma.sql`AND g.group_name LIKE '%${Prisma.raw(group_name)}%'`
                 : Prisma.empty
         }
-        ${user_role ? Prisma.sql`AND u.user_role = ${Prisma.raw(user_role)}` : Prisma.empty}
+        ${user_role ? Prisma.sql`AND u.user_role LIKE '%${Prisma.raw(user_role)}%'` : Prisma.empty}
         GROUP BY u.id, u.manager_id
         LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
     `;
@@ -110,7 +109,13 @@ export default async function User({ searchParams }: { searchParams: { [key: str
                     <Table
                         configs={userTableConfig}
                         datas={datas}
-                        headerChildren={<UserTableSearch defaultParams={searchParams} />}
+                        searchNode={
+                            <TableSearch
+                                path={'./users'}
+                                defaultParams={searchParams}
+                                searchDatas={searchDatas}
+                            />
+                        }
                     >
                         <Pagination
                             path="./users"
@@ -248,5 +253,25 @@ const userTableConfig: TableConfig[] = [
                 </div>
             );
         },
+    },
+];
+
+const searchDatas = [
+    { name: 'username', type: 'input', placeholder: '请输入用户名' },
+    { name: 'email', type: 'input', placeholder: '请输入电子邮件' },
+    { name: 'tel', type: 'input', placeholder: '请输入联系电话' },
+    { name: 'qualtrics', type: 'input', placeholder: '请输入Qualtrics账号' },
+    { name: 'group_name', type: 'input', placeholder: '请输入用户组' },
+    {
+        name: 'role',
+        type: 'select',
+        placeholder: '请选择用户角色',
+        values: [
+            { value: '', label: '' },
+            { value: 'ADMIN', label: '管理员' },
+            { value: 'ASSISTANT', label: '助教' },
+            { value: 'USER', label: '测试者' },
+            { value: 'GUEST', label: '访客' },
+        ],
     },
 ];

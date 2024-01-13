@@ -1,13 +1,13 @@
 import { DashboardHeader } from '@/components/dashboard-header';
 import { State } from '@/components/state';
-import { Table } from '@/components/table';
+import { Table } from '@/components/table/table';
 import { dateFormat } from '@/lib/date';
 import { getCurrentUser } from '@/lib/session';
 import { db } from '@/lib/db';
 import { TableConfig } from '@/types/table';
 import { ExperimentDetailButton } from '@/components/experiment/experiment-detail-button';
 import SubpageHeader from '@/components/subpage-header';
-import TableCheckbox from '@/components/table-checkbox';
+import TableCheckbox from '@/components/table/table-checkbox';
 import { ExperimentTableConfirmButton } from '@/components/experiment/experiment-table-comfirm-button';
 
 async function getExperiments() {

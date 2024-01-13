@@ -1,14 +1,15 @@
 import { db } from '@/lib/db';
 import { DashboardHeader } from '@/components/dashboard-header';
-import { Table } from '@/components/table';
+import { Table } from '@/components/table/table';
 import { TableConfig } from '@/types/table';
 import { State } from '@/components/state';
 import { getCurrentUser } from '@/lib/session';
 import { dateFormat } from '@/lib/date';
 import Pagination from '@/components/pagination';
-import { UserTableSearch } from '@/components/user/user-table-search';
 import { ProjectTableEditButtons } from '@/components/project/project-table-edit-buttons';
 import { CreateProjectButton } from '@/components/project/project-create-button';
+import { TableSearch } from '@/components/table/table-search';
+import { Prisma } from '@prisma/client';
 
 type ProjectState = 'AVAILABLE' | 'DRAFT' | 'ACHIVED';
 type ProjectTableProps = {
@@ -36,9 +37,20 @@ async function getProjects(
         return [];
     }
 
+    const project_name = searchParams?.project_name || '';
+    const state = searchParams?.state || '';
+
     // 判断当前用户角色
     const projects = await db.$queryRaw<ProjectTableProps[]>`
-        select * from projects
+        select * from projects p
+        where 1 = 1
+        ${
+            project_name
+                ? Prisma.sql`AND p.project_name LIKE '%${Prisma.raw(project_name)}%'`
+                : Prisma.empty
+        }
+        ${state ? Prisma.sql`AND p.state LIKE '%${Prisma.raw(state)}%'` : Prisma.empty}
+
         LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
     `;
 
@@ -76,7 +88,13 @@ export default async function Projects({
                     <Table
                         configs={projectTableConfig}
                         datas={datas}
-                        headerChildren={<UserTableSearch defaultParams={searchParams} />}
+                        searchNode={
+                            <TableSearch
+                                path={'./projects'}
+                                defaultParams={searchParams}
+                                searchDatas={searchDatas}
+                            />
+                        }
                     >
                         <Pagination
                             path="./users"
@@ -158,5 +176,20 @@ const projectTableConfig: TableConfig[] = [
                 </div>
             );
         },
+    },
+];
+
+const searchDatas = [
+    { name: 'project_name', type: 'input', placeholder: '请输入项目名称' },
+    {
+        name: 'state',
+        type: 'select',
+        placeholder: '请选择项目状态',
+        values: [
+            { value: '', label: '' },
+            { value: 'AVAILABLE', label: '可用' },
+            { value: 'DRAFT', label: '草稿' },
+            { value: 'ACHIVED', label: '已归档' },
+        ],
     },
 ];

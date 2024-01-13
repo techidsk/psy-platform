@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { DashboardHeader } from '@/components/dashboard-header';
-import { Table } from '@/components/table';
+import { Table } from '@/components/table/table';
 import { TableConfig } from '@/types/table';
 import { State } from '@/components/state';
 import { getCurrentUser } from '@/lib/session';

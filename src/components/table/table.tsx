@@ -7,12 +7,12 @@ interface TableProp {
     datas: any[];
     configs: TableConfig[];
     children?: React.ReactNode;
-    headerChildren?: React.ReactNode;
+    searchNode?: React.ReactNode;
 }
-export function Table({ datas, configs, children, headerChildren }: TableProp) {
+export function Table({ datas, configs, children, searchNode }: TableProp) {
     return (
         <>
-            <div className="table-header p-2">{headerChildren}</div>
+            <div className="table-header p-2">{searchNode}</div>
             <table className="table w-full">
                 <TableHeader configs={configs} />
                 <tbody>

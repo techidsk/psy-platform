@@ -1,6 +1,6 @@
 import { DashboardHeader } from '@/components/dashboard-header';
 import { State } from '@/components/state';
-import { Table } from '@/components/table';
+import { Table } from '@/components/table/table';
 import { TableConfig } from '@/types/table';
 import Image from 'next/image';
 import { Icons } from '@/components/icons';

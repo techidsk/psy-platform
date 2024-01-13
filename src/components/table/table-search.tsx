@@ -32,7 +32,7 @@ const SearchForm = ({
                     <input
                         type="text"
                         placeholder={field.placeholder}
-                        value={defaultParams[field.name] || ''} // 设置默认值
+                        defaultValue={defaultParams[field.name] || ''} // 设置默认值
                         className="input input-bordered w-full max-w-xs"
                         onChange={(e) => onInputChange(field.name, e.target.value)}
                     />
@@ -42,7 +42,7 @@ const SearchForm = ({
                     return (
                         <select
                             className="select select-bordered w-full max-w-xs"
-                            value={defaultParams[field.name] || ''} // 设置默认值
+                            defaultValue={defaultParams[field.name] || ''} // 设置默认值
                             onChange={(e) => onInputChange(field.name, e.target.value)}
                         >
                             {field.values.map(({ value, label }) => (
@@ -69,7 +69,15 @@ const SearchForm = ({
     );
 };
 
-export function UserTableSearch({ defaultParams }: { defaultParams: { [key: string]: string } }) {
+export function TableSearch({
+    defaultParams,
+    searchDatas,
+    path,
+}: {
+    defaultParams: { [key: string]: string };
+    searchDatas: SearchProps[];
+    path: string;
+}) {
     const router = useRouter();
     const [searchParams, setSearchParams] = useState(defaultParams);
 
@@ -90,7 +98,7 @@ export function UserTableSearch({ defaultParams }: { defaultParams: { [key: stri
             let newSearchParams = new URLSearchParams();
             newSearchParams.set('page', (oldSearchParams.get('page') || 1).toString());
             newSearchParams.set('pagesize', (oldSearchParams.get('pagesize') || 15).toString());
-            const newUrl = `./users?${newSearchParams.toString()}`;
+            const newUrl = path + `?${newSearchParams.toString()}`;
             router.push(newUrl);
         } else {
             Object.entries(searchParams).forEach(([key, value]) => {
@@ -102,7 +110,7 @@ export function UserTableSearch({ defaultParams }: { defaultParams: { [key: stri
 
             if (hasChanged) {
                 // 构造新的URL，保留现有的查询参数
-                const newUrl = `./users?${oldSearchParams.toString()}`;
+                const newUrl = path + `?${oldSearchParams.toString()}`;
                 router.push(newUrl);
             }
         }
@@ -127,23 +135,3 @@ export function UserTableSearch({ defaultParams }: { defaultParams: { [key: stri
         </div>
     );
 }
-
-const searchDatas = [
-    { name: 'username', type: 'input', placeholder: '请输入用户名' },
-    { name: 'email', type: 'input', placeholder: '请输入电子邮件' },
-    { name: 'tel', type: 'input', placeholder: '请输入联系电话' },
-    { name: 'qualtrics', type: 'input', placeholder: '请输入Qualtrics账号' },
-    { name: 'group_name', type: 'input', placeholder: '请输入用户组' },
-    {
-        name: 'role',
-        type: 'select',
-        placeholder: '请输入用户角色',
-        values: [
-            { value: '', label: '' },
-            { value: 'ADMIN', label: '管理员' },
-            { value: 'ASSISTANT', label: '助教' },
-            { value: 'USER', label: '测试者' },
-            { value: 'GUEST', label: '访客' },
-        ],
-    },
-];

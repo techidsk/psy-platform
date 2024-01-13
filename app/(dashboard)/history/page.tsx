@@ -1,12 +1,12 @@
 import { DashboardHeader } from '@/components/dashboard-header';
 import { State } from '@/components/state';
-import { Table } from '@/components/table';
+import { Table } from '@/components/table/table';
 import { TableConfig } from '@/types/table';
 import Image from 'next/image';
 
 import { db } from '@/lib/db';
 import { dateFormat, formatTime } from '@/lib/date';
-import TableActions from '@/components/table-action';
+import TableActions from '@/components/table/table-action';
 import CheckExperimentHistoryButton from '@/components/check-experiment-histroy-button';
 
 interface ExperimentProps {

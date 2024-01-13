@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { DashboardHeader } from '@/components/dashboard-header';
-import { Table } from '@/components/table';
+import { Table } from '@/components/table/table';
 import { TableConfig } from '@/types/table';
 import { State } from '@/components/state';
 import { getCurrentUser } from '@/lib/session';
@@ -9,7 +9,7 @@ import { ProjectTableEditButtons } from '@/components/project/project-table-edit
 import { CreateProjectButton } from '@/components/project/project-create-button';
 import { JsonValue } from '@prisma/client/runtime/library';
 import SubpageHeader from '@/components/subpage-header';
-import TableCheckbox from '@/components/table-checkbox';
+import TableCheckbox from '@/components/table/table-checkbox';
 
 type ProjectGroupTableProps = {
     id: string;
