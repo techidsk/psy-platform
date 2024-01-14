@@ -34,15 +34,9 @@ model experiment {
   available       Int?      @default(1) @db.UnsignedTinyInt
   description     String?   @db.Text
   nano_id         String?   @unique(map: "psy_experiment_nano_id_uindex") @db.VarChar(16)
-}
-
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model experiment_setting {
-  id            Int     @id @unique(map: "psy_experiment_setting_id_uindex") @default(autoincrement())
-  experiment_id Int?
-  setting       Json?
-  intro         String? @db.LongText
-  engine_id     Int?
+  engine_id       Int?
+  setting         Json?
+  intro           String?   @db.VarChar(50)
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
