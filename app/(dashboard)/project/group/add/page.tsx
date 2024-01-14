@@ -1,4 +1,4 @@
-import { ProjectCreateForm } from '@/components/project/project-create-form';
+import { ProjectGroupCreateForm } from '@/components/project/group/project-group-create-form';
 import SubpageHeader, { SubpageContentHeader } from '@/components/subpage-header';
 
 export default function CreateProjectGroup() {
@@ -7,7 +7,7 @@ export default function CreateProjectGroup() {
             <SubpageHeader />
             <div className="flex flex-col gap-4">
                 <SubpageContentHeader heading="创建新项目分组" />
-                <ProjectCreateForm className="w-full px-2" />
+                <ProjectGroupCreateForm className="w-full px-2" />
             </div>
         </div>
     );

@@ -12,7 +12,7 @@ interface TableProp {
 export function Table({ datas, configs, children, searchNode }: TableProp) {
     return (
         <>
-            <div className="table-header p-2">{searchNode}</div>
+            {searchNode && <div className="table-header p-2">{searchNode}</div>}
             <table className="table w-full">
                 <TableHeader configs={configs} />
                 <tbody>

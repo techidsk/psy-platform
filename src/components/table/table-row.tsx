@@ -3,10 +3,9 @@ import { TableConfig } from '@/types/table';
 interface TableRowProp {
     data: object;
     configs: TableConfig[];
-    children?: React.ReactNode;
 }
 
-export function TableRow({ data, configs, children }: TableRowProp) {
+export function TableRow({ data, configs }: TableRowProp) {
     const defaultClassName = 'px-4 py-2 whitespace-nowrap text-sm text-gray-500';
 
     return (

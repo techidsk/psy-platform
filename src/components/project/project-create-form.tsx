@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import dayjs from 'dayjs';
+import { zhCN } from 'date-fns/locale';
+import { useRouter } from 'next/navigation';
 import { toast } from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -8,12 +11,9 @@ import * as z from 'zod';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { projectFormSchema } from '@/lib/validations/project';
-import { Icons } from '@/components/icons';
 import { getUrl } from '@/lib/url';
-import { DatePickerComponent } from '../datepicker/datepicker';
-import dayjs from 'dayjs';
-import { zhCN } from 'date-fns/locale';
-import { useRouter } from 'next/navigation';
+import { Icons } from '@/components/icons';
+import { DatePickerComponent } from '@/components/datepicker/datepicker';
 import { projects, project_group } from '@prisma/client';
 import { JsonValue } from '@prisma/client/runtime/library';
 import { useTableState } from '@/state/_table_atom';
@@ -122,7 +122,7 @@ export function ProjectCreateForm({
 
     function showProjectGroup(event: any, id: number) {
         event.preventDefault();
-        console.log('show experiment', id);
+        router.push(`/project/group/${id}`);
     }
 
     function removeGroupFromProject(event: any, id: number) {
@@ -142,9 +142,9 @@ export function ProjectCreateForm({
             return;
         }
 
-        // setIsLoading(true);
-        // await addProject(data);
-        // setIsLoading(false);
+        setIsLoading(true);
+        await addProject(data);
+        setIsLoading(false);
     }
 
     function initForm() {
@@ -277,28 +277,32 @@ export function ProjectCreateForm({
                             )}
                         </div>
                         <div className="flex gap-4 flex-wrap">
-                            {projectGroups?.map((group, i) => (
-                                <div className="stats shadow" key={i}>
-                                    <div className="p-4 px-6 rounded-xs flex flex-col gap-2">
-                                        <div className="stat-title">{group.group_name}</div>
-                                        <div className="stat-desc">{group.description}</div>
-                                        <div className="flex justify-end mt-2 gap-2">
-                                            <button
-                                                className="btn btn-xs"
-                                                onClick={(e) => showProjectGroup(e, i)}
-                                            >
-                                                <Icons.history size={16} />
-                                            </button>
-                                            <button
-                                                className="btn btn-xs"
-                                                onClick={(e) => removeGroupFromProject(e, i)}
-                                            >
-                                                <Icons.delete size={16} />
-                                            </button>
+                            {projectGroups && projectGroups.length > 0 ? (
+                                projectGroups?.map((group, i) => (
+                                    <div className="stats shadow" key={i}>
+                                        <div className="p-4 px-6 rounded-xs flex flex-col gap-2">
+                                            <div className="stat-title">{group.group_name}</div>
+                                            <div className="stat-desc">{group.description}</div>
+                                            <div className="flex justify-end mt-2 gap-2">
+                                                <button
+                                                    className="btn btn-xs"
+                                                    onClick={(e) => showProjectGroup(e, group.id)}
+                                                >
+                                                    <Icons.link size={16} />
+                                                </button>
+                                                <button
+                                                    className="btn btn-xs"
+                                                    onClick={(e) => removeGroupFromProject(e, i)}
+                                                >
+                                                    <Icons.delete size={16} />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))
+                            ) : (
+                                <span className="badge">暂无分组</span>
+                            )}
                         </div>
                     </div>
                     {edit && (

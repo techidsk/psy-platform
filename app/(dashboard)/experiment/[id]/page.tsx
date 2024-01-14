@@ -2,7 +2,6 @@ import { ExperimentCreateForm } from '@/components/experiment/experiment-create-
 
 import { db } from '@/lib/db';
 import SubpageHeader, { SubpageContentHeader } from '@/components/subpage-header';
-import { Icons } from '@/components/icons';
 
 /**
  * 判断数据库是否存在,如果存在则进入编辑流程.

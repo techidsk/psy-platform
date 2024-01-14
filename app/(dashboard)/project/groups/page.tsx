@@ -11,6 +11,7 @@ import { JsonValue } from '@prisma/client/runtime/library';
 import { TableSearch } from '@/components/table/table-search';
 import { Prisma } from '@prisma/client';
 import { CreateProjectGroupButton } from '@/components/project/group/project-group-create-button';
+import { ProjectGroupTableEditButtons } from '@/components/project/group/project-group-table-edit-buttons';
 
 type ProjecTtGroupState = 'AVAILABLE' | 'UNASSIGNED' | 'DISABLED';
 
@@ -163,7 +164,7 @@ const projectTableConfig: TableConfig[] = [
         children: (data: any) => {
             return (
                 <div className="flex gap-4 items-center">
-                    <ProjectTableEditButtons projectId={data.id} />
+                    <ProjectGroupTableEditButtons groupId={data.id} />
                 </div>
             );
         },

@@ -131,6 +131,7 @@ model user_setting {
 model experiment_steps {
   id            Int     @id @default(autoincrement())
   experiment_id Int?
+  step_name     String? @db.VarChar(50)
   order         Int?
   type          Int?
   title         String? @db.VarChar(50)

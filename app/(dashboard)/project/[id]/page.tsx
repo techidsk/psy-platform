@@ -21,6 +21,7 @@ async function getProject(id: string) {
 
     return project;
 }
+
 async function getProjectGroupIds(id: string) {
     const projectGroups = await db.project_group.findMany({
         where: {
@@ -36,7 +37,7 @@ async function getProjectGroupIds(id: string) {
     return projectGroups;
 }
 
-export default async function UserForm({ params: { id }, searchParams }: any) {
+export default async function ProjectDetail({ params: { id }, searchParams }: any) {
     // Initiate both requests in parallel
     const projectData = getProject(id);
     const projectGroupData = getProjectGroupIds(id);
@@ -55,7 +56,7 @@ export default async function UserForm({ params: { id }, searchParams }: any) {
             <div className="flex flex-col gap-4">
                 <SubpageContentHeader heading="项目详情" />
                 <ProjectCreateForm
-                    className="w-full px-2"
+                    className="w-full p-2"
                     edit={Boolean(edit)}
                     project={project}
                     projectGroups={projectGroups}

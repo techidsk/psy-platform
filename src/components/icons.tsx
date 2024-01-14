@@ -30,6 +30,7 @@ import {
     ListMinus,
     Save,
     Group,
+    Link,
 } from 'lucide-react';
 
 export const Icons = {
@@ -65,4 +66,5 @@ export const Icons = {
     save: Save,
     projectGroups: Group,
     undo: Undo2,
+    link: Link,
 };

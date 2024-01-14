@@ -7,7 +7,7 @@ export default function UserForm() {
             <SubpageHeader />
             <div className="flex flex-col gap-4">
                 <SubpageContentHeader heading="创建新项目" />
-                <ProjectCreateForm className="w-full px-2" />
+                <ProjectCreateForm className="w-full px-2" edit={true} />
             </div>
         </div>
     );
