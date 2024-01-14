@@ -92,12 +92,7 @@ export default async function Projects({
                             <TableSearch defaultParams={searchParams} searchDatas={searchDatas} />
                         }
                     >
-                        <Pagination
-                            path="./users"
-                            current={currentPage}
-                            pageSize={currentPageSize}
-                            end={end}
-                        />
+                        <Pagination current={currentPage} pageSize={currentPageSize} end={end} />
                     </Table>
                 </div>
             </div>

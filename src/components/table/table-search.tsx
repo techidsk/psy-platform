@@ -111,7 +111,7 @@ export function TableSearch({
     };
 
     return (
-        <div>
+        <div className="grid gap-2">
             <div className="grid gap-4 grid-cols-4">
                 {searchDatas.map((field) => (
                     <div key={field.name}>{renderField(field)}</div>

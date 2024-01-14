@@ -63,12 +63,7 @@ export default async function ProjectGroup({
                 <DashboardHeader heading="配置项目分组" text="管理配置项目分组"></DashboardHeader>
                 <div className="w-full overflow-auto">
                     <Table configs={projectTableConfig} datas={datas}>
-                        <Pagination
-                            path="./users"
-                            current={currentPage}
-                            pageSize={currentPageSize}
-                            end={end}
-                        />
+                        <Pagination current={currentPage} pageSize={currentPageSize} end={end} />
                     </Table>
                 </div>
             </div>

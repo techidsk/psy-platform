@@ -29,10 +29,9 @@ async function getExperimentsByIds(ids: number[]) {
     }
 
     const experiments = await db.$queryRaw<any[]>`
-        SELECT e.*, s.setting, s.intro, 
+        SELECT e.*, 
         en.engine_name, en.engine_image, en.gpt_prompt, en.gpt_settings, en.template
         FROM experiment e
-        LEFT JOIN experiment_setting s ON s.experiment_id = e.id
         LEFT JOIN engine en ON en.id = s.experiment_id
         WHERE 1 = 1
         ${Prisma.sql`AND e.id IN (${Prisma.raw(ids.join(','))})`}

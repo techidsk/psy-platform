@@ -3,19 +3,13 @@
 import { useRouter } from 'next/navigation';
 
 interface PaginationProps extends React.HTMLAttributes<HTMLElement> {
-    path: string;
+    path?: string;
     current: number;
     pageSize?: number;
     end?: number;
 }
 
-export default function Pagination({
-    path,
-    children,
-    current,
-    pageSize = 10,
-    end = 1,
-}: PaginationProps) {
+export default function Pagination({ current, pageSize = 10, end = 1 }: PaginationProps) {
     const router = useRouter();
 
     const jumpTo = (i: number) => {
@@ -24,9 +18,9 @@ export default function Pagination({
         // 设置或更新页码和页面大小参数
         searchParams.set('page', i.toString());
         searchParams.set('pagesize', pageSize.toString());
-
+        const pathname = window.location.pathname;
         // 构造新的URL，保留现有的查询参数
-        const newUrl = `${path}?${searchParams.toString()}`;
+        const newUrl = `${pathname}?${searchParams.toString()}`;
         router.push(newUrl);
     };
 
