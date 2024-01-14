@@ -25,6 +25,8 @@ async function getExperiments() {
 export default async function ExperimentList() {
     const datas = await getExperiments();
 
+    console.log(datas);
+
     return (
         <div className="container mx-auto">
             <div className="flex flex-col gap-4">

@@ -115,7 +115,7 @@ export function EngineAddForm({
                             引擎名称
                         </label>
                         <input
-                            id="engine_name"
+                            nano_id="engine_name"
                             placeholder="请输入引擎名称"
                             type="text"
                             autoCapitalize="none"
@@ -135,7 +135,7 @@ export function EngineAddForm({
                             引擎描述
                         </label>
                         <input
-                            id="engine_description"
+                            nano_id="engine_description"
                             placeholder="请输入引擎描述"
                             type="text"
                             autoCapitalize="none"
@@ -155,7 +155,7 @@ export function EngineAddForm({
                             GPT提示词
                         </label>
                         <input
-                            id="gpt_prompt"
+                            nano_id="gpt_prompt"
                             placeholder="请输入GPT提示词"
                             type="text"
                             autoCapitalize="none"
@@ -173,7 +173,7 @@ export function EngineAddForm({
                             GPT Temperature
                         </label>
                         <input
-                            id="temperature"
+                            nano_id="temperature"
                             placeholder="请输入GPT temperature"
                             min={0}
                             max={1}
@@ -195,7 +195,7 @@ export function EngineAddForm({
                             GPT最大tokens
                         </label>
                         <input
-                            id="max_tokens"
+                            nano_id="max_tokens"
                             placeholder="请输入GPT最大tokens"
                             min={100}
                             max={2048}
@@ -215,7 +215,7 @@ export function EngineAddForm({
                             SDXL提示词模板
                         </label>
                         <textarea
-                            id="prompt"
+                            nano_id="prompt"
                             placeholder="请输入SDXL提示词模板"
                             autoCapitalize="none"
                             autoCorrect="off"
@@ -232,7 +232,7 @@ export function EngineAddForm({
                             SDXL负面提示词
                         </label>
                         <textarea
-                            id="negative_prompt"
+                            nano_id="negative_prompt"
                             placeholder="请输入SDXL负面提示词"
                             autoCapitalize="none"
                             autoCorrect="off"

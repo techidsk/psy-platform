@@ -73,7 +73,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
                             用户名
                         </label>
                         <input
-                            id="username"
+                            nano_id="username"
                             placeholder="请输入用户名"
                             type="text"
                             autoCapitalize="none"
@@ -92,7 +92,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
                             密码
                         </label>
                         <input
-                            id="password"
+                            nano_id="password"
                             placeholder="请输入密码"
                             type="password"
                             autoCapitalize="none"
@@ -100,6 +100,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
                             autoCorrect="off"
                             disabled={isLoading}
                             className="input input-bordered w-full"
+
                             /**
                              * 针对用户修改密码时，由于state不会实时更新以及refine/addIssue方法抛出错误后不会自动清除（并且zod似乎只有验证为false时，
                              * 才会让formState中的errors更新，这导致无法用Effect跟踪errors），故而更改了相关前端逻辑。
@@ -111,6 +112,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
                                     trigger();
                                 },
                             })}
+
                         />
                         {errors?.password && (
                             <p className="px-1 text-xs text-red-600">{errors.password.message}</p>
@@ -133,7 +135,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
                             Qualtrics账号
                         </label>
                         <input
-                            id="qualtrics"
+                            nano_id="qualtrics"
                             placeholder="请输入Qualtrics账号"
                             type="text"
                             autoCapitalize="none"

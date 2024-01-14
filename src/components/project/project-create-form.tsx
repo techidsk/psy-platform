@@ -20,7 +20,7 @@ import { useTableState } from '@/state/_table_atom';
 interface ProjectFormProps extends React.HTMLAttributes<HTMLDivElement> {
     closeModal?: Function;
     edit?: boolean;
-    id?: string;
+    nano_id?: string;
     project?: projects;
     projectGroups?: project_group[];
     projectGroupsIds?: number[];
@@ -29,7 +29,7 @@ type FormData = z.infer<typeof projectFormSchema>;
 
 export function ProjectCreateForm({
     className,
-    id,
+    nano_id: id,
     closeModal,
     edit,
     project,
@@ -173,7 +173,7 @@ export function ProjectCreateForm({
                             项目名称
                         </label>
                         <input
-                            id="project_name"
+                            nano_id="project_name"
                             placeholder="请输入项目名称"
                             type="text"
                             autoCapitalize="none"
@@ -193,7 +193,7 @@ export function ProjectCreateForm({
                             项目描述
                         </label>
                         <textarea
-                            id="project_description"
+                            nano_id="project_description"
                             placeholder="请输入项目描述"
                             autoCapitalize="none"
                             autoCorrect="off"
@@ -317,7 +317,7 @@ export function ProjectCreateForm({
                                 ) : (
                                     <Icons.save />
                                 )}
-                                创建
+                                完成
                             </button>
                         </div>
                     )}

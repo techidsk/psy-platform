@@ -19,7 +19,7 @@ import { TableConfig } from '@/types/table';
 interface ProjectGroupFormProps extends React.HTMLAttributes<HTMLDivElement> {
     closeModal?: Function;
     edit?: boolean;
-    id?: string;
+    nano_id?: string;
     projectGroup?: project_group;
     experiments?: experiment[];
 }
@@ -27,7 +27,7 @@ type FormData = z.infer<typeof projectGroupFormSchema>;
 
 export function ProjectGroupCreateForm({
     className,
-    id,
+    nano_id: id,
     closeModal,
     edit,
     projectGroup,
@@ -151,7 +151,7 @@ export function ProjectGroupCreateForm({
                             项目名称
                         </label>
                         <input
-                            id="group_name"
+                            nano_id="group_name"
                             placeholder="请输入项目分组名称"
                             type="text"
                             autoCapitalize="none"
@@ -169,7 +169,7 @@ export function ProjectGroupCreateForm({
                             项目描述
                         </label>
                         <textarea
-                            id="description"
+                            nano_id="description"
                             placeholder="请输入项目分组描述"
                             autoCapitalize="none"
                             autoCorrect="off"
