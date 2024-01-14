@@ -6,7 +6,7 @@ import * as z from 'zod';
 export const registerSchema = z
     .object({
         username: z.string().min(2, '用户名长度必须大于两位').max(100),
-        password: z.string().min(8, { message: '密码长度必须大于6位' }),
+        password: z.string().min(8, { message: '密码长度必须大于8位' }),
         qualtrics: z.string().optional(),
     })
     .superRefine(({ password }, checkPassComplexity) => {
@@ -23,8 +23,9 @@ export const registerSchema = z
         }
         if (countOfLowerCase < 1 || countOfUpperCase < 1 || countOfNumbers < 1) {
             checkPassComplexity.addIssue({
-                code: 'custom',
+                code: z.ZodIssueCode.custom,
                 message: '密码必须包含至少一个大写字母，一个小写字母和一个数字',
+                path: ['password'],
             });
         }
     });
@@ -62,7 +63,7 @@ export const userFormSchema = z
         }
         if (countOfLowerCase < 1 || countOfUpperCase < 1 || countOfNumbers < 1) {
             checkPassComplexity.addIssue({
-                code: 'custom',
+                code: z.ZodIssueCode.custom,
                 message: '密码必须包含至少一个大写字母，一个小写字母和一个数字',
             });
         }
@@ -98,7 +99,7 @@ export const userPatchFormSchema = z
         }
         if (countOfLowerCase < 1 || countOfUpperCase < 1 || countOfNumbers < 1) {
             checkPassComplexity.addIssue({
-                code: 'custom',
+                code: z.ZodIssueCode.custom,
                 message: '密码必须包含至少一个大写字母，一个小写字母和一个数字',
             });
         }
