@@ -48,12 +48,18 @@
     但是foreground变量值被正确复写，造成在浏览器为深色模式时，会发生输入框内文字、svg图片因为颜色为白色而看不见。
     
     感觉似乎不会做深色模式的适配。因此径直更改深色主题下的环境变量值，与普通主题一致。以后需要修改再改好了。
+
+    bg-white:rgb(255 255 255 / var(--tw-bg-opacity))
+
+    
     */
         /* --foreground-rgb      : 255, 255, 255; */
         --foreground-rgb: 0, 0, 0;
-        --background-start-rgb: 0, 0, 0;
-        --background-end-rgb: 0, 0, 0;
+        --background-start-rgb: 214, 219, 220;
+        --background-end-rgb: 255, 255, 255;
 
+        /* 要做深色模式适配时再做修改
+        
         --primary-glow: radial-gradient(rgba(1, 65, 255, 0.4), rgba(1, 65, 255, 0));
         --secondary-glow: linear-gradient(
             to bottom right,
@@ -77,7 +83,7 @@
         --callout-rgb: 20, 20, 20;
         --callout-border-rgb: 108, 108, 108;
         --card-rgb: 100, 100, 100;
-        --card-border-rgb: 200, 200, 200;
+        --card-border-rgb: 200, 200, 200; */
     }
 }
 
