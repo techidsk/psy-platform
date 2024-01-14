@@ -64,4 +64,5 @@ export const Icons = {
     list: ListMinus,
     save: Save,
     projectGroups: Group,
+    undo: Undo2,
 };

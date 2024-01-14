@@ -145,7 +145,8 @@ model project_group {
   project_id  Int?
   group_name  String? @db.VarChar(30)
   description String? @db.Text
-  status      Int?    @db.UnsignedTinyInt
+  state       String? @db.VarChar(20)
+  experiments Json?
 
   @@index([project_id], map: "idx_project_id")
 }

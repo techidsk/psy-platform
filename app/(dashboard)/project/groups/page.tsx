@@ -10,6 +10,7 @@ import { CreateProjectButton } from '@/components/project/project-create-button'
 import { JsonValue } from '@prisma/client/runtime/library';
 import { TableSearch } from '@/components/table/table-search';
 import { Prisma } from '@prisma/client';
+import { CreateProjectGroupButton } from '@/components/project/group/project-group-create-button';
 
 type ProjecTtGroupState = 'AVAILABLE' | 'UNASSIGNED' | 'DISABLED';
 
@@ -78,7 +79,7 @@ export default async function ProjectGroups({
         <div className="container mx-auto">
             <div className="flex flex-col gap-4">
                 <DashboardHeader heading="项目分组列表" text="管理项目分组">
-                    <CreateProjectButton className="btn btn-primary btn-sm" />
+                    <CreateProjectGroupButton className="btn btn-primary btn-sm" />
                 </DashboardHeader>
                 <div className="w-full overflow-auto">
                     <Table

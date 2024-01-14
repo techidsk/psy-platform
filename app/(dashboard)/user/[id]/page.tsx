@@ -1,9 +1,6 @@
-import { UserCreateHeader } from '@/components/user/user-create-header';
-import { Icons } from '@/components/icons';
-
 import { db } from '@/lib/db';
 import { UserCreateForm } from '@/components/user/user-create-form';
-import SubpageHeader from '@/components/subpage-header';
+import SubpageHeader, { SubpageContentHeader } from '@/components/subpage-header';
 
 /**
  * 判断数据库中用户是否存在,如果存在则进入编辑流程.
@@ -31,7 +28,7 @@ export default async function UserForm({ params: { id } }: any) {
         <div className="container h-screen lg:max-w-none bg-white">
             <SubpageHeader />
             <div className="flex flex-col gap-4">
-                <UserCreateHeader heading={`${user?.id ? '编辑用户' : '创建新用户'}`} />
+                <SubpageContentHeader heading={`${user?.id ? '编辑用户' : '创建新用户'}`} />
                 <UserCreateForm className="w-full px-2" nano_id={id} />
             </div>
         </div>

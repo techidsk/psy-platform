@@ -1,7 +1,6 @@
 import { db } from '@/lib/db';
-import { ProjectCreateHeader } from '@/components/project/project-create-header';
 import { ProjectCreateForm } from '@/components/project/project-create-form';
-import SubpageHeader from '@/components/subpage-header';
+import SubpageHeader, { SubpageContentHeader } from '@/components/subpage-header';
 import { ProjectEditButton } from '@/components/project/project-edit-button';
 
 /**
@@ -54,7 +53,7 @@ export default async function UserForm({ params: { id }, searchParams }: any) {
                 />
             </SubpageHeader>
             <div className="flex flex-col gap-4">
-                <ProjectCreateHeader heading="项目详情" />
+                <SubpageContentHeader heading="项目详情" />
                 <ProjectCreateForm
                     className="w-full px-2"
                     edit={Boolean(edit)}
