@@ -8,13 +8,18 @@ import Pagination from '@/components/pagination';
 import { ProjectTableEditButtons } from '@/components/project/project-table-edit-buttons';
 import { CreateProjectButton } from '@/components/project/project-create-button';
 import { JsonValue } from '@prisma/client/runtime/library';
+import { TableSearch } from '@/components/table/table-search';
+import { Prisma } from '@prisma/client';
+
+type ProjecTtGroupState = 'AVAILABLE' | 'UNASSIGNED' | 'DISABLED';
 
 type ProjectGroupTableProps = {
     id: string;
     group_name: string;
     description: string;
-    status: boolean;
+    state: ProjecTtGroupState;
     experiments: JsonValue;
+    project_name: string;
 };
 
 async function getProjectGroups(
@@ -30,10 +35,26 @@ async function getProjectGroups(
     if (role === 'USER') {
         return [];
     }
+    const group_name = searchParams?.group_name || '';
+    const project_name = searchParams?.project_name || '';
+    const state = searchParams?.state || null;
+
     // 判断当前用户角色
     const projectGroups = await db.$queryRaw<ProjectGroupTableProps[]>`
         select g.*, p.project_name from project_group g
         left join projects p on g.project_id = p.id 
+        where 1 = 1
+        ${
+            group_name
+                ? Prisma.sql`AND g.group_name LIKE '%${Prisma.raw(group_name)}%'`
+                : Prisma.empty
+        }
+        ${
+            project_name
+                ? Prisma.sql`AND p.project_name LIKE '%${Prisma.raw(project_name)}%'`
+                : Prisma.empty
+        }
+        ${state ? Prisma.sql`AND g.state LIKE '%${Prisma.raw(state)}%'` : Prisma.empty}
         LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
     `;
 
@@ -48,7 +69,6 @@ export default async function ProjectGroups({
     const currentPage = searchParams.page ? parseInt(searchParams.page) || 1 : 1;
     const currentPageSize = searchParams.pagesize ? parseInt(searchParams.pagesize) || 10 : 10;
     const datas = await getProjectGroups(searchParams, currentPage, currentPageSize);
-    console.log(datas);
     let end = currentPage;
     if (datas.length === currentPageSize) {
         end = currentPage + 1;
@@ -61,7 +81,13 @@ export default async function ProjectGroups({
                     <CreateProjectButton className="btn btn-primary btn-sm" />
                 </DashboardHeader>
                 <div className="w-full overflow-auto">
-                    <Table configs={projectTableConfig} datas={datas}>
+                    <Table
+                        configs={projectTableConfig}
+                        datas={datas}
+                        searchNode={
+                            <TableSearch defaultParams={searchParams} searchDatas={searchDatas} />
+                        }
+                    >
                         <Pagination
                             path="./users"
                             current={currentPage}
@@ -105,15 +131,22 @@ const projectTableConfig: TableConfig[] = [
         key: 'state',
         label: '状态',
         children: (data: ProjectGroupTableProps) => {
-            let obj = data.status
-                ? {
-                      text: '可用',
-                      state: 'success',
-                  }
-                : {
-                      text: '草稿',
-                      state: 'pending',
-                  };
+            const projectState: Record<ProjecTtGroupState, { text: string; state: string }> = {
+                AVAILABLE: {
+                    text: '可用',
+                    state: 'success',
+                },
+                UNASSIGNED: {
+                    text: '未分配',
+                    state: 'error',
+                },
+                DISABLED: {
+                    text: '停用',
+                    state: 'error',
+                },
+            };
+
+            let obj = projectState[data.state];
 
             return (
                 <div className="flex flex-col gap-2 items-start">
@@ -133,5 +166,21 @@ const projectTableConfig: TableConfig[] = [
                 </div>
             );
         },
+    },
+];
+
+const searchDatas = [
+    { name: 'group_name', type: 'input', placeholder: '请输入项目分组名称' },
+    { name: 'project_name', type: 'input', placeholder: '请输入所属项目名称' },
+    {
+        name: 'state',
+        type: 'select',
+        placeholder: '请选择分组状态',
+        values: [
+            { value: '', label: '' },
+            { value: 'AVAILABLE', label: '可用' },
+            { value: 'UNASSIGNED', label: '未分配' },
+            { value: 'DISABLED', label: '停用' },
+        ],
     },
 ];

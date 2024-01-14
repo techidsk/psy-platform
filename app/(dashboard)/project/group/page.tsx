@@ -60,7 +60,7 @@ export default async function ProjectGroup({
         <div className="container mx-auto">
             <SubpageHeader />
             <div className="flex flex-col gap-4">
-                <DashboardHeader heading="项目分组列表" text="管理项目分组">
+                <DashboardHeader heading="配置项目分组" text="管理配置项目分组">
                     <CreateProjectButton className="btn btn-primary btn-sm" />
                 </DashboardHeader>
                 <div className="w-full overflow-auto">

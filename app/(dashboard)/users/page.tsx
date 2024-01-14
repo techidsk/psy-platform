@@ -110,11 +110,7 @@ export default async function User({ searchParams }: { searchParams: { [key: str
                         configs={userTableConfig}
                         datas={datas}
                         searchNode={
-                            <TableSearch
-                                path={'./users'}
-                                defaultParams={searchParams}
-                                searchDatas={searchDatas}
-                            />
+                            <TableSearch defaultParams={searchParams} searchDatas={searchDatas} />
                         }
                     >
                         <Pagination

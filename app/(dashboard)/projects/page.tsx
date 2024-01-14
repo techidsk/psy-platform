@@ -89,11 +89,7 @@ export default async function Projects({
                         configs={projectTableConfig}
                         datas={datas}
                         searchNode={
-                            <TableSearch
-                                path={'./projects'}
-                                defaultParams={searchParams}
-                                searchDatas={searchDatas}
-                            />
+                            <TableSearch defaultParams={searchParams} searchDatas={searchDatas} />
                         }
                     >
                         <Pagination
