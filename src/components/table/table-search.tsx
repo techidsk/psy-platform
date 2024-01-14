@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Icons } from '../icons';
 
 interface FormValues {
-    value: string;
+    value: any;
     label: string;
 }
 
@@ -16,15 +16,28 @@ interface SearchProps {
     values?: FormValues[];
 }
 
-const SearchForm = ({
-    searchDatas,
-    onInputChange,
+export function TableSearch({
     defaultParams,
+    searchDatas,
 }: {
-    searchDatas: SearchProps[];
-    onInputChange: Function;
     defaultParams: { [key: string]: string };
-}) => {
+    searchDatas: SearchProps[];
+}) {
+    const router = useRouter();
+    const [searchParams, setSearchParams] = useState(defaultParams);
+    const [formValues, setFormValues] = useState(defaultParams);
+
+    // 当输入改变时，更新对应字段的状态
+    const handleChange = (fieldName: string, value: any) => {
+        setFormValues((prevValues) => ({ ...prevValues, [fieldName]: value }));
+        handleInputChange(fieldName, value); // 保留对外部函数的调用
+    };
+
+    // 重置表单值到默认值
+    const resetForm = () => {
+        setFormValues(defaultParams);
+    };
+
     const renderField = (field: SearchProps) => {
         switch (field.type) {
             case 'input':
@@ -32,9 +45,9 @@ const SearchForm = ({
                     <input
                         type="text"
                         placeholder={field.placeholder}
-                        defaultValue={defaultParams[field.name] || ''} // 设置默认值
+                        value={formValues[field.name] || ''} // 设置默认值
                         className="input input-bordered w-full max-w-xs"
-                        onChange={(e) => onInputChange(field.name, e.target.value)}
+                        onChange={(e) => handleChange(field.name, e.target.value)}
                     />
                 );
             case 'select':
@@ -42,8 +55,8 @@ const SearchForm = ({
                     return (
                         <select
                             className="select select-bordered w-full max-w-xs"
-                            defaultValue={defaultParams[field.name] || ''} // 设置默认值
-                            onChange={(e) => onInputChange(field.name, e.target.value)}
+                            value={formValues[field.name] || ''} // 设置默认值
+                            onChange={(e) => handleChange(field.name, e.target.value)}
                         >
                             {field.values.map(({ value, label }) => (
                                 <option key={value} value={value}>
@@ -60,27 +73,6 @@ const SearchForm = ({
         }
     };
 
-    return (
-        <div className="grid gap-4 grid-cols-4">
-            {searchDatas.map((field) => (
-                <div key={field.name}>{renderField(field)}</div>
-            ))}
-        </div>
-    );
-};
-
-export function TableSearch({
-    defaultParams,
-    searchDatas,
-    path,
-}: {
-    defaultParams: { [key: string]: string };
-    searchDatas: SearchProps[];
-    path: string;
-}) {
-    const router = useRouter();
-    const [searchParams, setSearchParams] = useState(defaultParams);
-
     const handleInputChange = (name: string, value: string) => {
         setSearchParams((prevParams) => ({ ...prevParams, [name]: value }));
     };
@@ -88,19 +80,21 @@ export function TableSearch({
     const resetSearch = () => {
         setSearchParams({});
         search(true);
+        resetForm();
     };
 
     const search = (reset: boolean = false) => {
         let oldSearchParams = new URLSearchParams(window.location.search);
-        let hasChanged = false;
+        const pathname = window.location.pathname;
 
         if (reset) {
-            let newSearchParams = new URLSearchParams();
-            newSearchParams.set('page', (oldSearchParams.get('page') || 1).toString());
-            newSearchParams.set('pagesize', (oldSearchParams.get('pagesize') || 15).toString());
-            const newUrl = path + `?${newSearchParams.toString()}`;
+            let emptySearchParams = new URLSearchParams();
+            emptySearchParams.set('page', (oldSearchParams.get('page') || 1).toString());
+            emptySearchParams.set('pagesize', (oldSearchParams.get('pagesize') || 15).toString());
+            const newUrl = `${pathname}?${emptySearchParams.toString()}`;
             router.push(newUrl);
         } else {
+            let hasChanged = false;
             Object.entries(searchParams).forEach(([key, value]) => {
                 if (typeof value === 'string') {
                     oldSearchParams.set(key, value.toString());
@@ -110,7 +104,7 @@ export function TableSearch({
 
             if (hasChanged) {
                 // 构造新的URL，保留现有的查询参数
-                const newUrl = path + `?${oldSearchParams.toString()}`;
+                const newUrl = `${pathname}?${oldSearchParams.toString()}`;
                 router.push(newUrl);
             }
         }
@@ -118,11 +112,11 @@ export function TableSearch({
 
     return (
         <div>
-            <SearchForm
-                searchDatas={searchDatas}
-                onInputChange={handleInputChange}
-                defaultParams={defaultParams}
-            />
+            <div className="grid gap-4 grid-cols-4">
+                {searchDatas.map((field) => (
+                    <div key={field.name}>{renderField(field)}</div>
+                ))}
+            </div>
             <div className="flex justify-end gap-4">
                 <button className="btn btn-outline btn-sm" onClick={resetSearch}>
                     重置搜索
