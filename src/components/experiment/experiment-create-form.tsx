@@ -1,85 +1,90 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { toast } from "@/hooks/use-toast"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
+import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { toast } from '@/hooks/use-toast';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
 
-import { cn } from "@/lib/utils"
-import { exprimentSchema } from "@/lib/validations/auth"
-import { Icons } from "@/components/icons"
-import { getUrl } from "@/lib/url"
+import { cn } from '@/lib/utils';
+import { exprimentSchema } from '@/lib/validations/experiment';
+import { Icons } from '@/components/icons';
+import { getUrl } from '@/lib/url';
 
-import type { experiment } from '@prisma/client'
+import type { experiment } from '@prisma/client';
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
-    experiment: experiment | null
-    nano_id: string
+    experiment: experiment | null;
+    nano_id: string;
 }
 
-type FormData = z.infer<typeof exprimentSchema>
+type FormData = z.infer<typeof exprimentSchema>;
 
-export function ExperimentCreateForm({ className, experiment, nano_id, ...props }: UserAuthFormProps) {
+export function ExperimentCreateForm({
+    className,
+    experiment,
+    nano_id,
+    ...props
+}: UserAuthFormProps) {
     const {
         register,
         handleSubmit,
         formState: { errors },
     } = useForm<FormData>({
         resolver: zodResolver(exprimentSchema),
-    })
+    });
 
-    const [isLoading, setIsLoading] = useState<boolean>(false)
-    const router = useRouter()
-
-    const searchParams = useSearchParams()
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const router = useRouter();
 
     /**
      * 创建实验
      * @param data 新实验信息
-     * @returns 
+     * @returns
      */
     async function onSubmit(data: FormData) {
         if (isLoading) {
-            return
+            return;
         }
-        setIsLoading(true)
+        setIsLoading(true);
         const createResult = await fetch(getUrl('/api/experiment/add'), {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 ...data,
                 nano_id: nano_id,
-            })
-        })
-        setIsLoading(false)
+            }),
+        });
+        setIsLoading(false);
 
         if (!createResult?.ok) {
             return toast({
-                title: "创建失败",
-                description: "请查看系统消息",
-                variant: "destructive",
-                duration: 5000
-            })
+                title: '创建失败',
+                description: '请查看系统消息',
+                variant: 'destructive',
+                duration: 5000,
+            });
         }
-        router.push("/experiment")
+        router.push('/experiment');
 
         return toast({
-            title: "创建成功",
-            description: "已成功创建新实验",
-            duration: 3000
-        })
+            title: '创建成功',
+            description: '已成功创建新实验',
+            duration: 3000,
+        });
     }
 
     return (
-        <div className={cn("grid gap-6", className)} {...props}>
+        <div className={cn('grid gap-6', className)} {...props}>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="grid gap-2">
                     <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="name">实验名称</label>
+                        <label className="sr-only" htmlFor="name">
+                            实验名称
+                        </label>
                         <input
                             id="name"
                             placeholder="请输入实验名称"
@@ -89,14 +94,16 @@ export function ExperimentCreateForm({ className, experiment, nano_id, ...props 
                             autoCorrect="off"
                             disabled={isLoading}
                             className="input input-bordered w-full"
-                            {...register("name")}
+                            {...register('name')}
                         />
                         {errors?.name && (
                             <p className="px-1 text-xs text-red-600">{errors.name.message}</p>
                         )}
                     </div>
                     <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="description">详情描述</label>
+                        <label className="sr-only" htmlFor="description">
+                            详情描述
+                        </label>
                         <textarea
                             id="description"
                             placeholder="请输入实验名称"
@@ -106,17 +113,15 @@ export function ExperimentCreateForm({ className, experiment, nano_id, ...props 
                             disabled={isLoading}
                             className="textarea textarea-bordered w-full"
                             rows={6}
-                            {...register("description")}
+                            {...register('description')}
                         />
                     </div>
                     <button className={'btn btn-primary'} disabled={isLoading} type="submit">
-                        {isLoading && (
-                            <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                        )}
+                        {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
                         创建
                     </button>
                 </div>
             </form>
         </div>
-    )
+    );
 }

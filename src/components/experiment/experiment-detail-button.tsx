@@ -8,6 +8,7 @@ import type { experiment as Experiment, experiment_steps } from '@prisma/client'
 import { Modal } from '../ui/modal';
 import { dateFormat } from '@/lib/date';
 import { getUrl } from '@/lib/url';
+import { useRouter } from 'next/navigation';
 
 interface ExperimentDetailProps extends React.HTMLAttributes<HTMLButtonElement> {
     experiment: Experiment;
@@ -21,10 +22,13 @@ export function ExperimentDetailButton({ experiment }: ExperimentDetailProps) {
     const [open, setOpen] = useState(false);
     const [steps, setSteps] = useState<ExperimentSteps[]>([]);
 
+    const router = useRouter();
+
     const selectedEngine = usePreExperimentState((state) => state.engine);
 
     function showDetail() {
-        setOpen(true);
+        // setOpen(true);
+        router.push(`/experiment/${experiment.nano_id}`);
     }
 
     function handleToggle() {

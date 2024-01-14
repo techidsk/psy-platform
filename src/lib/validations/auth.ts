@@ -37,15 +37,6 @@ export const loginSchema = z.object({
     password: z.string().min(8, { message: '密码长度必须大于8位' }),
 });
 
-export const exprimentSchema = z.object({
-    name: z.string().min(1, '实验名称不能为空').max(100),
-    description: z.string(),
-});
-
-export const exprimentSettingSchema = z.object({
-    display_num: z.number().min(1).max(4, '不能超过4张'),
-});
-
 export const userFormSchema = z
     .object({
         username: z.string().min(2, '用户名长度必须大于两位').max(100),
