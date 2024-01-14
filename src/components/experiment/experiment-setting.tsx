@@ -59,7 +59,7 @@ export function ExperimentSetting() {
                                 图片显示数量
                             </label>
                             <input
-                                id="display-num"
+                                nano_id="display-num"
                                 placeholder="请输入图片显示数量"
                                 defaultValue={displayNum}
                                 type="number"

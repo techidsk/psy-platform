@@ -49,7 +49,7 @@ export default async function ProjectDetail({ params: { id }, searchParams }: an
             <SubpageHeader>
                 <ProjectEditButton
                     className="btn btn-primary btn-sm"
-                    id={id}
+                    nano_id={id}
                     edit={Boolean(edit)}
                 />
             </SubpageHeader>

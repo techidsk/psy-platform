@@ -1,48 +1,26 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { useRouter } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { Icons } from "@/components/icons"
-import { getId } from '@/lib/nano-id'
+import * as React from 'react';
+import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { Icons } from '@/components/icons';
 
+interface ExperimentCreateButtonProps extends React.HTMLAttributes<HTMLButtonElement> {}
 
-interface ExperimentCreateButtonProps
-    extends React.HTMLAttributes<HTMLButtonElement> { }
-
-export function ExperimentCreateButton({
-    className,
-    ...props
-}: ExperimentCreateButtonProps) {
-    const router = useRouter()
-    const [isLoading, setIsLoading] = React.useState<boolean>(false)
+export function ExperimentCreateButton({ className, ...props }: ExperimentCreateButtonProps) {
+    const router = useRouter();
 
     /**
      * 创建新实验
      */
-    async function onClick() {
-        const id = getId()
-        router.push(`/experiment/${id}`)
+    function onClick() {
+        router.push(`/experiment/add/`);
     }
 
     return (
-        <button
-            onClick={onClick}
-            className={cn(
-                {
-                    "cursor-not-allowed opacity-60": isLoading,
-                },
-                className
-            )}
-            disabled={isLoading}
-            {...props}
-        >
-            {isLoading ? (
-                <Icons.spinner className="h-4 w-4 animate-spin" />
-            ) : (
-                <Icons.add className="h-4 w-4" />
-            )}
+        <button onClick={onClick} className={cn(className)} {...props}>
+            <Icons.add className="h-4 w-4" />
             创建
         </button>
-    )
+    );
 }

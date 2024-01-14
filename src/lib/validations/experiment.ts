@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 export const exprimentSchema = z.object({
-    name: z.string().min(1, '实验名称不能为空').max(100),
+    experiment_name: z.string().min(1, '实验名称不能为空').max(100),
     description: z.string(),
 });
 

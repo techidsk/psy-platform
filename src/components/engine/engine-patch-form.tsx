@@ -133,7 +133,7 @@ export function EnginePatchForm({
                             引擎名称
                         </label>
                         <input
-                            id="engine_name"
+                            nano_id="engine_name"
                             placeholder="请输入引擎名称"
                             type="text"
                             autoCapitalize="none"
@@ -153,7 +153,7 @@ export function EnginePatchForm({
                             引擎描述
                         </label>
                         <input
-                            id="engine_description"
+                            nano_id="engine_description"
                             placeholder="请输入引擎描述"
                             type="text"
                             autoCapitalize="none"
@@ -173,7 +173,7 @@ export function EnginePatchForm({
                             GPT提示词
                         </label>
                         <textarea
-                            id="gpt_prompt"
+                            nano_id="gpt_prompt"
                             placeholder="请输入GPT提示词"
                             autoCapitalize="none"
                             autoCorrect="off"

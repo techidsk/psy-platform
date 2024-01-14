@@ -140,7 +140,7 @@ export function EnginePatchAdvancedForm({
                             引擎名称
                         </label>
                         <input
-                            id="engine_name"
+                            nano_id="engine_name"
                             placeholder="请输入引擎名称"
                             type="text"
                             autoCapitalize="none"
@@ -160,7 +160,7 @@ export function EnginePatchAdvancedForm({
                             引擎描述
                         </label>
                         <input
-                            id="engine_description"
+                            nano_id="engine_description"
                             placeholder="请输入引擎描述"
                             type="text"
                             autoCapitalize="none"
@@ -180,7 +180,7 @@ export function EnginePatchAdvancedForm({
                             GPT提示词
                         </label>{' '}
                         <textarea
-                            id="gpt_prompt"
+                            nano_id="gpt_prompt"
                             placeholder="请输入GPT提示词"
                             autoCapitalize="none"
                             autoCorrect="off"
@@ -198,7 +198,7 @@ export function EnginePatchAdvancedForm({
                             GPT Temperature
                         </label>
                         <input
-                            id="temperature"
+                            nano_id="temperature"
                             placeholder="请输入GPT temperature"
                             type="number"
                             autoCapitalize="none"
@@ -220,7 +220,7 @@ export function EnginePatchAdvancedForm({
                             GPT最大tokens
                         </label>
                         <input
-                            id="temperature"
+                            nano_id="temperature"
                             placeholder="请输入GPT最大tokens"
                             type="number"
                             autoCapitalize="none"
@@ -240,7 +240,7 @@ export function EnginePatchAdvancedForm({
                             SDXL提示词
                         </label>{' '}
                         <textarea
-                            id="prompt"
+                            nano_id="prompt"
                             placeholder="请输入SDXL提示词"
                             autoCapitalize="none"
                             autoCorrect="off"
@@ -259,7 +259,7 @@ export function EnginePatchAdvancedForm({
                             SDXL负面提示词
                         </label>{' '}
                         <textarea
-                            id="negative_prompt"
+                            nano_id="negative_prompt"
                             placeholder="请输入SDXL负面提示词"
                             autoCapitalize="none"
                             autoCorrect="off"

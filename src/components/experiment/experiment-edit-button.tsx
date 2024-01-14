@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 
-interface ProjectEditButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
-    nano_id?: string;
+interface ExperimentEditButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
     edit: boolean;
 }
 
@@ -16,26 +15,19 @@ interface ProjectEditButtonProps extends React.HTMLAttributes<HTMLButtonElement>
  * @param param0
  * @returns
  */
-export function ProjectEditButton({
-    className,
-    nano_id: id,
-    edit,
-    ...props
-}: ProjectEditButtonProps) {
+export function ExperimentEditButton({ className, edit, ...props }: ExperimentEditButtonProps) {
     const router = useRouter();
 
     async function onClick() {
-        router.push(`/project/${id}?edit=true`);
+        router.push(`${window.location.pathname}?edit=true`);
     }
 
     return (
         <>
             {!edit && (
                 <button onClick={onClick} className={cn(className)} {...props}>
-                    <>
-                        <Icons.edit className="h-4 w-4" />
-                        编辑
-                    </>
+                    <Icons.edit className="h-4 w-4" />
+                    编辑
                 </button>
             )}
         </>

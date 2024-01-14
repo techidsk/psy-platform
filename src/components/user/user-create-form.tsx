@@ -113,7 +113,7 @@ export function UserCreateForm({
                             用户名
                         </label>
                         <input
-                            id="username"
+                            nano_id="username"
                             placeholder="请输入用户名"
                             type="text"
                             autoCapitalize="none"
@@ -131,7 +131,7 @@ export function UserCreateForm({
                             登录密码
                         </label>
                         <input
-                            id="password"
+                            nano_id="password"
                             placeholder="请输入登录密码"
                             type="password"
                             autoCapitalize="none"
@@ -150,7 +150,7 @@ export function UserCreateForm({
                             Email
                         </label>
                         <input
-                            id="email"
+                            nano_id="email"
                             placeholder="请输入email"
                             autoCapitalize="none"
                             autoComplete="email"
@@ -168,7 +168,7 @@ export function UserCreateForm({
                             联系电话
                         </label>
                         <input
-                            id="tel"
+                            nano_id="tel"
                             placeholder="请输入联系电话"
                             autoCapitalize="none"
                             autoComplete="tel"
