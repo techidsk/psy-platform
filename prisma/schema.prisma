@@ -92,24 +92,34 @@ model user {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model user_experiments {
-  id            Int       @id @unique(map: "user_experiments_id_uindex") @default(autoincrement())
-  user_id       Int?
-  nano_id       String?   @unique(map: "user_experiments_nano_id_uindex") @db.VarChar(16)
-  experiment_id String?   @db.VarChar(16)
-  type          String?   @default("TRAIL") @db.VarChar(30)
-  engine_id     Int?
-  start_time    DateTime? @default(now()) @db.DateTime(0)
-  finish_time   DateTime? @db.DateTime(0)
+  id               Int       @id @unique(map: "user_experiments_id_uindex") @default(autoincrement())
+  user_id          Int?
+  nano_id          String?   @unique(map: "user_experiments_nano_id_uindex") @db.VarChar(16)
+  experiment_id    String?   @db.VarChar(16)
+  type             String?   @default("TRAIL") @db.VarChar(30)
+  engine_id        Int?
+  project_group_id Int?
+  start_time       DateTime? @default(now()) @db.DateTime(0)
+  finish_time      DateTime? @db.DateTime(0)
 
   @@index([user_id], map: "idx_user_id")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model user_group {
-  id            Int     @id @default(autoincrement())
-  group_name    String? @db.VarChar(50)
-  experiment_id Int?
-  state         Int?    @default(1) @db.UnsignedTinyInt
+  id                       Int     @id @default(autoincrement())
+  user_id                  Int?
+  project_id               Int?
+  project_group_id         Int?
+  project_experiment_times Int?    @default(0)
+  state                    Int?    @default(1) @db.UnsignedTinyInt
+  group_name               String? @db.VarChar(50)
+  experiment_id            Int?
+
+  @@unique([user_id, project_id], map: "idx_user_project")
+  @@index([project_group_id], map: "idx_project_group_id")
+  @@index([project_id], map: "idx_project_id")
+  @@index([user_id], map: "idx_user_id")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -141,7 +151,7 @@ model project_group {
   group_name  String? @db.VarChar(30)
   description String? @db.Text
   state       String? @db.VarChar(20)
-  experiments Json?
+  gap         Int?    @default(7)
 
   @@index([project_id], map: "idx_project_id")
 }
@@ -155,4 +165,15 @@ model projects {
   settings            Json?
   start_time          DateTime? @db.Date
   end_time            DateTime? @db.Date
+}
+
+model project_group_experiments {
+  id               Int @id @default(autoincrement())
+  project_group_id Int
+  experiment_id    Int
+  experiment_index Int @db.UnsignedTinyInt
+
+  @@unique([project_group_id, experiment_index], map: "idx_group_index")
+  @@index([experiment_id], map: "idx_experiment_ide")
+  @@index([project_group_id], map: "idx_project_group_id")
 }

@@ -22,34 +22,27 @@ async function getProjectGroup(id: string) {
     return projectGroup;
 }
 
-async function getExperimentsByIds(ids: number[]) {
-    if (!ids) return [];
-    if (ids.length === 0) {
-        return [];
-    }
-
+async function getExperimentsByIds(id: number) {
     const experiments = await db.$queryRaw<any[]>`
         SELECT e.*, 
         en.engine_name, en.engine_image, en.gpt_prompt, en.gpt_settings, en.template
         FROM experiment e
-        LEFT JOIN engine en ON en.id = s.experiment_id
-        WHERE 1 = 1
-        ${Prisma.sql`AND e.id IN (${Prisma.raw(ids.join(','))})`}
+        LEFT JOIN engine en ON en.id = e.engine_id
+        LEFT JOIN project_group_experiments pge ON pge.experiment_id = e.id
+        WHERE pge = ${id}
     `;
 
     if (!experiments) {
-        console.warn(`No experiments in ${ids}`);
+        console.warn(`No experiments for project group[${id}]`);
         return [];
     }
     return experiments;
 }
 
+// 获取项目分组详情
 export default async function ProjectGroupDetail({ params: { id }, searchParams }: any) {
-    // Initiate both requests in parallel
     const projectGroup = await getProjectGroup(id);
-    const experimentsIds = projectGroup?.experiments as number[];
-
-    const experiments = await getExperimentsByIds(experimentsIds);
+    const experiments = await getExperimentsByIds(id);
 
     return (
         <div className="container lg:max-w-none bg-white">
