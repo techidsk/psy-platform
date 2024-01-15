@@ -38,9 +38,7 @@ export const authOptions: NextAuthOptions = {
                     console.error(`用户${username}密码错误`);
                     return null;
                 }
-                console.log('成功登录');
                 // 更新用户最后登录时间
-                console.log(dbUser.id, new Date());
                 await db.user.update({
                     where: { id: dbUser.id },
                     data: { last_login_time: new Date() },
