@@ -31,6 +31,7 @@ import {
     Save,
     Group,
     Link,
+    MonitorPlay,
 } from 'lucide-react';
 
 export const Icons = {
@@ -67,4 +68,5 @@ export const Icons = {
     projectGroups: Group,
     undo: Undo2,
     link: Link,
+    tv: MonitorPlay,
 };
