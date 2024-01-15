@@ -21,6 +21,7 @@ type FetchData = {
     nano_id: string; // experiment
     experimentId?: string;
     promptNanoId?: string;
+    projectGroupId?: string;
 };
 
 export function ExperimentEditor({
@@ -36,7 +37,7 @@ export function ExperimentEditor({
     const [experimentId, setExperimentId] = useState<string>();
 
     const currentEngine = usePreExperimentState((state) => state.engine);
-    console.log(currentEngine);
+
     /**
      * 获取本次实验的引擎id，如果为空，就跳转到dashboard
      * @param nano_id 用户实验id
@@ -97,7 +98,9 @@ export function ExperimentEditor({
         if (!value) {
             return;
         }
+        // TODO 配置实验字数
         if (value.length < 5) {
+            setLoading(false);
             return toast({
                 title: '输入文字过少',
                 description: '请至少输入5个字符',
@@ -125,7 +128,7 @@ export function ExperimentEditor({
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(data),
+            body: JSON.stringify({ ...data }),
             cache: 'no-store',
         });
 

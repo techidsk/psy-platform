@@ -39,11 +39,14 @@ async function getHistory(
     }
 
     const experiments = await db.$queryRaw<ExperimentProps[]>`
-        select e.*, u.username, u.avatar, n.engine_name, n.engine_image, eper.experiment_name
+        select e.*, u.username, u.avatar, n.engine_name, n.engine_image, 
+        eper.experiment_name, g.group_name
         from user_experiments e
         left join user u on u.id = e.user_id
         left join experiment eper on eper.nano_id = e.experiment_id
-        left join engine n on n.id = eper.engine_id
+        left join project_group g on g.id = e.project_group_id
+        left join engine n on n.id = e.engine_id
+        WHERE e.user_id = ${currentUser.id}
         order by e.id desc
         LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
     `;
@@ -125,17 +128,25 @@ const experimentTableConfig: TableConfig[] = [
         children: (data: any) => {
             return (
                 <div className="flex flex-col gap-2 justify-center">
-                    <div className="avatar">
-                        <div className="rounded-full">
-                            <Image
-                                src="https://techidsk.oss-cn-hangzhou.aliyuncs.com/project/_psy_/avatar.avif"
-                                alt=""
-                                width={48}
-                                height={48}
-                            />
-                        </div>
-                    </div>
+                    <Image
+                        className="rounded-full"
+                        src="https://techidsk.oss-cn-hangzhou.aliyuncs.com/project/_psy_/avatar.avif"
+                        alt=""
+                        width={48}
+                        height={48}
+                    />
                     <div className="text-gray-700">{data.username}</div>
+                </div>
+            );
+        },
+    },
+    {
+        key: 'group_name',
+        label: '所属分组',
+        children: (data: any) => {
+            return (
+                <div className="flex flex-col gap-2">
+                    <span>{data.group_name}</span>
                 </div>
             );
         },

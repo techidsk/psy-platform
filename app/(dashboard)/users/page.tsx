@@ -11,8 +11,8 @@ import { UserTableEditButtons } from '@/components/user/user-table-edit-buttons'
 import Pagination from '@/components/pagination';
 import { TableSearch } from '@/components/table/table-search';
 import { Prisma } from '@prisma/client';
+import { UserRole } from '@/types/user';
 
-type UserRole = 'USER' | 'ADMIN' | 'ASSISTANT' | 'GUEST';
 type UserTableProps = {
     id: string;
     username: string;
