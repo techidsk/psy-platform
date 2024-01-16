@@ -1,0 +1,34 @@
+import { redirect } from 'next/navigation';
+import { getCurrentUser } from '@/lib/session';
+import { DashboardHeader } from '@/components/dashboard-header';
+import { CenteredHero } from '@/components/experiment/modules/centerd-hero';
+import { DashboardReturnButtons } from '@/components/dashboard/dashboard-return-buttons';
+
+export default async function Closed() {
+    // 获取用户默认的实验
+    const currentUser = await getCurrentUser();
+    if (!currentUser?.id) {
+        redirect('/login');
+    }
+
+    const content = `已完成所有实验或者当前未开放实验`;
+
+    return (
+        <div className="container mx-auto">
+            <div className="flex flex-col gap-4">
+                <DashboardHeader heading="控制台" text="用户相关操作页面" />
+                <div className="p-2">
+                    <div className="hero">
+                        <div className="hero-content text-center">
+                            <div className="max-w-md">
+                                <CenteredHero title={'已完成'} content={content}>
+                                    <DashboardReturnButtons />
+                                </CenteredHero>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
