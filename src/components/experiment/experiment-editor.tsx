@@ -22,6 +22,7 @@ type FetchData = {
     experimentId?: string;
     promptNanoId?: string;
     projectGroupId?: string;
+    trail?: boolean;
 };
 
 export function ExperimentEditor({
@@ -115,6 +116,7 @@ export function ExperimentEditor({
             engine_id: engineId,
             nano_id: nanoId, // 本次实验id
             promptNanoId: promptNanoId,
+            trail: trail,
         };
 
         console.log(data, trail);
