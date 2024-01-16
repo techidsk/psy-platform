@@ -107,6 +107,7 @@ const experimentTableConfig: TableConfig[] = [
     {
         key: 'engine_id',
         label: '使用引擎',
+        auth: ['ADMIN', 'ASSISTANT'],
         children: (data: any) => {
             return (
                 <div className="flex flex-col gap-2 justify-center">
@@ -125,6 +126,7 @@ const experimentTableConfig: TableConfig[] = [
     {
         key: 'user_id',
         label: '实验对象',
+        auth: ['ADMIN', 'ASSISTANT'],
         children: (data: any) => {
             return (
                 <div className="flex flex-col gap-2 justify-center">
@@ -143,6 +145,7 @@ const experimentTableConfig: TableConfig[] = [
     {
         key: 'group_name',
         label: '所属分组',
+        auth: ['ADMIN', 'ASSISTANT'],
         children: (data: any) => {
             return (
                 <div className="flex flex-col gap-2">

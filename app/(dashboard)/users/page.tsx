@@ -189,6 +189,10 @@ const userTableConfig: TableConfig[] = [
                     text: '访客',
                     state: 'warn',
                 },
+                SUPERADMIN: {
+                    text: '算法专家',
+                    state: 'warn',
+                },
             };
 
             let obj = userGroups[data.user_role];
@@ -203,6 +207,7 @@ const userTableConfig: TableConfig[] = [
     {
         key: 'user_group',
         label: '分组',
+        auth: ['ADMIN'],
         children: (data: any) => {
             let group = Boolean(data?.user_group_name)
                 ? {
