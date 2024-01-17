@@ -39,7 +39,7 @@ export default async function Settings() {
                 <div className="flex gap-4 justify-center items-center">
                     <Image
                         src={
-                            user?.avatar ||
+                            dbUser?.avatar ||
                             'https://techidsk.oss-cn-hangzhou.aliyuncs.com/project/_psy_/avatar-2.jpg'
                         }
                         alt=""
