@@ -11,6 +11,7 @@ import CheckExperimentHistoryButton from '@/components/check-experiment-histroy-
 import Pagination from '@/components/pagination';
 import { getCurrentUser } from '@/lib/session';
 import { TableSearch } from '@/components/table/table-search';
+import { Prisma } from '@prisma/client';
 
 interface ExperimentProps {
     id: number;
@@ -37,6 +38,15 @@ async function getHistory(
     if (!currentUser) {
         return [];
     }
+    const role = currentUser.role;
+    if (role === 'GUEST') {
+        return [];
+    }
+    // TODO 判断角色
+    // ADMIN 查看所有
+    // ASSITANT 查看所属用户
+    // USER 查看自己
+    // GUEST 查看自己
 
     const experiments = await db.$queryRaw<ExperimentProps[]>`
         select e.*, u.username, u.avatar, n.engine_name, n.engine_image, 
@@ -46,7 +56,9 @@ async function getHistory(
         left join experiment eper on eper.nano_id = e.experiment_id
         left join project_group g on g.id = e.project_group_id
         left join engine n on n.id = e.engine_id
-        WHERE e.user_id = ${currentUser.id}
+        WHERE 1 = 1 
+        ${role === 'USER' ? Prisma.sql`and e.user_id = ${currentUser.id}` : Prisma.empty}
+        ${role === 'ASSITANT' ? Prisma.sql`and e.manager_id = ${currentUser.id}` : Prisma.empty}
         order by e.id desc
         LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
     `;

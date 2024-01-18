@@ -6,6 +6,7 @@ import { CenteredHero } from '@/components/experiment/modules/centerd-hero';
 import { redirect } from 'next/navigation';
 
 import './styles.css';
+import { LeftImageHero } from '@/components/experiment/modules/left-image-hero';
 
 // 获取用户在当前项目中的分组实验内容
 // 1. 如果用户从未登陆，则查看是否当前项目，否则显示当前时间尚未开放实验
@@ -62,6 +63,14 @@ export default async function Dashboard() {
                             </div>
                         </div>
                     </div>
+
+                    <LeftImageHero
+                        title={experiment?.experiment_name || '实验名称'}
+                        content={content}
+                        size="md"
+                    >
+                        <ExperimentStarterButtons experimentId={experiment?.nano_id || ''} />
+                    </LeftImageHero>
                 </div>
             </div>
         </div>

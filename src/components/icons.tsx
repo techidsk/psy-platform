@@ -32,6 +32,7 @@ import {
     Group,
     Link,
     MonitorPlay,
+    BookOpen,
 } from 'lucide-react';
 
 export const Icons = {
@@ -69,4 +70,5 @@ export const Icons = {
     undo: Undo2,
     link: Link,
     tv: MonitorPlay,
+    preview: BookOpen,
 };

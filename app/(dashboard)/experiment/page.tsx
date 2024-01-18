@@ -7,25 +7,27 @@ import { db } from '@/lib/db';
 import { TableConfig } from '@/types/table';
 import { ExperimentDetailButton } from '@/components/experiment/experiment-detail-button';
 import { ExperimentCreateButton } from '@/components/experiment/experiment-create-button';
+import Image from 'next/image';
 
 async function getExperiments() {
     const currentUser = await getCurrentUser();
     if (!currentUser?.id) {
         return [];
     }
-    const experiments = await db.experiment.findMany({
-        where: {
-            creator: parseInt(currentUser?.id),
-        },
-    });
+
+    const experiments = await db.$queryRaw<any[]>`
+        select e.*, engine_image, engine_name
+        from experiment e 
+        left join engine en on en.id = e.engine_id
+        where e.creator = ${currentUser.id}
+    `;
+
     return experiments;
 }
 
 /** 实验流程设计与管理 */
 export default async function ExperimentList() {
     const datas = await getExperiments();
-
-    console.log(datas);
 
     return (
         <div className="container mx-auto">
@@ -54,12 +56,19 @@ const experimentTableConfig: TableConfig[] = [
         },
     },
     {
-        key: 'create_time',
-        label: '创建时间',
+        key: 'engine_id',
+        label: '使用引擎',
         children: (data: any) => {
             return (
-                <div className="flex flex-col gap-2">
-                    <span>{dateFormat(data.create_time)}</span>
+                <div className="flex flex-col gap-2 justify-center">
+                    <Image
+                        className="rounded"
+                        src={data.engine_image}
+                        alt={data.engine_name}
+                        width={48}
+                        height={48}
+                    />
+                    <div className="text-gray-700">{data.engine_name}</div>
                 </div>
             );
         },
@@ -70,6 +79,17 @@ const experimentTableConfig: TableConfig[] = [
         children: (data: any) => {
             let text = Boolean(data.available) ? '可用' : '暂停';
             return <State type="success">{text}</State>;
+        },
+    },
+    {
+        key: 'create_time',
+        label: '创建时间',
+        children: (data: any) => {
+            return (
+                <div className="flex flex-col gap-2">
+                    <span>{dateFormat(data.create_time)}</span>
+                </div>
+            );
         },
     },
     {

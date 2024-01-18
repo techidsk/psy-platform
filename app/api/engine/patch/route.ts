@@ -5,7 +5,7 @@ import { getCurrentUser } from '@/lib/session';
 
 /**
  * /api/engine/patch
- * 更新用户信息
+ * 更新引擎信息
  *
  * @returns
  */
@@ -15,7 +15,7 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ msg: '出现异常,请重新登录进行操作' }, { status: 401 });
     }
 
-    if (currentUser.role !== 'ADMIN') {
+    if (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPERADMIN') {
         return NextResponse.json({ msg: '没有权限' }, { status: 403 });
     }
     try {

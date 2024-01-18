@@ -106,11 +106,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
                              *
                              * 目前，当用户输入时，就会跳出红字提醒用户密码应满足的格式规范
                              */
-                            {...register('password', {
-                                onChange: (e) => {
-                                    trigger();
-                                },
-                            })}
+                            {...register('password')}
                         />
                         {errors?.password && (
                             <p className="px-1 text-xs text-red-600">{errors.password.message}</p>
@@ -124,9 +120,9 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
                          *
                          * @todo 这段代码可能会在后续添加更多自定义逻辑项的时候出现问题。这一点需要注意。
                          */}
-                        {errors['']?.message && (
+                        {/* {errors['']?.message && (
                             <p className="px-1 text-xs text-red-600">{errors[''].message}</p>
-                        )}
+                        )} */}
                     </div>
                     <div className="grid gap-1">
                         <label className="sr-only" htmlFor="password">

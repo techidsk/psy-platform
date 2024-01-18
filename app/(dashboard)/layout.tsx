@@ -58,12 +58,12 @@ const sidebarNav: SidebarNavItem[] = [
         icon: 'projectGroups',
         auth: ['ADMIN', 'ASSISTANT'],
     },
-    {
-        title: '用户组',
-        href: '/usergroup',
-        icon: 'usergroup',
-        auth: ['ADMIN', 'ASSISTANT'],
-    },
+    // {
+    //     title: '用户组',
+    //     href: '/usergroup',
+    //     icon: 'usergroup',
+    //     auth: ['ADMIN', 'ASSISTANT'],
+    // },
     {
         title: '用户设置',
         href: '/settings',

@@ -19,12 +19,40 @@ async function getExperiment(nanoId: string) {
         console.log(`Experiment with nanoId: ${nanoId} not found.`);
         return null;
     }
-
     return experiment;
+}
+
+async function getEngines() {
+    const engines = await db.engine.findMany({
+        where: {
+            state: 1,
+        },
+    });
+    return engines;
+}
+
+async function getExperimentSteps(experimentId: number) {
+    const steps = await db.experiment_steps.findMany({
+        where: {
+            experiment_id: experimentId,
+        },
+        orderBy: {
+            order: 'asc',
+        },
+    });
+    return steps;
 }
 
 export default async function ExperimentDetail({ params: { id }, searchParams }: any) {
     const experiment = await getExperiment(id);
+    const engines = await getEngines();
+    let steps = null;
+    if (experiment && experiment.id) {
+        steps = await getExperimentSteps(experiment.id);
+    } else {
+        console.log('experiment not found');
+    }
+
     const edit = searchParams.edit === 'true';
 
     return (
@@ -39,6 +67,8 @@ export default async function ExperimentDetail({ params: { id }, searchParams }:
                     edit={Boolean(edit)}
                     experiment={experiment}
                     nano_id={id}
+                    engines={engines}
+                    steps={steps}
                 />
             </div>
         </div>
