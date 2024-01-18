@@ -173,7 +173,7 @@ export function EnginePatchForm({
                             GPT提示词
                         </label>
                         <textarea
-                            nano_id="gpt_prompt"
+                            data-name="gpt_prompt"
                             placeholder="请输入GPT提示词"
                             autoCapitalize="none"
                             autoCorrect="off"

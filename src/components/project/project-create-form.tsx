@@ -193,7 +193,7 @@ export function ProjectCreateForm({
                             项目描述
                         </label>
                         <textarea
-                            nano_id="project_description"
+                            data-name="project_description"
                             placeholder="请输入项目描述"
                             autoCapitalize="none"
                             autoCorrect="off"

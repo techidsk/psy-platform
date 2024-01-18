@@ -180,7 +180,7 @@ export function EnginePatchAdvancedForm({
                             GPT提示词
                         </label>{' '}
                         <textarea
-                            nano_id="gpt_prompt"
+                            data-name="gpt_prompt"
                             placeholder="请输入GPT提示词"
                             autoCapitalize="none"
                             autoCorrect="off"
@@ -240,7 +240,7 @@ export function EnginePatchAdvancedForm({
                             SDXL提示词
                         </label>{' '}
                         <textarea
-                            nano_id="prompt"
+                            data-name="prompt"
                             placeholder="请输入SDXL提示词"
                             autoCapitalize="none"
                             autoCorrect="off"
@@ -259,7 +259,7 @@ export function EnginePatchAdvancedForm({
                             SDXL负面提示词
                         </label>{' '}
                         <textarea
-                            nano_id="negative_prompt"
+                            data-name="negative_prompt"
                             placeholder="请输入SDXL负面提示词"
                             autoCapitalize="none"
                             autoCorrect="off"

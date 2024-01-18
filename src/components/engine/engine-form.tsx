@@ -215,7 +215,7 @@ export function EngineAddForm({
                             SDXL提示词模板
                         </label>
                         <textarea
-                            nano_id="prompt"
+                            data-name="prompt"
                             placeholder="请输入SDXL提示词模板"
                             autoCapitalize="none"
                             autoCorrect="off"
@@ -232,7 +232,7 @@ export function EngineAddForm({
                             SDXL负面提示词
                         </label>
                         <textarea
-                            nano_id="negative_prompt"
+                            data-name="negative_prompt"
                             placeholder="请输入SDXL负面提示词"
                             autoCapitalize="none"
                             autoCorrect="off"

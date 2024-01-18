@@ -169,7 +169,7 @@ export function ProjectGroupCreateForm({
                             项目描述
                         </label>
                         <textarea
-                            nano_id="description"
+                            data-name="description"
                             placeholder="请输入项目分组描述"
                             autoCapitalize="none"
                             autoCorrect="off"

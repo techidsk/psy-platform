@@ -187,7 +187,7 @@ export function ExperimentCreateForm({
                             详情描述
                         </label>
                         <textarea
-                            nano_id="description"
+                            data-name="description"
                             placeholder="请输入实验名称"
                             autoCapitalize="none"
                             autoComplete="description"
