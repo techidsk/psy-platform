@@ -40,11 +40,11 @@ type Action =
       }
     | {
           type: ActionType['DISMISS_TOAST'];
-          toastId?: ToasterToast['nano_id'];
+          toastId?: ToasterToast['id'];
       }
     | {
           type: ActionType['REMOVE_TOAST'];
-          toastId?: ToasterToast['nano_id'];
+          toastId?: ToasterToast['id'];
       };
 
 interface State {
@@ -81,7 +81,7 @@ export const reducer = (state: State, action: Action): State => {
             return {
                 ...state,
                 toasts: state.toasts.map((t) =>
-                    t.nano_id === action.toast.nano_id ? { ...t, ...action.toast } : t
+                    t.id === action.toast.id ? { ...t, ...action.toast } : t
                 ),
             };
 
@@ -94,14 +94,14 @@ export const reducer = (state: State, action: Action): State => {
                 addToRemoveQueue(toastId);
             } else {
                 state.toasts.forEach((toast) => {
-                    addToRemoveQueue(toast.nano_id);
+                    addToRemoveQueue(toast.id || '');
                 });
             }
 
             return {
                 ...state,
                 toasts: state.toasts.map((t) =>
-                    t.nano_id === toastId || toastId === undefined
+                    t.id === toastId || toastId === undefined
                         ? {
                               ...t,
                               open: false,
@@ -118,7 +118,7 @@ export const reducer = (state: State, action: Action): State => {
             }
             return {
                 ...state,
-                toasts: state.toasts.filter((t) => t.nano_id !== action.toastId),
+                toasts: state.toasts.filter((t) => t.id !== action.toastId),
             };
     }
 };
@@ -142,7 +142,7 @@ function toast({ ...props }: Toast) {
     const update = (props: ToasterToast) =>
         dispatch({
             type: 'UPDATE_TOAST',
-            toast: { ...props, nano_id: id },
+            toast: { ...props, id: id },
         });
     const dismiss = () => dispatch({ type: 'DISMISS_TOAST', toastId: id });
 
@@ -150,7 +150,7 @@ function toast({ ...props }: Toast) {
         type: 'ADD_TOAST',
         toast: {
             ...props,
-            nano_id: id,
+            id: id,
             open: true,
             onOpenChange: (open) => {
                 if (!open) dismiss();

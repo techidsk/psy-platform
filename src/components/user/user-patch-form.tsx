@@ -136,7 +136,7 @@ export function UserPatchForm({
                             用户名
                         </label>
                         <input
-                            nano_id="username"
+                            data-name="username"
                             placeholder="请输入用户名"
                             type="text"
                             autoCapitalize="none"
@@ -151,7 +151,7 @@ export function UserPatchForm({
                             登录密码
                         </label>
                         <input
-                            nano_id="password"
+                            data-name="password"
                             placeholder="请输入登录密码"
                             type="password"
                             autoCapitalize="none"
@@ -170,7 +170,7 @@ export function UserPatchForm({
                             Email
                         </label>
                         <input
-                            nano_id="email"
+                            data-name="email"
                             placeholder="请输入email"
                             autoCapitalize="none"
                             autoComplete="email"
@@ -188,7 +188,7 @@ export function UserPatchForm({
                             联系电话
                         </label>
                         <input
-                            nano_id="tel"
+                            data-name="tel"
                             placeholder="请输入联系电话"
                             autoCapitalize="none"
                             autoComplete="tel"

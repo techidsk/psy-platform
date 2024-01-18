@@ -115,7 +115,7 @@ export function EngineAddForm({
                             引擎名称
                         </label>
                         <input
-                            nano_id="engine_name"
+                            data-name="engine_name"
                             placeholder="请输入引擎名称"
                             type="text"
                             autoCapitalize="none"
@@ -135,7 +135,7 @@ export function EngineAddForm({
                             引擎描述
                         </label>
                         <input
-                            nano_id="engine_description"
+                            data-name="engine_description"
                             placeholder="请输入引擎描述"
                             type="text"
                             autoCapitalize="none"
@@ -155,7 +155,7 @@ export function EngineAddForm({
                             GPT提示词
                         </label>
                         <input
-                            nano_id="gpt_prompt"
+                            data-name="gpt_prompt"
                             placeholder="请输入GPT提示词"
                             type="text"
                             autoCapitalize="none"
@@ -173,7 +173,7 @@ export function EngineAddForm({
                             GPT Temperature
                         </label>
                         <input
-                            nano_id="temperature"
+                            data-name="temperature"
                             placeholder="请输入GPT temperature"
                             min={0}
                             max={1}
@@ -195,7 +195,7 @@ export function EngineAddForm({
                             GPT最大tokens
                         </label>
                         <input
-                            nano_id="max_tokens"
+                            data-name="max_tokens"
                             placeholder="请输入GPT最大tokens"
                             min={100}
                             max={2048}

@@ -88,7 +88,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                             用户名
                         </label>
                         <input
-                            nano_id="username"
+                            data-name="username"
                             placeholder="请输入用户名"
                             type="text"
                             autoCapitalize="none"
@@ -107,7 +107,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                             密码
                         </label>
                         <input
-                            nano_id="password"
+                            data-name="password"
                             placeholder="请输入密码"
                             type="password"
                             autoCapitalize="none"

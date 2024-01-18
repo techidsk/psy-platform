@@ -166,7 +166,7 @@ export function ExperimentCreateForm({
                             实验名称
                         </label>
                         <input
-                            nano_id="experiment_name"
+                            data-name="experiment_name"
                             placeholder="请输入实验名称"
                             type="text"
                             autoCapitalize="none"

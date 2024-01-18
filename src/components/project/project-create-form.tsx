@@ -173,7 +173,7 @@ export function ProjectCreateForm({
                             项目名称
                         </label>
                         <input
-                            nano_id="project_name"
+                            data-name="project_name"
                             placeholder="请输入项目名称"
                             type="text"
                             autoCapitalize="none"

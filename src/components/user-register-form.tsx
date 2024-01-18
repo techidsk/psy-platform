@@ -73,7 +73,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
                             用户名
                         </label>
                         <input
-                            nano_id="username"
+                            data-name="username"
                             placeholder="请输入用户名"
                             type="text"
                             autoCapitalize="none"
@@ -92,7 +92,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
                             密码
                         </label>
                         <input
-                            nano_id="password"
+                            data-name="password"
                             placeholder="请输入密码"
                             type="password"
                             autoCapitalize="none"
@@ -129,7 +129,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
                             Qualtrics账号
                         </label>
                         <input
-                            nano_id="qualtrics"
+                            data-name="qualtrics"
                             placeholder="请输入Qualtrics账号"
                             type="text"
                             autoCapitalize="none"

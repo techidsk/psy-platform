@@ -151,7 +151,7 @@ export function ProjectGroupCreateForm({
                             项目名称
                         </label>
                         <input
-                            nano_id="group_name"
+                            data-name="group_name"
                             placeholder="请输入项目分组名称"
                             type="text"
                             autoCapitalize="none"

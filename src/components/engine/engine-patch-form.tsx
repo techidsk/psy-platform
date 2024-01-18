@@ -133,7 +133,7 @@ export function EnginePatchForm({
                             引擎名称
                         </label>
                         <input
-                            nano_id="engine_name"
+                            data-name="engine_name"
                             placeholder="请输入引擎名称"
                             type="text"
                             autoCapitalize="none"
@@ -153,7 +153,7 @@ export function EnginePatchForm({
                             引擎描述
                         </label>
                         <input
-                            nano_id="engine_description"
+                            data-name="engine_description"
                             placeholder="请输入引擎描述"
                             type="text"
                             autoCapitalize="none"
