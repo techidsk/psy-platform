@@ -11,7 +11,7 @@ export default async function Closed() {
         redirect('/login');
     }
 
-    const content = `已完成所有实验或者当前未开放实验`;
+    const content = `已完成本次项目所有实验或者当前未开放实验`;
 
     return (
         <div className="container mx-auto">

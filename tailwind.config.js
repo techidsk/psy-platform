@@ -14,6 +14,6 @@ module.exports = {
     daisyui: {
         themes: ['light'],
     },
-    plugins: [require('daisyui')],
+    plugins: [require('@tailwindcss/typography'), require('daisyui')],
     // darkMode:'media' -- 如果要做深色模式适配再添加 https://esinger.gitee.io/tailwindcss/docs/dark-mode
 };

@@ -11,6 +11,7 @@ interface TableProp {
     children?: React.ReactNode;
     searchNode?: React.ReactNode;
 }
+
 export async function Table({ datas, configs, children, searchNode }: TableProp) {
     const currentUser = await getCurrentUser();
     const role = currentUser?.role as UserRole;
@@ -32,6 +33,31 @@ export async function Table({ datas, configs, children, searchNode }: TableProp)
                     <tbody>
                         {datas.map((data) => {
                             return <TableRow key={data.id} data={data} configs={filterConfigs} />;
+                        })}
+                    </tbody>
+                )}
+            </table>
+            {datas.length === 0 ? (
+                <div className="w-full flex justify-center items-center h-[300px]">
+                    <div>暂无数据</div>
+                </div>
+            ) : (
+                <div className="px-4 py-2 flex justify-end">{children}</div>
+            )}
+        </>
+    );
+}
+
+export function NoAuthTable({ datas, configs, children, searchNode }: TableProp) {
+    return (
+        <>
+            {searchNode && <div className="table-header p-2">{searchNode}</div>}
+            <table className="table w-full">
+                <TableHeader configs={configs} />
+                {datas.length > 0 && (
+                    <tbody>
+                        {datas.map((data) => {
+                            return <TableRow key={data.id} data={data} configs={configs} />;
                         })}
                     </tbody>
                 )}

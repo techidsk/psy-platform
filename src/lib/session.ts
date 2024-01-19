@@ -151,7 +151,7 @@ export async function getUserGroupExperiments() {
     const userId = parseInt(user?.id);
     // 1. 如果用户从未登陆，则查看是否当前项目，否则显示当前时间尚未开放实验
     const project = await findProject();
-
+    console.log(`user: ${userId} project: ${project.id}`);
     const response = await findProjectGroup(userId, project.id);
     return response;
 }
