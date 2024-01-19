@@ -6,7 +6,6 @@ import { State } from '@/components/state';
 import { getCurrentUser } from '@/lib/session';
 import Pagination from '@/components/pagination';
 import { ProjectTableEditButtons } from '@/components/project/project-table-edit-buttons';
-import { CreateProjectButton } from '@/components/project/project-create-button';
 import { JsonValue } from '@prisma/client/runtime/library';
 import SubpageHeader from '@/components/subpage-header';
 import TableCheckbox from '@/components/table/table-checkbox';

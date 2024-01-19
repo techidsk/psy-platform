@@ -9,24 +9,44 @@ import { ExperimentDetailButton } from '@/components/experiment/experiment-detai
 import SubpageHeader from '@/components/subpage-header';
 import TableCheckbox from '@/components/table/table-checkbox';
 import { ExperimentTableConfirmButton } from '@/components/experiment/experiment-table-comfirm-button';
+import Pagination from '@/components/pagination';
+import { experiment as ExperimentTableProps } from '@prisma/client';
 
-async function getExperiments() {
+async function getExperiments(
+    searchParams: { [key: string]: string | undefined },
+    page: number = 1,
+    pageSize: number = 10
+) {
     const currentUser = await getCurrentUser();
     if (!currentUser?.id) {
         return [];
     }
-    const experiments = await db.experiment.findMany({
-        where: {
-            creator: parseInt(currentUser?.id),
-        },
-    });
+
+    const experiments = await db.$queryRaw<ExperimentTableProps[]>`
+        select * from experiment
+        WHERE creator = ${parseInt(currentUser?.id)}
+        LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
+    `;
+
     return experiments;
 }
-const itemName = 'project-group-add-experiment';
 
+const itemName = 'project-group-add-experiment';
+// const itemName = 'project-group-add-experiment';
 // 获取实验列表用于关联对应的项目
-export default async function ProjectAddExperiment() {
-    const datas = await getExperiments();
+export default async function ProjectAddExperiment({
+    searchParams,
+}: {
+    searchParams: { [key: string]: string };
+}) {
+    const currentPage = searchParams.page ? parseInt(searchParams.page) || 1 : 1;
+    const currentPageSize = searchParams.pagesize ? parseInt(searchParams.pagesize) || 10 : 10;
+    const datas = await getExperiments(searchParams, currentPage, currentPageSize);
+
+    let end = currentPage;
+    if (datas.length === currentPageSize) {
+        end = currentPage + 1;
+    }
 
     return (
         <div className="container mx-auto">
@@ -39,7 +59,9 @@ export default async function ProjectAddExperiment() {
                     />
                 </DashboardHeader>
                 <div className="w-full overflow-auto">
-                    <Table configs={experimentTableConfig} datas={datas} />
+                    <Table configs={experimentTableConfig} datas={datas}>
+                        <Pagination current={currentPage} pageSize={currentPageSize} end={end} />
+                    </Table>
                 </div>
             </div>
         </div>

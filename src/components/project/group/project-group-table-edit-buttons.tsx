@@ -57,23 +57,10 @@ export function ProjectGroupTableEditButtons({
                     'btn btn-ghost btn-sm',
                     className
                 )}
-                onClick={() => router.push(`/project/group/${groupId}`)}
+                onClick={editProject}
             >
                 <Icons.list className="h-4 w-4" />
                 查看详情
-            </button>
-            <button
-                className={cn(
-                    {
-                        'cursor-not-allowed opacity-60': isLoading,
-                    },
-                    'btn btn-ghost btn-sm',
-                    className
-                )}
-                onClick={editProject}
-            >
-                <Icons.edit className="h-4 w-4" />
-                编辑
             </button>
             <button
                 className={cn(

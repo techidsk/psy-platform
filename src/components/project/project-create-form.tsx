@@ -26,6 +26,7 @@ interface ProjectFormProps extends React.HTMLAttributes<HTMLDivElement> {
     projectGroupsIds?: number[];
 }
 type FormData = z.infer<typeof projectFormSchema>;
+const itemName = 'project-group-ids';
 
 export function ProjectCreateForm({
     className,
@@ -57,7 +58,6 @@ export function ProjectCreateForm({
     const [endDate, setEndDate] = useState(dayjs().add(1, 'day').toDate());
 
     const setSelectIds = useTableState((state) => state.setSelectIds);
-    const itemName = 'project-group-ids';
 
     // 创建项目
     async function addProject(data: FormData) {

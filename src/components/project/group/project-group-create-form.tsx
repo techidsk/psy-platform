@@ -14,7 +14,7 @@ import { useRouter } from 'next/navigation';
 import { experiment, project_group } from '@prisma/client';
 import { JsonValue } from '@prisma/client/runtime/library';
 import { useTableState } from '@/state/_table_atom';
-import { Table } from '@/components/table/table';
+import { NoAuthTable, Table } from '@/components/table/table';
 import { TableConfig } from '@/types/table';
 interface ProjectGroupFormProps extends React.HTMLAttributes<HTMLDivElement> {
     closeModal?: Function;
@@ -24,6 +24,7 @@ interface ProjectGroupFormProps extends React.HTMLAttributes<HTMLDivElement> {
     experiments?: experiment[];
 }
 type FormData = z.infer<typeof projectGroupFormSchema>;
+const itemName = 'project-group-add-experiment';
 
 export function ProjectGroupCreateForm({
     className,
@@ -50,9 +51,9 @@ export function ProjectGroupCreateForm({
     const router = useRouter();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [dispatch, setDispatch] = useState<string>('CREATE');
 
     const setSelectIds = useTableState((state) => state.setSelectIds);
-    const itemName = 'project-group-ids';
 
     // 创建项目
     async function addProjectGroup(data: FormData) {
@@ -93,12 +94,50 @@ export function ProjectGroupCreateForm({
         }
     }
 
+    async function patchProjectGroup(data: FormData) {
+        try {
+            const result = await fetch(getUrl('/api/project/group/patch'), {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...data,
+                }),
+            });
+            const responseBody = await result.json();
+            if (result.ok) {
+                toast({
+                    title: '更新成功',
+                    description: responseBody.msg || '已成功更新新项目分组',
+                    duration: 3000,
+                });
+                if (closeModal) {
+                    closeModal();
+                }
+            } else {
+                toast({
+                    title: '更新失败',
+                    description: responseBody.msg || '请查看系统消息',
+                    variant: 'destructive',
+                    duration: 5000,
+                });
+            }
+        } catch (error) {
+            console.error('请求失败:', error);
+            toast({
+                title: '请求错误',
+                description: '无法连接到服务器，请稍后再试。',
+                variant: 'destructive',
+                duration: 5000,
+            });
+        }
+    }
+
     function addProjectGroups(event: any, engines: JsonValue | undefined) {
         event.preventDefault();
         // TODO 添加实验
-        const enginesArray = engines as number[];
-        setSelectIds(enginesArray, itemName);
-        router.push('/project/group');
+        // const enginesArray = engines as number[];
+        // setSelectIds(enginesArray, itemName);
+        router.push(`/project/experiment`);
     }
 
     function showProjectGroup(event: any, id: number) {
@@ -120,9 +159,13 @@ export function ProjectGroupCreateForm({
         if (isLoading) {
             return;
         }
-
         setIsLoading(true);
-        await addProjectGroup(data);
+        if (dispatch === 'UPDATE') {
+            // TODO 更新项目
+            await patchProjectGroup(data);
+        } else {
+            await addProjectGroup(data);
+        }
         setIsLoading(false);
     }
 
@@ -192,7 +235,9 @@ export function ProjectGroupCreateForm({
                                 <div className="flex">
                                     <button
                                         className="btn btn-ghost btn-sm"
-                                        // onClick={(e) => addProjectGroups(e, projectGroupsIds)}
+                                        onClick={(e) =>
+                                            addProjectGroups(e, experiments?.map((e) => e.id))
+                                        }
                                     >
                                         <Icons.add />
                                         添加
@@ -203,7 +248,10 @@ export function ProjectGroupCreateForm({
                         <div className="flex gap-4 flex-wrap">
                             {experiments && experiments.length > 0 ? (
                                 <div className="w-full overflow-auto">
-                                    <Table configs={groupExperimentConfig} datas={experiments} />
+                                    <NoAuthTable
+                                        configs={groupExperimentConfig}
+                                        datas={experiments}
+                                    />
                                 </div>
                             ) : (
                                 <span className="badge">暂无实验</span>
@@ -222,7 +270,7 @@ export function ProjectGroupCreateForm({
                                 ) : (
                                     <Icons.save />
                                 )}
-                                创建
+                                完成
                             </button>
                         </div>
                     )}
