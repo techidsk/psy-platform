@@ -45,20 +45,22 @@ export async function POST(request: Request) {
                 project_group_id: projectGroupId,
             },
         });
-        // TODO 添加用户实验次数
-        await db.user_group.update({
-            where: {
-                user_id_project_group_id: {
-                    user_id: parseInt(data['user_id']),
-                    project_group_id: projectGroupId,
+
+        if (!data['trail']) {
+            await db.user_group.update({
+                where: {
+                    user_id_project_group_id: {
+                        user_id: parseInt(data['user_id']),
+                        project_group_id: projectGroupId,
+                    },
                 },
-            },
-            data: {
-                project_experiment_times: {
-                    increment: 1,
+                data: {
+                    project_experiment_times: {
+                        increment: 1,
+                    },
                 },
-            },
-        });
+            });
+        }
     }
 
     let trailNanoId = data['promptNanoId'];

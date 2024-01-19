@@ -43,32 +43,35 @@ export function ExperimentEditor({
      * 获取本次实验的引擎id，如果为空，就跳转到dashboard
      * @param nano_id 用户实验id
      */
-    async function getExperimentInfo(nano_id: string) {
-        if (!nano_id) {
-            router.push(back);
-        }
-        await fetch(getUrl('/api/experiment/log'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nano_id: nano_id }),
-        })
-            .then((r) => r.json())
-            .then((data) => {
-                console.log(data);
-                if (data?.engine_id) {
-                    setEngineId(data.engine_id);
-                } else {
-                    router.push(back);
-                }
-            });
-    }
+    // async function getExperimentInfo(nano_id: string) {
+    //     console.log('getExperimentInfo', nano_id);
+    //     if (!nano_id) {
+    //         router.push(back);
+    //     }
+    //     await fetch(getUrl('/api/experiment/log'), {
+    //         method: 'POST',
+    //         headers: { 'Content-Type': 'application/json' },
+    //         body: JSON.stringify({ nano_id: nano_id }),
+    //     })
+    //         .then((r) => r.json())
+    //         .then((data) => {
+    //             console.log(data);
+    //             if (data?.engine_id) {
+    //                 setEngineId(data.engine_id);
+    //             } else {
+    //                 // TODO
+    //                 router.push(back);
+    //             }
+    //         });
+    // }
 
     useEffect(() => {
         // 获取引擎id
+        console.log(currentEngine);
         if (currentEngine?.id) {
             setEngineId(currentEngine.id);
         } else {
-            getExperimentInfo(nanoId);
+            // getExperimentInfo(nanoId);
         }
     }, []);
 
@@ -84,6 +87,9 @@ export function ExperimentEditor({
     }, []);
 
     function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
+        if (loading) {
+            return;
+        }
         if (event.key === 'Enter') {
             event.preventDefault(); // 阻止默认的按键行为
             setLoading(true); // submit后改为false

@@ -62,16 +62,6 @@ const experimentTableConfig: TableConfig[] = [
                         width={96}
                         height={96}
                     />
-                </div>
-            );
-        },
-    },
-    {
-        key: 'engine_name',
-        label: '引擎名称',
-        children: (data: any) => {
-            return (
-                <div className="flex flex-col gap-2">
                     <span>{data.engine_name}</span>
                 </div>
             );
@@ -96,7 +86,11 @@ const experimentTableConfig: TableConfig[] = [
         key: 'prompt',
         label: '提示词',
         children: (data: any) => {
-            return <div className="flex flex-col gap-2">{data.gpt_prompt}</div>;
+            return (
+                <article className="whitespace-normal overflow-ellipsis line-clamp-4">
+                    {data.gpt_prompt}
+                </article>
+            );
         },
     },
     {

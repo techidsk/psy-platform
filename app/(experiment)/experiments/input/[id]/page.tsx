@@ -35,7 +35,6 @@ async function getExperimentInfos(experimentId: string) {
 /**正式实验输入测试 */
 export default async function MainInput({ params: { id } }: { params: { id: string } }) {
     // 获取用户实验prompt信息
-
     const list = await getExperimentInfos(id);
 
     return (

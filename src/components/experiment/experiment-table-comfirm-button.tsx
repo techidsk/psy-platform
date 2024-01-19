@@ -8,11 +8,13 @@ import { useTableState } from '@/state/_table_atom';
 
 interface ExperimentTableConfirmButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
     itemName: string;
+    projectGroupId?: number;
 }
 
 export function ExperimentTableConfirmButton({
     className,
     itemName,
+    projectGroupId,
     ...props
 }: ExperimentTableConfirmButtonProps) {
     const router = useRouter();
@@ -28,8 +30,7 @@ export function ExperimentTableConfirmButton({
      * 确认项目关联实验
      */
     async function onClick() {
-        console.log(selectedIds);
-        console.log(selectedIds[itemName] || []);
+        console.log(selectedIds[itemName]);
     }
 
     return (

@@ -8,12 +8,13 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
 import { cn } from '@/lib/utils';
-import { exprimentSchema } from '@/lib/validations/experiment';
+import { exprimentSchema, exprimentStepSchema } from '@/lib/validations/experiment';
 import { Icons } from '@/components/icons';
 import { getUrl } from '@/lib/url';
 
 import type { experiment, experiment_steps, engine as experimentEngine } from '@prisma/client';
 import Image from 'next/image';
+import { Modal } from '../ui/modal';
 
 interface ExperimentCreateFormProps extends React.HTMLAttributes<HTMLDivElement> {
     experiment: experiment | null;
@@ -24,6 +25,7 @@ interface ExperimentCreateFormProps extends React.HTMLAttributes<HTMLDivElement>
 }
 
 type FormData = z.infer<typeof exprimentSchema>;
+type StepFormData = z.infer<typeof exprimentStepSchema>;
 
 export function ExperimentCreateForm({
     className,
@@ -43,11 +45,24 @@ export function ExperimentCreateForm({
     } = useForm<FormData>({
         resolver: zodResolver(exprimentSchema),
     });
+    const {
+        register: stepRegister,
+        handleSubmit: stepHandleSubmit,
+        formState: { errors: stepErrors },
+        reset: stepReset,
+        setValue: stepSetValue,
+    } = useForm<StepFormData>({
+        resolver: zodResolver(exprimentStepSchema),
+    });
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [engineId, setEngineId] = useState<number>(0);
     const [dispatch, setDispatch] = useState<string>('CREATE');
     const [experimentSteps, setExperimentSteps] = useState<any[]>([]);
+
+    const [openStepForm, setOpenStepForm] = useState<boolean>(false);
+    const [stepType, setStepType] = useState<number>(0);
+    const [addtionalSteps, setAddtionalSteps] = useState<any[]>([]);
 
     const router = useRouter();
 
@@ -71,6 +86,7 @@ export function ExperimentCreateForm({
                 },
                 body: JSON.stringify({
                     ...data,
+                    steps: [...experimentSteps, ...addtionalSteps],
                 }),
             });
             setIsLoading(false);
@@ -98,6 +114,7 @@ export function ExperimentCreateForm({
                 body: JSON.stringify({
                     ...data,
                     nano_id: nano_id,
+                    steps: addtionalSteps,
                 }),
             });
             setIsLoading(false);
@@ -126,6 +143,10 @@ export function ExperimentCreateForm({
 
     const addSteps = (e: any) => {
         e.preventDefault();
+        setOpenStepForm(true);
+        stepReset();
+        setStepType(0);
+        stepSetValue('type', 0);
     };
 
     const editSteps = (e: any) => {
@@ -136,10 +157,25 @@ export function ExperimentCreateForm({
         e.preventDefault();
     };
 
+    const updateStepType = (stepType: number) => {
+        setStepType(stepType);
+        stepSetValue('type', stepType);
+    };
+
+    const addExperimentStep = (data: any) => {
+        console.log(data, experiment?.id);
+
+        setAddtionalSteps([...addtionalSteps, data]);
+        setOpenStepForm(false);
+
+        setExperimentSteps([...experimentSteps, data]);
+    };
+
     function initForm() {
         if (experiment) {
             setValue('experiment_name', experiment.experiment_name || '');
             setValue('description', experiment.description || '');
+            setValue('intro', experiment.intro || '');
             if (experiment.engine_id) {
                 setValue('engine_id', experiment.engine_id);
                 setEngineId(experiment.engine_id);
@@ -184,18 +220,34 @@ export function ExperimentCreateForm({
                     </div>
                     <div className="grid gap-1">
                         <label className="sr-only" htmlFor="description">
-                            详情描述
+                            实验描述
                         </label>
                         <textarea
                             data-name="description"
-                            placeholder="请输入实验名称"
+                            placeholder="请输入实验描述"
                             autoCapitalize="none"
                             autoComplete="description"
                             autoCorrect="off"
                             disabled={isLoading || !edit}
                             className="textarea textarea-bordered w-full"
-                            rows={6}
+                            rows={2}
                             {...register('description')}
+                        />
+                    </div>
+                    <div className="grid gap-1">
+                        <label className="sr-only" htmlFor="intro">
+                            项目介绍
+                        </label>
+                        <textarea
+                            data-name="intro"
+                            placeholder="请输入项目介绍"
+                            autoCapitalize="none"
+                            autoComplete="intro"
+                            autoCorrect="off"
+                            disabled={isLoading || !edit}
+                            className="textarea textarea-bordered w-full"
+                            rows={8}
+                            {...register('intro')}
                         />
                     </div>
                     <div className="grid gap-2">
@@ -220,7 +272,7 @@ export function ExperimentCreateForm({
                                             <input
                                                 type="radio"
                                                 className="radio"
-                                                value={engine.engine_name}
+                                                defaultValue={engine.engine_name}
                                                 checked={engine.id === engineId}
                                                 disabled={isLoading || !edit}
                                                 onClick={() => selectEngine(engine.id)}
@@ -302,6 +354,117 @@ export function ExperimentCreateForm({
                     )}
                 </div>
             </form>
+            {openStepForm && (
+                <Modal
+                    className="flex flex-col gap-4"
+                    open={openStepForm}
+                    onClose={() => setOpenStepForm(false)}
+                    disableClickOutside={!open}
+                >
+                    <h3 className="font-bold text-lg">实验内设置</h3>
+                    <form onSubmit={stepHandleSubmit(addExperimentStep)}>
+                        <div className="grid gap-2">
+                            <div className="grid gap-1">
+                                <label className="sr-only" htmlFor="step_type">
+                                    步骤样式
+                                </label>
+                                <div className="flex gap-2">
+                                    {stepTypes.map((type) => {
+                                        return (
+                                            <div key={type.id} className="flex items-center gap-2">
+                                                <input
+                                                    type="radio"
+                                                    className="radio"
+                                                    defaultValue={type.id}
+                                                    checked={type.id === stepType}
+                                                    disabled={isLoading || !edit}
+                                                    onClick={() => updateStepType(type.id)}
+                                                />
+                                                <label htmlFor={type.name}>{type.name}</label>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                            <div className="grid gap-1">
+                                <label className="sr-only" htmlFor="step_name">
+                                    步骤名称
+                                </label>
+                                <input
+                                    data-name="step_name"
+                                    placeholder="请输入步骤名称"
+                                    type="text"
+                                    autoCapitalize="none"
+                                    autoCorrect="off"
+                                    className="input input-bordered w-full"
+                                    {...stepRegister('step_name')}
+                                />
+                                {stepErrors?.step_name && (
+                                    <p className="px-1 text-xs text-red-600">
+                                        {stepErrors.step_name.message}
+                                    </p>
+                                )}
+                            </div>
+                            <div className="grid gap-1">
+                                <label className="sr-only" htmlFor="title">
+                                    标题
+                                </label>
+                                <input
+                                    data-name="title"
+                                    placeholder="请输入步骤标题"
+                                    type="text"
+                                    autoCapitalize="none"
+                                    autoCorrect="off"
+                                    className="input input-bordered w-full"
+                                    {...stepRegister('title')}
+                                />
+                                {stepErrors?.title && (
+                                    <p className="px-1 text-xs text-red-600">
+                                        {stepErrors.title.message}
+                                    </p>
+                                )}
+                            </div>
+                            <div className="grid gap-1">
+                                <label className="sr-only" htmlFor="step_content">
+                                    内容
+                                </label>
+                                <textarea
+                                    data-name="step_content"
+                                    placeholder="请输入显示内容"
+                                    autoCapitalize="none"
+                                    autoCorrect="off"
+                                    className="textarea textarea-bordered w-full"
+                                    rows={5}
+                                    {...stepRegister('step_content')}
+                                />
+                                {stepErrors?.step_content && (
+                                    <p className="px-1 text-xs text-red-600">
+                                        {stepErrors.step_content.message}
+                                    </p>
+                                )}
+                            </div>
+                            {stepTypes.find((type) => type.id === stepType && type.image) && (
+                                <div className="grid gap-1">
+                                    <label className="sr-only" htmlFor="step_image">
+                                        上传图片
+                                    </label>
+                                    <input
+                                        type="file"
+                                        className="file-input file-input-bordered w-full max-w-xs"
+                                        placeholder="请上传图片"
+                                    />
+                                </div>
+                            )}
+                            <div className="flex flex-row-reverse gap-2">
+                                <button className="btn btn-ghost btn-outline" type="submit">
+                                    <Icons.add />
+                                    添加
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </Modal>
+            )}
         </div>
     );
 }
@@ -318,3 +481,21 @@ const StepType = ({ type }: { type: number }) => {
             return <span className="badge badge-outline">仅图文</span>;
     }
 };
+
+const stepTypes = [
+    {
+        id: 1,
+        name: '仅图文',
+        image: false,
+    },
+    {
+        id: 2,
+        name: '左侧图片',
+        image: true,
+    },
+    {
+        id: 3,
+        name: '右侧图片',
+        image: true,
+    },
+];

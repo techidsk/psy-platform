@@ -179,7 +179,7 @@ export function EnginePatchForm({
                             autoCorrect="off"
                             disabled={isLoading}
                             className="textarea textarea-bordered w-full"
-                            rows={6}
+                            rows={15}
                             {...register('gpt_prompt')}
                         />
                         {errors?.gpt_prompt && (

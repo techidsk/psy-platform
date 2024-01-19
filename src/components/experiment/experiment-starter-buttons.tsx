@@ -1,26 +1,29 @@
-'use client'
+'use client';
 
-import { useRouter } from "next/navigation"
-import store from "store2"
+import { useRouter } from 'next/navigation';
+import store from 'store2';
 
 interface Buttons extends React.HTMLAttributes<HTMLDivElement> {
-    experimentId?: string
+    experimentId?: string;
 }
 
 export function ExperimentStarterButtons({
     experimentId, // 实验 nano_id
-    children
+    children,
 }: Buttons) {
-
-    const router = useRouter()
+    const router = useRouter();
 
     function startExperiment() {
-        router.push('/test')
+        router.push(`/test/${experimentId}`);
         // 保存实验id
-        experimentId && store('experimentId', experimentId)
+        experimentId && store('experimentId', experimentId);
     }
 
-    return <div className="flex flex-col gap-4">
-        <button className="btn btn-primary" onClick={startExperiment}>开始测验</button>
-    </div>
+    return (
+        <div className="flex flex-col gap-4">
+            <button className="btn btn-primary" onClick={startExperiment}>
+                开始测验
+            </button>
+        </div>
+    );
 }

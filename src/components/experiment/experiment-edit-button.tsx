@@ -18,7 +18,7 @@ interface ExperimentEditButtonProps extends React.HTMLAttributes<HTMLButtonEleme
 export function ExperimentEditButton({ className, edit, ...props }: ExperimentEditButtonProps) {
     const router = useRouter();
 
-    async function onClick() {
+    function onClick() {
         router.push(`${window.location.pathname}?edit=true`);
     }
 

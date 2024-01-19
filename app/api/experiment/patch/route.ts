@@ -30,6 +30,14 @@ export async function PATCH(request: Request) {
             data: data,
         });
         // TODO 更新实验步骤
+        const steps: {
+            step_name: string;
+            title: string;
+            step_content: string;
+            step_image?: string;
+            type: number;
+        }[] = data.steps;
+        console.log(steps, data.id);
 
         return NextResponse.json({ msg: '添加成功' });
     } catch (error) {

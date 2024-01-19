@@ -53,7 +53,7 @@ async function getHistory(
         eper.experiment_name, g.group_name
         from user_experiments e
         left join user u on u.id = e.user_id
-        left join experiment eper on eper.nano_id = e.experiment_id
+        left join experiment eper on eper.id = e.experiment_id
         left join project_group g on g.id = e.project_group_id
         left join engine n on n.id = e.engine_id
         WHERE 1 = 1 
@@ -89,7 +89,7 @@ export default async function ExperimentHistory({
     const currentPage = searchParams.page ? parseInt(searchParams.page) || 1 : 1;
     const currentPageSize = searchParams.pagesize ? parseInt(searchParams.pagesize) || 10 : 10;
     const datas = await getHistory(searchParams, currentPage, currentPageSize);
-
+    console.log(datas);
     let end = currentPage;
     if (datas.length === currentPageSize) {
         end = currentPage + 1;
