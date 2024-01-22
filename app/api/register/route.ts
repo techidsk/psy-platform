@@ -40,17 +40,18 @@ export async function POST(request: Request) {
             return NextResponse.json({ msg: '用户名已存在' }, { status: 409 });
         }
         // 获取用户分组
-        const userGroup = await db.$queryRaw<UserGroup[]>`
-            select g.id, count(u.id) as group_user_num
-            from user_group g
-            left join user u on u.user_group_id = g.id
-            where g.state = 1
-            group by g.id
-            ORDER BY group_user_num ASC
-        `;
-        if (userGroup.length === 0) {
-            return NextResponse.json({ msg: '用户组不存在' }, { status: 400 });
-        }
+        // const userGroup = await db.$queryRaw<UserGroup[]>`
+        //     select g.id, count(u.id) as group_user_num
+        //     from user_group g
+        //     left join user u on u.user_group_id = g.id
+        //     where g.state = 1
+        //     group by g.id
+        //     ORDER BY group_user_num ASC
+        // `;
+        // if (userGroup.length === 0) {
+        //     return NextResponse.json({ msg: '用户组不存在' }, { status: 400 });
+        // }
+        // console.log(userGroup);
 
         // 默认头像
         // 此处代码保留。如果希望配置统一的默认头像，则将下方 isUseStandardAvatar参数改为true
@@ -74,6 +75,10 @@ export async function POST(request: Request) {
             order by manager_count, rand()
             limit 1 
         `;
+
+        if (manager.length === 0) {
+            return NextResponse.json({ msg: '未分配助教' }, { status: 400 });
+        }
         const managerId = manager[0].id;
 
         const nanoId = nanoid(16);
@@ -86,7 +91,7 @@ export async function POST(request: Request) {
                 password: hashedPassword,
                 salt: salt,
                 avatar: defaultAvatar,
-                user_group_id: userGroup[0].id,
+                // user_group_id: userGroup[0].id,
                 manager_id: managerId,
             },
         });

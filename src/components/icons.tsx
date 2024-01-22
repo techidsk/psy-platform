@@ -33,6 +33,7 @@ import {
     Link,
     MonitorPlay,
     BookOpen,
+    RefreshCw,
 } from 'lucide-react';
 
 export const Icons = {
@@ -71,4 +72,5 @@ export const Icons = {
     link: Link,
     tv: MonitorPlay,
     preview: BookOpen,
+    refresh: RefreshCw,
 };
