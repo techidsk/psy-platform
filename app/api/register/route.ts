@@ -53,8 +53,15 @@ export async function POST(request: Request) {
         }
 
         // 默认头像
+        // 此处代码保留。如果希望配置统一的默认头像，则将下方 isUseStandardAvatar参数改为true
         const setting = await db.platform_setting.findFirst();
-        const defaultAvatar = setting?.default_image;
+        let defaultAvatar = setting?.default_image;
+        // 2024-1-23
+        // 目前对于默认头像采用访问 `/api/photo/avatar` 接口生成svg图像解决。
+        const isUseStandardAvatar = false; // 如果希望使用数据库配置的默认头像，则将此项参数值改为 true
+        if (!isUseStandardAvatar) {
+            defaultAvatar = '';
+        }
 
         // 默认所属管理助手
         const manager = await db.$queryRaw<UserManager[]>`
