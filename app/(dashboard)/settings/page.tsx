@@ -1,27 +1,14 @@
 import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/session';
+import { getUser } from '@/lib/logic/user';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { format } from 'date-fns';
 import { Icons } from '@/components/icons';
+import { getAvatarUrl } from '@/lib/logic/avatar';
 
-async function getUser(userId: string) {
-    const user = await db.user.findUnique({
-        where: {
-            id: parseInt(userId),
-        },
-        select: {
-            username: true,
-            email: true,
-            tel: true,
-            avatar: true,
-            create_time: true,
-            last_login_time: true,
-            qualtrics: true,
-        },
-    });
-    return user;
-}
+import './setting.css';
+import { UserAvatarUploadButton } from '@/components/user/user-avatar-upload-button';
 
 /**用户设置界面 */
 export default async function Settings() {
@@ -32,21 +19,34 @@ export default async function Settings() {
     }
 
     const dbUser = await getUser(user.id);
+    const resultUrl = getAvatarUrl(dbUser.avatar, dbUser.username);
+    console.log('session user:', user);
+    console.log('dbUser', dbUser);
 
     return (
         <div className="ml-6 max-w-3xl">
             <div className="flex flex-col gap-6 items-start min-w-[400px]">
                 <div className="flex gap-4 justify-center items-center">
-                    <Image
-                        src={
-                            dbUser?.avatar ||
-                            'https://techidsk.oss-cn-hangzhou.aliyuncs.com/project/_psy_/avatar-2.jpg'
-                        }
-                        alt=""
-                        height={96}
-                        width={96}
-                        className="rounded-full"
-                    />
+                    <div className="inline-block" id="avatar-container" style={{ height: 96 }}>
+                        <Image
+                            src={resultUrl}
+                            alt=""
+                            height={96}
+                            width={96}
+                            className="rounded-full align-middle"
+                            // 默认height会是auto，导致计算结果不与width一致，导致图像未能呈圆框
+                            style={{ height: 96 }}
+                            loading="lazy"
+                        />
+                        <div
+                            className="flex flex-col align-middle"
+                            id="upload-button"
+                            style={{ width: 96 }}
+                        >
+                            <UserAvatarUploadButton></UserAvatarUploadButton>
+                        </div>
+                    </div>
+
                     <div>{dbUser?.username}</div>
                 </div>
                 <div className="flex flex-col gap-4">

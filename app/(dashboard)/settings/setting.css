@@ -1,0 +1,12 @@
+#avatar-container:hover #upload-button {
+    visibility: visible;
+    opacity: 1;
+    display: flex;
+    bottom: 24px;
+}
+
+#upload-button {
+    opacity: 0;
+    position: relative;
+    display: none;
+}
