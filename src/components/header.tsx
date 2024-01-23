@@ -2,9 +2,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { signOut } from 'next-auth/react';
+import { getUrl } from '@/lib/url';
+import { User } from 'next-auth';
+import { getAvatarUrl } from '@/lib/logic/avatar';
 
 interface HeaderProps {
-    user: any;
+    user: User;
 }
 
 export default function Header({ user }: HeaderProps) {
@@ -13,6 +16,10 @@ export default function Header({ user }: HeaderProps) {
             callbackUrl: '/login',
         });
     }
+
+    console.log('header user:', user);
+
+    const resultAvatarUrl = getAvatarUrl(user.avatar, user.username);
 
     return (
         <div className="w-full bg-white border-b border-slate-300">
@@ -28,11 +35,13 @@ export default function Header({ user }: HeaderProps) {
                         <div className="avatar">
                             <div className="rounded-full">
                                 <Image
-                                    src="https://techidsk.oss-cn-hangzhou.aliyuncs.com/project/_psy_/avatar.avif"
+                                    //"https://techidsk.oss-cn-hangzhou.aliyuncs.com/project/_psy_/avatar.avif"
+                                    src={resultAvatarUrl}
                                     alt=""
                                     width={48}
                                     height={48}
                                     style={{ width: 48, height: 48 }}
+                                    loading="lazy"
                                 />
                             </div>
                         </div>
