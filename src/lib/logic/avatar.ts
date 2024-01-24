@@ -19,7 +19,7 @@ export function getAvatarUrl(avatarUrl: string, username: string = 'DEFAULTNAME#
     // 根据头像协议链接确认是外链还是使用用户自定义的头像（存放在数据库中）
     const imageProtocol = new URL(avatarUrl).protocol;
     if (imageProtocol == 'psy:') {
-        return getUrl(`/api/photo/avatar?username=${username}$?hasAvatar=${avatarUrl}`);
+        return getUrl(`/api/photo/avatar?username=${username}&hasAvatar=${avatarUrl}`);
     }
     // 使用外链
     if (imageProtocol == 'https:') {
