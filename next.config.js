@@ -19,7 +19,13 @@ const nextConfig = {
                 hostname: 'yuansun-psy.oss-cn-beijing.aliyuncs.com',
                 port: '',
             },
+            {
+                protocol: 'http',
+                hostname: 'localhost',
+                port: '3000',
+            },
         ],
+        dangerouslyAllowSVG: true,
     },
     env: {
         NEXTAUTH_URL: process.env.NEXTAUTH_URL,
