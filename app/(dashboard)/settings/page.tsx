@@ -9,6 +9,7 @@ import { getAvatarUrl } from '@/lib/logic/avatar';
 
 import './setting.css';
 import { UserAvatarUploadButton } from '@/components/user/user-avatar-upload-button';
+import { UserSetttingAvatar } from '@/components/setting/setting-page-avatar';
 
 /**用户设置界面 */
 export default async function Settings() {
@@ -20,6 +21,7 @@ export default async function Settings() {
 
     const dbUser = await getUser(user.id);
     const resultUrl = getAvatarUrl(dbUser.avatar, dbUser.username);
+    console.log(resultUrl);
     console.log('session user:', user);
     console.log('dbUser', dbUser);
 
@@ -28,25 +30,8 @@ export default async function Settings() {
             <div className="flex flex-col gap-6 items-start min-w-[400px]">
                 <div className="flex gap-4 justify-center items-center">
                     <div className="inline-block" id="avatar-container" style={{ height: 96 }}>
-                        <Image
-                            src={resultUrl}
-                            alt=""
-                            height={96}
-                            width={96}
-                            className="rounded-full align-middle"
-                            // 默认height会是auto，导致计算结果不与width一致，导致图像未能呈圆框
-                            style={{ height: 96 }}
-                            loading="lazy"
-                        />
-                        <div
-                            className="flex flex-col align-middle"
-                            id="upload-button"
-                            style={{ width: 96 }}
-                        >
-                            <UserAvatarUploadButton></UserAvatarUploadButton>
-                        </div>
+                        <UserSetttingAvatar user={dbUser}></UserSetttingAvatar>
                     </div>
-
                     <div>{dbUser?.username}</div>
                 </div>
                 <div className="flex flex-col gap-4">

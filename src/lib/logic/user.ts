@@ -23,6 +23,7 @@ export async function getUser(userId: string): user {
             create_time: true,
             last_login_time: true,
             qualtrics: true,
+            id: true,
         },
     });
     console.log('returned:', user);

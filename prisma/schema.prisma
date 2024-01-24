@@ -36,7 +36,9 @@ model experiment {
   nano_id         String?   @unique(map: "psy_experiment_nano_id_uindex") @db.VarChar(16)
   engine_id       Int?
   setting         Json?
-  intro           String?   @db.VarChar(50)
+  intro           String?   @db.Text
+
+  @@index([engine_id], map: "idx_engine_id")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -103,6 +105,7 @@ model user_experiments {
   finish_time      DateTime? @db.DateTime(0)
 
   @@index([user_id], map: "idx_user_id")
+  @@index([project_group_id], map: "idx_project_group_id")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -177,4 +180,12 @@ model project_group_experiments {
   @@unique([project_group_id, experiment_index], map: "idx_group_index")
   @@index([experiment_id], map: "idx_experiment_ide")
   @@index([project_group_id], map: "idx_project_group_id")
+}
+
+model user_avatar {
+  id          Int    @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  username    String
+  avatar      Bytes
+  avatar_type String
+  version     Int
 }

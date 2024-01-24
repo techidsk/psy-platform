@@ -8,9 +8,9 @@ import { getUrl } from '../url';
  * 根据从数据库中获取的用户头像字符串链接，确定最终的头像链接
  * @param avatarUrl 从数据库中获取的用户头像字符串链接
  * @param username 用户名。如果不传入，那么也将使用默认头像。@mention 规定默认用户名为'DEFAULTNAME#NOBODY?_',如果有用户真的取了这个这个名会出现这个问题。可考虑先预设占位。
- * @returns
+ * @returns e.g `/api/photo/avatar?username=${username}&hasAvatar=${avatarUrl}`
  */
-export function getAvatarUrl(avatarUrl: string, username: string = 'DEFAULTNAME#NOBODY?_') {
+export function getAvatarUrl(avatarUrl: string, username: string = 'DEFAULTNAME#NOBODY?_'): string {
     // 使用默认头像
     if (avatarUrl == '' || username == 'DEFAULTNAME') {
         return getUrl(`/api/photo/avatar?username=${username}`);
