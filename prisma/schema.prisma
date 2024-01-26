@@ -189,3 +189,12 @@ model user_avatar {
   avatar_type String
   version     Int
 }
+
+model resource_image{
+  id          Int    @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  file_data   Bytes
+  file_type   String
+  hash        String @unique
+  create_time     DateTime?  @default(now()) @db.DateTime(0)
+  refkey      String?
+}
