@@ -1,5 +1,5 @@
-export default function Loading() {
+import { LoadingSpin } from '@/components/common/loading';
 
-    
-    return <p>Loading...</p>
+export default function Loading() {
+    return <LoadingSpin></LoadingSpin>;
 }
