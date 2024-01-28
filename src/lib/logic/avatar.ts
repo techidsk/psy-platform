@@ -12,7 +12,7 @@ import { getUrl } from '../url';
  */
 export function getAvatarUrl(avatarUrl: string, username: string = 'DEFAULTNAME#NOBODY?_'): string {
     // 使用默认头像
-    if (avatarUrl == '' || username == 'DEFAULTNAME') {
+    if (avatarUrl === '' || avatarUrl === undefined || username == 'DEFAULTNAME') {
         return getUrl(`/api/photo/avatar?username=${username}`);
     }
 
