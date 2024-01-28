@@ -9,6 +9,7 @@ import { Modal } from '../ui/modal';
 import { EnginePatchForm } from './engine-patch-form';
 import { useSession } from 'next-auth/react';
 import { EnginePatchAdvancedForm } from './engine-patch-advanced-form';
+import { EngineDeleteModal } from './engine-delete-modal';
 
 interface EngineTableEditButtonsProps extends React.HTMLAttributes<HTMLButtonElement> {
     engineId: number;
@@ -49,7 +50,7 @@ export function EngineTableEditButtons({
         setOpen(true);
     }
 
-    function deleteUser() {
+    function deleteEngine() {
         setOpenDelete(true);
     }
 
@@ -87,7 +88,7 @@ export function EngineTableEditButtons({
                     'btn btn-ghost btn-sm',
                     className
                 )}
-                onClick={deleteUser}
+                onClick={deleteEngine}
             >
                 <Icons.delete className="h-4 w-4" />
                 删除
@@ -111,17 +112,17 @@ export function EngineTableEditButtons({
                     )}
                 </Modal>
             )}
-            {/* {openDelete && (
+            {openDelete && (
                 <Modal
                     className="flex flex-col gap-4"
                     open={openDelete}
                     onClose={handleDeleteToggle}
                     disableClickOutside={!openDelete}
                 >
-                    <h1 className="text-xl">删除用户</h1>
-                    <UserDeleteModal closeModal={closeDeleteModal} userId={engineId} />
+                    <h1 className="text-xl">删除引擎</h1>
+                    <EngineDeleteModal closeModal={closeDeleteModal} engineId={engineId} />
                 </Modal>
-            )} */}
+            )}
         </>
     );
 }

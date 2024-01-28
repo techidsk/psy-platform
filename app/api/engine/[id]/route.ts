@@ -63,7 +63,7 @@ export async function GET(request: Request, context: { params: any }) {
 }
 
 /**
- * 删除用户
+ * 删除引擎
  * @param request
  * @param context
  * @returns
@@ -78,9 +78,8 @@ export async function DELETE(request: Request, context: { params: any }) {
         return NextResponse.json({ msg: '没有权限' }, { status: 403 });
     }
     try {
-        await db.user.update({
+        await db.engine.delete({
             where: { id: parseInt(context.params.id) },
-            data: { deleted: 1 },
         });
 
         return NextResponse.json({ msg: '已删除用户' });

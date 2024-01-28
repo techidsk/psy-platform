@@ -26,7 +26,11 @@ export async function PATCH(request: Request) {
 
         await db.engine.update({
             where: { id: data['id'] },
-            data: data,
+            data: {
+                engine_name: data['engine_name'],
+                engine_description: data['engine_description'],
+                gpt_prompt: data['gpt_prompt'],
+            },
         });
 
         return NextResponse.json({ msg: '添加成功' });
