@@ -20,6 +20,7 @@ async function getExperiments() {
         from experiment e 
         left join engine en on en.id = e.engine_id
         where e.creator = ${currentUser.id}
+        order by e.create_time desc
     `;
 
     return experiments;
