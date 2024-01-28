@@ -17,6 +17,7 @@ import { DatePickerComponent } from '@/components/datepicker/datepicker';
 import { projects, project_group } from '@prisma/client';
 import { JsonValue } from '@prisma/client/runtime/library';
 import { useTableState } from '@/state/_table_atom';
+import { useProjectState } from '@/state/_project_atoms';
 interface ProjectFormProps extends React.HTMLAttributes<HTMLDivElement> {
     closeModal?: Function;
     edit?: boolean;
@@ -58,6 +59,7 @@ export function ProjectCreateForm({
     const [endDate, setEndDate] = useState(dayjs().add(1, 'day').toDate());
 
     const setSelectIds = useTableState((state) => state.setSelectIds);
+    const setProjectId = useProjectState((state) => state.setProjectId);
 
     // 创建项目
     async function addProject(data: FormData) {
@@ -117,6 +119,8 @@ export function ProjectCreateForm({
         // TODO 添加实验
         const enginesArray = engines as number[];
         setSelectIds(enginesArray, itemName);
+        // 添加ProjectId
+        setProjectId(project?.id);
         router.push('/project/group');
     }
 

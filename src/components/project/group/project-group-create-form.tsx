@@ -26,6 +26,7 @@ interface ProjectGroupFormProps extends React.HTMLAttributes<HTMLDivElement> {
 type FormData = z.infer<typeof projectGroupFormSchema>;
 const itemName = 'project-group-add-experiment';
 
+// 创建项目分组表单
 export function ProjectGroupCreateForm({
     className,
     nano_id: id,
@@ -161,12 +162,13 @@ export function ProjectGroupCreateForm({
         }
         setIsLoading(true);
         if (dispatch === 'UPDATE') {
-            // TODO 更新项目
             await patchProjectGroup(data);
         } else {
             await addProjectGroup(data);
         }
         setIsLoading(false);
+        // 跳转
+        router.back();
     }
 
     function initForm() {
@@ -191,7 +193,7 @@ export function ProjectGroupCreateForm({
                 <div className="grid gap-4">
                     <div className="grid gap-1">
                         <label className="sr-only" htmlFor="group_name">
-                            项目名称
+                            项目分组名称
                         </label>
                         <input
                             data-name="group_name"
@@ -209,7 +211,7 @@ export function ProjectGroupCreateForm({
                     </div>
                     <div className="grid gap-1">
                         <label className="sr-only" htmlFor="description">
-                            项目描述
+                            项目分组描述
                         </label>
                         <textarea
                             data-name="description"
@@ -261,7 +263,7 @@ export function ProjectGroupCreateForm({
                     {edit && (
                         <div className="flex justify-end">
                             <button
-                                className="btn btn-primary btn-sm"
+                                className="btn btn-primary btn-sm btn-outline"
                                 type="submit"
                                 disabled={isLoading}
                             >

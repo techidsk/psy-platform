@@ -9,6 +9,7 @@ import { ProjectTableEditButtons } from '@/components/project/project-table-edit
 import { JsonValue } from '@prisma/client/runtime/library';
 import SubpageHeader from '@/components/subpage-header';
 import TableCheckbox from '@/components/table/table-checkbox';
+import { ProjectBindGroupButton } from '@/components/project/project-bind-group-button';
 
 type ProjectGroupTableProps = {
     id: string;
@@ -59,7 +60,9 @@ export default async function ProjectGroup({
         <div className="container mx-auto">
             <SubpageHeader />
             <div className="flex flex-col gap-4">
-                <DashboardHeader heading="配置项目分组" text="管理配置项目分组"></DashboardHeader>
+                <DashboardHeader heading="配置项目分组" text="管理配置项目分组">
+                    <ProjectBindGroupButton className="btn btn-primary btn-sm" />
+                </DashboardHeader>
                 <div className="w-full overflow-auto">
                     <Table configs={projectTableConfig} datas={datas}>
                         <Pagination current={currentPage} pageSize={currentPageSize} end={end} />

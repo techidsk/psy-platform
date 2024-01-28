@@ -27,10 +27,6 @@ export function ProjectTableEditButtons({
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [openDelete, setOpenDelete] = useState(false);
 
-    async function editProject() {
-        router.push(`/project/${projectId}`);
-    }
-
     function deleteUser() {
         console.log('delete user');
         setOpenDelete(true);
@@ -61,19 +57,6 @@ export function ProjectTableEditButtons({
             >
                 <Icons.list className="h-4 w-4" />
                 查看详情
-            </button>
-            <button
-                className={cn(
-                    {
-                        'cursor-not-allowed opacity-60': isLoading,
-                    },
-                    'btn btn-ghost btn-sm',
-                    className
-                )}
-                onClick={editProject}
-            >
-                <Icons.edit className="h-4 w-4" />
-                编辑
             </button>
             <button
                 className={cn(
