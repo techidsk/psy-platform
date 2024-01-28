@@ -14,7 +14,7 @@ export function ExperimentStarterButtons({
     const router = useRouter();
 
     function startExperiment() {
-        router.push(`/test/${experimentId}`);
+        router.push(`/experiments/input/${experimentId}`);
         // 保存实验id
         experimentId && store('experimentId', experimentId);
     }

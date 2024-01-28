@@ -82,7 +82,7 @@ export function ExperimentDetailButton({ experiment }: ExperimentDetailProps) {
                     onClose={handleToggle}
                     disableClickOutside={!open}
                 >
-                    <h3 className="font-bold text-lg">实验内设置</h3>
+                    <h3 className="font-bold text-lg">实验详情</h3>
                     <div className="flex flex-col gap-2">
                         <span className="text-gray-700">实验名称</span>
                         <span className="text-sm">{experiment.experiment_name}</span>

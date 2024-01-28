@@ -27,6 +27,7 @@ export function ExperimentSetting() {
     const updateDisplayNum = useSettingState((state) => state.setDisplayNum);
 
     async function onSubmit(data: FormData) {
+        console.log(data);
         store('display_num', data.display_num);
         updateDisplayNum(data.display_num);
         handleToggle();
@@ -53,12 +54,12 @@ export function ExperimentSetting() {
             >
                 <h3 className="font-bold text-lg">实验内设置</h3>
                 <form onSubmit={handleSubmit(onSubmit)}>
-                    <div className="grid gap-2">
-                        <div className="grid gap-1">
-                            <label className="sr-only" htmlFor="display-num">
+                    <div className="grid gap-4">
+                        <div className="grid gap-2">
+                            <label className="" htmlFor="display-num">
                                 图片显示数量
                             </label>
-                            <input
+                            {/* <input
                                 data-name="display-num"
                                 placeholder="请输入图片显示数量"
                                 defaultValue={displayNum}
@@ -71,7 +72,23 @@ export function ExperimentSetting() {
                                 autoCorrect="off"
                                 className="input input-bordered w-full"
                                 {...register('display_num', { valueAsNumber: true })}
+                            /> */}
+                            <input
+                                data-name="display-num"
+                                type="range"
+                                min={1}
+                                max="4"
+                                defaultValue={displayNum}
+                                className="range"
+                                step="1"
+                                {...register('display_num', { valueAsNumber: true })}
                             />
+                            <div className="w-full flex justify-between text-xs px-2">
+                                <span>1</span>
+                                <span>2</span>
+                                <span>3</span>
+                                <span>4</span>
+                            </div>
                             {errors?.display_num && (
                                 <p className="px-1 text-xs text-red-600">
                                     {errors.display_num.message}
@@ -79,10 +96,10 @@ export function ExperimentSetting() {
                             )}
                         </div>
                         <div className="flex flex-row-reverse gap-2">
-                            <button className="btn btn-ghost" type="submit">
+                            <button className="btn btn-ghost btn-sm" type="submit">
                                 保存
                             </button>
-                            <button className="btn btn-error text-white">重置</button>
+                            <button className="btn btn-error btn-sm text-white">重置</button>
                         </div>
                     </div>
                 </form>

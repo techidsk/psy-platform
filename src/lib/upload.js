@@ -1,5 +1,5 @@
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
-require('dotenv').config()
+require('dotenv').config();
 
 const OSS = require('ali-oss');
 const client = new OSS({
@@ -7,11 +7,11 @@ const client = new OSS({
     accessKeyId: process.env.ACCESS_KEY_ID,
     accessKeySecret: process.env.ACCESS_KEY_SECRET,
     bucket: process.env.OSS_BUCKET,
-    endpoint: process.env.ENDPOINT
+    endpoint: process.env.ENDPOINT,
 });
 
 async function downloadImage(url) {
-    console.log('开始下载: ', url)
+    console.log('开始下载: ', url);
     try {
         const response = await fetch(url);
         const buffer = await response.buffer();
@@ -24,22 +24,21 @@ async function downloadImage(url) {
 
 async function uploadImage(url, object) {
     try {
-        const buffer = await downloadImage(url)
-        console.log(typeof buffer)
-        console.log('开始上传: ', url, object)
+        const buffer = await downloadImage(url);
+        console.log('开始上传: ', url, object);
         if (buffer) {
             await client.put(object, buffer);
-            return true
+            return true;
         } else {
-            return false
+            return false;
         }
     } catch (e) {
         console.log(`Error uploading image: ${e.message}`);
-        return false
+        return false;
     }
 }
 
 export {
     // put,
-    uploadImage
-}
+    uploadImage,
+};

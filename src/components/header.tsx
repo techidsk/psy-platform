@@ -17,7 +17,7 @@ export default function Header({ user }: HeaderProps) {
         });
     }
 
-    console.log('header user:', user);
+    // console.log('header user:', user);
 
     const resultAvatarUrl = getAvatarUrl(user.avatar, user.username);
 

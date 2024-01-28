@@ -361,7 +361,7 @@ export function ExperimentCreateForm({
                     onClose={() => setOpenStepForm(false)}
                     disableClickOutside={!open}
                 >
-                    <h3 className="font-bold text-lg">实验内设置</h3>
+                    <h3 className="font-bold text-lg">实验流程配置</h3>
                     <form onSubmit={stepHandleSubmit(addExperimentStep)}>
                         <div className="grid gap-2">
                             <div className="grid gap-1">

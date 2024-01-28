@@ -38,10 +38,13 @@ export default async function MainInput({ params: { id } }: { params: { id: stri
     const list = await getExperimentInfos(id);
 
     return (
-        <div className="h-screen bg-white">
+        <div className="bg-white mb-8">
             <div className="container mx-auto flex flex-col gap-8">
                 <DashboardHeader heading="实验说明" text="请在下方的文本框内输入您的想法和感受。">
-                    <ExperimentSetting />
+                    <div className="flex gap-2">
+                        <ExperimentSetting />
+                        <ExperimentFinishButton nanoId={id} experimentList={list} />
+                    </div>
                 </DashboardHeader>
                 <ImageListServer>
                     <ImageList experimentList={list} />
@@ -53,7 +56,6 @@ export default async function MainInput({ params: { id } }: { params: { id: stri
                         trail={false}
                         experimentList={list}
                     />
-                    <ExperimentFinishButton nanoId={id} experimentList={list} />
                 </div>
             </div>
         </div>

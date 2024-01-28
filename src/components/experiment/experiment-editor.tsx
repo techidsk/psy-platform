@@ -9,8 +9,8 @@ import { ImageResponse } from '@/types/experiment';
 import { getUrl } from '@/lib/url';
 
 interface ExperimentEditorProps {
-    back: string;
     nanoId: string;
+    back?: string;
     trail?: boolean;
     experimentList?: ImageResponse[];
 }
@@ -25,12 +25,7 @@ type FetchData = {
     trail?: boolean;
 };
 
-export function ExperimentEditor({
-    back, //
-    nanoId,
-    trail = true,
-    experimentList,
-}: ExperimentEditorProps) {
+export function ExperimentEditor({ nanoId, trail = true }: ExperimentEditorProps) {
     const router = useRouter();
     const ref = useRef<HTMLTextAreaElement>(null);
     const [loading, setLoading] = useState<boolean>(false);
@@ -43,27 +38,20 @@ export function ExperimentEditor({
      * 获取本次实验的引擎id，如果为空，就跳转到dashboard
      * @param nano_id 用户实验id
      */
-    // async function getExperimentInfo(nano_id: string) {
-    //     console.log('getExperimentInfo', nano_id);
-    //     if (!nano_id) {
-    //         router.push(back);
-    //     }
-    //     await fetch(getUrl('/api/experiment/log'), {
-    //         method: 'POST',
-    //         headers: { 'Content-Type': 'application/json' },
-    //         body: JSON.stringify({ nano_id: nano_id }),
-    //     })
-    //         .then((r) => r.json())
-    //         .then((data) => {
-    //             console.log(data);
-    //             if (data?.engine_id) {
-    //                 setEngineId(data.engine_id);
-    //             } else {
-    //                 // TODO
-    //                 router.push(back);
-    //             }
-    //         });
-    // }
+    async function getExperimentInfo(nano_id: string) {
+        await fetch(getUrl('/api/experiment/log'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nano_id: nano_id }),
+        })
+            .then((r) => r.json())
+            .then((data) => {
+                console.log(data);
+                if (data?.engine_id) {
+                    setEngineId(data.engine_id);
+                }
+            });
+    }
 
     useEffect(() => {
         // 获取引擎id
@@ -71,7 +59,7 @@ export function ExperimentEditor({
         if (currentEngine?.id) {
             setEngineId(currentEngine.id);
         } else {
-            // getExperimentInfo(nanoId);
+            getExperimentInfo(nanoId);
         }
     }, []);
 
@@ -119,7 +107,6 @@ export function ExperimentEditor({
         let promptNanoId = getId();
         let data: FetchData = {
             prompt: value,
-            engine_id: engineId,
             nano_id: nanoId, // 本次实验id
             promptNanoId: promptNanoId,
             trail: trail,
@@ -148,11 +135,12 @@ export function ExperimentEditor({
 
     async function generate(promptNanoId: string, experimentId: string, engineId: string) {
         // 发送请求生成图片
+        console.log(promptNanoId, experimentId, engineId, nanoId);
         let response = await fetch(getUrl(`/api/generate/`), {
             method: 'POST',
             body: JSON.stringify({
                 id: promptNanoId,
-                engineId: engineId,
+                experimentId: experimentId,
             }),
             headers: { 'Content-Type': 'application/json' },
         });

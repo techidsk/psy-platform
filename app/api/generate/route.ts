@@ -36,7 +36,7 @@ async function translate(systemPrompt: string, userPrompt: string): Promise<stri
 export async function POST(request: Request) {
     const json = await request.json();
     const promptNanoId = json?.id;
-    const engineId = json?.engineId;
+    const experimentId = json?.experimentId;
     if (!promptNanoId) {
         console.error('未找到对应promptNanoId数据');
         return;
@@ -52,10 +52,20 @@ export async function POST(request: Request) {
         console.error('未找到对应prompt数据');
         return;
     }
+    const experiment = await db.experiment.findFirst({
+        where: { nano_id: experimentId },
+        select: { engine_id: true },
+    });
+    if (!experiment || !experiment.engine_id) {
+        console.error('未找到对应experiment数据');
+        return;
+    }
+
     // 获取生成信息
     const engine = await db.engine.findFirst({
-        where: { id: parseInt(engineId) },
+        where: { id: experiment.engine_id },
     });
+
     if (!engine) {
         console.error('未找到对应engine数据');
         return;
@@ -68,8 +78,8 @@ export async function POST(request: Request) {
     let prompt = await translate(engine.gpt_prompt || '', data['prompt']);
 
     console.log('===============================================');
-    console.log(`GPT的System指令：   ${engine.gpt_prompt}`);
-    console.log(`GPT翻譯結果：       ${prompt}`);
+    console.log(`GPT的System指令：   \n${engine.gpt_prompt}`);
+    console.log(`GPT翻譯結果：      \n ${prompt}`);
     console.log('===============================================');
 
     // 拼接生成提示词 将JSON转换成Object
@@ -83,8 +93,8 @@ export async function POST(request: Request) {
         templateNegativePrompt = template.negative_prompt || '';
         prompt = templatePrompt.replace(/{prompt}/g, prompt);
     }
-    console.log(`生成提示词：${prompt}`);
-    console.log(`生成负面提示词：${templateNegativePrompt}`);
+    console.log(`生成提示词：\n${prompt}`);
+    console.log(`生成负面提示词：\n${templateNegativePrompt}`);
     const response = await generate(prompt, templateNegativePrompt);
     const imageData = response?.data?.images;
     if (imageData.length > 0) {
