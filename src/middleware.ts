@@ -1,14 +1,19 @@
 import { getToken } from 'next-auth/jwt';
 import { withAuth } from 'next-auth/middleware';
+import { NextURL } from 'next/dist/server/web/next-url';
 import { NextResponse } from 'next/server';
+
+function checkAuthPage(url: NextURL) {
+    return ['/login', '/register', '/guest'].some((path) => url.pathname.startsWith(path));
+}
 
 export default withAuth(
     async function middleware(req) {
         const token = await getToken({ req });
         const isAuth = !!token;
-        const isAuthPage =
-            req.nextUrl.pathname.startsWith('/login') ||
-            req.nextUrl.pathname.startsWith('/register');
+        console.log(req.nextUrl);
+        const isAuthPage = checkAuthPage(req.nextUrl);
+
         if (isAuthPage) {
             if (isAuth) {
                 return NextResponse.redirect(new URL('/dashboard', req.url));

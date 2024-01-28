@@ -9,8 +9,12 @@ datasource db {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model platform_setting {
-  id            Int     @id @default(autoincrement())
-  default_image String? @db.VarChar(200)
+  id                   Int       @id @default(autoincrement())
+  default_image        String?   @db.VarChar(200)
+  access_key           String?   @db.VarChar(32)
+  access_end_date      DateTime? @db.Date
+  guest_mode           Boolean?
+  guest_experiment_ids Json?
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments

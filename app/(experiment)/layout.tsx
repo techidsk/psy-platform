@@ -3,11 +3,12 @@ import { notFound } from 'next/navigation';
 import { getCurrentUser } from '@/lib/session';
 import Header from '@/components/header';
 
-interface DashboardLayoutProps {
+interface LayoutProps {
     children?: React.ReactNode;
 }
 
-export default async function DashboardLayout({ children }: DashboardLayoutProps) {
+export default async function ExperimentLayout({ children }: LayoutProps) {
+    console.log('experiment');
     const user = await getCurrentUser();
 
     if (!user) {
