@@ -2,7 +2,7 @@ require('dotenv').config();
 const url = `http://${process.env.COMFYUI_HOST}/generate/creative`;
 
 /**
- * Generates data by sending a prompt, intro, and select options to a web UI.
+ * 转发到ComfyUI生成接口
  * @param {string} prompt - The prompt to send to the web UI.
  * @returns {Promise<any>} - The response data from the web UI.
  * @throws {Error} - If an error occurs during the fetch request.

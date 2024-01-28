@@ -57,7 +57,7 @@ async function findProjectGroup(userId: number, project_id: number) {
         if (!projectGroup) {
             throw new Error('所属分组不存在或者未激活');
         }
-        console.debug('user:', userId, 'has project group:', projectGroup);
+        console.debug('user:', userId, '所属项目分组:', projectGroup);
 
         const experimentList = await db.project_group_experiments.findMany({
             where: {
