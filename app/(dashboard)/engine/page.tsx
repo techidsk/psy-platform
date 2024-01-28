@@ -9,9 +9,9 @@ import { EngineTableEditButtons } from '@/components/engine/engine-table-edit-bu
 
 async function getEngines() {
     const engines = await db.$queryRaw<any[]>`
-        select e.*, count(s.engine_id) as num
-        from engine e
-        left join user_setting s on s.engine_id = e.id
+        SELECT e.*, count(s.engine_id) as num
+        FROM engine e
+        LEFT JOIN user_setting s ON s.engine_id = e.id
         group by e.id
     `;
 

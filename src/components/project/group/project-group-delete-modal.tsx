@@ -57,7 +57,7 @@ export function ProjectDeleteModal({
     return (
         <div className={cn('grid gap-6', className)} {...props}>
             <div className="text-lg flex gap-2 text-red-500">
-                <Icons.alert /> 是否确认删除项目?
+                <Icons.alert /> 是否确认删除项目分组?
             </div>
             <div className="flex justify-end gap-4">
                 <button className="btn btn-primary" onClick={deleteProject}>

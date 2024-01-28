@@ -52,14 +52,14 @@ async function getUsers(
     const user_role = searchParams?.role || '';
     // 判断当前用户角色
     const users = await db.$queryRaw<UserTableProps[]>`
-        select u.id, u.username, u.email, u.tel, u.avatar, u.user_role, u.create_time, u.qualtrics, u.last_login_time,
+        SELECT u.id, u.username, u.email, u.tel, u.avatar, u.user_role, u.create_time, u.qualtrics, u.last_login_time,
         g.group_name as user_group_name, e.engine_name as user_engine_name, e.engine_image, count(m.id) as manager_count
-        from user u
+        FROM user u
         LEFT JOIN user m ON u.id = m.manager_id
-        left join user_group g on g.id = u.user_group_id
-        left join user_setting s on s.user_id = u.id
-        left join engine e on e.id = s.engine_id
-        where u.deleted = 0 and u.user_role != 'SUPERADMIN'
+        LEFT JOIN user_group g ON g.id = u.user_group_id
+        LEFT JOIN user_setting s ON s.user_id = u.id
+        LEFT JOIN engine e ON e.id = s.engine_id
+        WHERE u.deleted = 0 and u.user_role != 'SUPERADMIN'
         ${
             role !== 'ADMIN'
                 ? Prisma.sql`AND u.manager_id = ${Prisma.raw(currentUser.id)}`

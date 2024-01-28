@@ -5,23 +5,22 @@ import { TableConfig } from '@/types/table';
 import { State } from '@/components/state';
 import { getCurrentUser } from '@/lib/session';
 import Pagination from '@/components/pagination';
-import { ProjectTableEditButtons } from '@/components/project/project-table-edit-buttons';
-import { CreateProjectButton } from '@/components/project/project-create-button';
 import { JsonValue } from '@prisma/client/runtime/library';
 import { TableSearch } from '@/components/table/table-search';
 import { Prisma } from '@prisma/client';
 import { CreateProjectGroupButton } from '@/components/project/group/project-group-create-button';
 import { ProjectGroupTableEditButtons } from '@/components/project/group/project-group-table-edit-buttons';
 
-type ProjecTtGroupState = 'AVAILABLE' | 'UNASSIGNED' | 'DISABLED';
+type ProjectGroupState = 'AVAILABLE' | 'UNASSIGNED' | 'DISABLED';
 
 type ProjectGroupTableProps = {
     id: string;
     group_name: string;
     description: string;
-    state: ProjecTtGroupState;
+    state: ProjectGroupState;
     experiments: JsonValue;
     project_name: string;
+    user_num: number;
 };
 
 async function getProjectGroups(
@@ -43,9 +42,11 @@ async function getProjectGroups(
 
     // 判断当前用户角色
     const projectGroups = await db.$queryRaw<ProjectGroupTableProps[]>`
-        select g.*, p.project_name from project_group g
-        left join projects p on g.project_id = p.id 
-        where 1 = 1
+        SELECT g.*, p.project_name, COUNT(ug.user_id) AS user_num
+        FROM project_group g
+        LEFT JOIN projects p ON g.project_id = p.id 
+        LEFT JOIN user_group ug ON ug.project_group_id = g.id AND ug.project_id = p.id
+        WHERE 1 = 1
         ${
             group_name
                 ? Prisma.sql`AND g.group_name LIKE '%${Prisma.raw(group_name)}%'`
@@ -57,6 +58,7 @@ async function getProjectGroups(
                 : Prisma.empty
         }
         ${state ? Prisma.sql`AND g.state LIKE '%${Prisma.raw(state)}%'` : Prisma.empty}
+        GROUP BY g.id
         LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
     `;
 
@@ -75,7 +77,6 @@ export default async function ProjectGroups({
     if (datas.length === currentPageSize) {
         end = currentPage + 1;
     }
-
     return (
         <div className="container mx-auto">
             <div className="flex flex-col gap-4">
@@ -100,6 +101,17 @@ export default async function ProjectGroups({
 
 const projectTableConfig: TableConfig[] = [
     {
+        key: 'project_name',
+        label: '所属项目',
+        children: (data: any) => {
+            return data.project_name ? (
+                <div className="badge"> {data.project_name}</div>
+            ) : (
+                <div className="badge badge-error badge-outline">暂未分配</div>
+            );
+        },
+    },
+    {
         key: 'group_name',
         label: '分组名称',
         children: (data: any) => {
@@ -114,13 +126,13 @@ const projectTableConfig: TableConfig[] = [
         },
     },
     {
-        key: 'project_name',
-        label: '所属项目',
+        key: 'user_num',
+        label: '分组人数',
         children: (data: any) => {
-            return data.project_name ? (
-                <div className="badge"> {data.project_name}</div>
-            ) : (
-                <div className="badge badge-error badge-outline">暂未分配</div>
+            return (
+                <div className="flex gap-2">
+                    <span>{`${data.user_num}`}</span>
+                </div>
             );
         },
     },
@@ -128,7 +140,7 @@ const projectTableConfig: TableConfig[] = [
         key: 'state',
         label: '状态',
         children: (data: ProjectGroupTableProps) => {
-            const projectState: Record<ProjecTtGroupState, { text: string; state: string }> = {
+            const projectState: Record<ProjectGroupState, { text: string; state: string }> = {
                 AVAILABLE: {
                     text: '可用',
                     state: 'success',
@@ -167,8 +179,8 @@ const projectTableConfig: TableConfig[] = [
 ];
 
 const searchDatas = [
-    { name: 'group_name', type: 'input', placeholder: '请输入项目分组名称' },
     { name: 'project_name', type: 'input', placeholder: '请输入所属项目名称' },
+    { name: 'group_name', type: 'input', placeholder: '请输入项目分组名称' },
     {
         name: 'state',
         type: 'select',

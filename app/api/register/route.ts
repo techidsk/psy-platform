@@ -41,10 +41,10 @@ export async function POST(request: Request) {
         }
         // 获取用户分组
         // const userGroup = await db.$queryRaw<UserGroup[]>`
-        //     select g.id, count(u.id) as group_user_num
+        //     SELECT g.id, count(u.id) as group_user_num
         //     from user_group g
-        //     left join user u on u.user_group_id = g.id
-        //     where g.state = 1
+        //     LEFT JOIN user u ON u.user_group_id = g.id
+        //     WHERE g.state = 1
         //     group by g.id
         //     ORDER BY group_user_num ASC
         // `;
@@ -69,10 +69,10 @@ export async function POST(request: Request) {
             SELECT u.id, u.manager_id, COUNT(m.id) as manager_count
             FROM user u
                     LEFT JOIN user m ON u.id = m.manager_id
-            where u.user_role = 'ASSISTANT'
+            WHERE u.user_role = 'ASSISTANT'
             and u.state = 1
             GROUP BY u.id, u.manager_id
-            order by manager_count, rand()
+            ORDER BY manager_count, rand()
             limit 1 
         `;
 

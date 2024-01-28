@@ -42,8 +42,8 @@ async function getProjects(
 
     // 判断当前用户角色
     const projects = await db.$queryRaw<ProjectTableProps[]>`
-        select * from projects p
-        where 1 = 1
+        SELECT * from projects p
+        WHERE 1 = 1
         ${
             project_name
                 ? Prisma.sql`AND p.project_name LIKE '%${Prisma.raw(project_name)}%'`

@@ -8,27 +8,57 @@ import { TableConfig } from '@/types/table';
 import { ExperimentDetailButton } from '@/components/experiment/experiment-detail-button';
 import { ExperimentCreateButton } from '@/components/experiment/experiment-create-button';
 import Image from 'next/image';
+import { TableSearch } from '@/components/table/table-search';
+import Pagination from '@/components/pagination';
+import { Prisma } from '@prisma/client';
 
-async function getExperiments() {
+async function getExperiments(
+    searchParams: { [key: string]: string | undefined },
+    page: number = 1,
+    pageSize: number = 10
+) {
     const currentUser = await getCurrentUser();
     if (!currentUser?.id) {
         return [];
     }
+    const experiment_name = searchParams?.experiment_name || '';
+    const engine_name = searchParams?.engine_name || '';
 
     const experiments = await db.$queryRaw<any[]>`
-        select e.*, engine_image, engine_name
-        from experiment e 
-        left join engine en on en.id = e.engine_id
-        where e.creator = ${currentUser.id}
-        order by e.create_time desc
+        SELECT e.*, engine_image, engine_name
+        FROM experiment e 
+        LEFT JOIN engine en ON en.id = e.engine_id
+        WHERE e.creator = ${currentUser.id}
+        ${
+            experiment_name
+                ? Prisma.sql`AND e.experiment_name LIKE '%${Prisma.raw(experiment_name)}%'`
+                : Prisma.empty
+        }
+        ${
+            engine_name
+                ? Prisma.sql`AND en.engine_name LIKE '%${Prisma.raw(engine_name)}%'`
+                : Prisma.empty
+        }
+        ORDER BY e.create_time DESC
+        LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
     `;
 
     return experiments;
 }
 
 /** 实验流程设计与管理 */
-export default async function ExperimentList() {
-    const datas = await getExperiments();
+export default async function ExperimentList({
+    searchParams,
+}: {
+    searchParams: { [key: string]: string };
+}) {
+    const currentPage = searchParams.page ? parseInt(searchParams.page) || 1 : 1;
+    const currentPageSize = searchParams.pagesize ? parseInt(searchParams.pagesize) || 10 : 10;
+    const datas = await getExperiments(searchParams, currentPage, currentPageSize);
+    let end = currentPage;
+    if (datas.length === currentPageSize) {
+        end = currentPage + 1;
+    }
 
     return (
         <div className="container mx-auto">
@@ -37,7 +67,15 @@ export default async function ExperimentList() {
                     <ExperimentCreateButton className="btn btn-primary btn-sm" />
                 </DashboardHeader>
                 <div className="w-full overflow-auto">
-                    <Table configs={experimentTableConfig} datas={datas} />
+                    <Table
+                        configs={experimentTableConfig}
+                        datas={datas}
+                        searchNode={
+                            <TableSearch defaultParams={searchParams} searchDatas={searchDatas} />
+                        }
+                    >
+                        <Pagination current={currentPage} pageSize={currentPageSize} end={end} />
+                    </Table>
                 </div>
             </div>
         </div>
@@ -105,4 +143,9 @@ const experimentTableConfig: TableConfig[] = [
             );
         },
     },
+];
+
+const searchDatas = [
+    { name: 'experiment_name', type: 'input', placeholder: '请输入实验名称' },
+    { name: 'engine_name', type: 'input', placeholder: '请输入引擎名称' },
 ];

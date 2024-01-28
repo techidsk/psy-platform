@@ -49,17 +49,17 @@ async function getHistory(
     // GUEST 查看自己
 
     const experiments = await db.$queryRaw<ExperimentProps[]>`
-        select e.*, u.username, u.avatar, n.engine_name, n.engine_image, 
+        SELECT e.*, u.username, u.avatar, n.engine_name, n.engine_image, 
         eper.experiment_name, g.group_name
-        from user_experiments e
-        left join user u on u.id = e.user_id
-        left join experiment eper on eper.id = e.experiment_id
-        left join project_group g on g.id = e.project_group_id
-        left join engine n on n.id = e.engine_id
+        FROM user_experiments e
+        LEFT JOIN user u ON u.id = e.user_id
+        LEFT JOIN experiment eper ON eper.id = e.experiment_id
+        LEFT JOIN project_group g ON g.id = e.project_group_id
+        LEFT JOIN engine n ON n.id = e.engine_id
         WHERE 1 = 1 
         ${role === 'USER' ? Prisma.sql`and e.user_id = ${currentUser.id}` : Prisma.empty}
         ${role === 'ASSITANT' ? Prisma.sql`and e.manager_id = ${currentUser.id}` : Prisma.empty}
-        order by e.id desc
+        ORDER BY e.id DESC
         LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
     `;
 
@@ -89,7 +89,6 @@ export default async function ExperimentHistory({
     const currentPage = searchParams.page ? parseInt(searchParams.page) || 1 : 1;
     const currentPageSize = searchParams.pagesize ? parseInt(searchParams.pagesize) || 10 : 10;
     const datas = await getHistory(searchParams, currentPage, currentPageSize);
-    console.log(datas);
     let end = currentPage;
     if (datas.length === currentPageSize) {
         end = currentPage + 1;

@@ -34,7 +34,7 @@ async function getProjectGroups(
     }
     // 判断当前用户角色
     const projectGroups = await db.$queryRaw<ProjectGroupTableProps[]>`
-        select * from project_group
+        SELECT * from project_group
         LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
     `;
 

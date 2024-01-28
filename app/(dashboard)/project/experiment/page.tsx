@@ -23,7 +23,7 @@ async function getExperiments(
     }
 
     const experiments = await db.$queryRaw<ExperimentTableProps[]>`
-        select * from experiment
+        SELECT * from experiment
         WHERE creator = ${parseInt(currentUser?.id)}
         LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
     `;
