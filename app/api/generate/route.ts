@@ -75,13 +75,32 @@ export async function POST(request: Request) {
         return;
     }
 
-    let prompt = await translate(engine.gpt_prompt || '', data['prompt']);
+    const userPrompts = await db.trail.findMany({
+        where: { user_id: data.user_id, user_experiment_id: data.user_experiment_id },
+        select: { prompt: true, generate_prompt: true },
+        orderBy: { create_time: 'desc' },
+        take: 5,
+    });
 
+    const generateData = {
+        user_prompts: userPrompts,
+        engine_id: engine.id,
+        gpt: {
+            gpt_prompt: engine.gpt_prompt,
+            gpt_setting: engine.gpt_settings,
+        },
+        workflow: engine.workflow,
+        template: engine.template,
+    };
+
+    console.log('用户已发送提示词', generateData);
+
+    // TODO 修改成发送多条用户的提示词以及上下文
+    let prompt = await translate(engine.gpt_prompt || '', data['prompt']);
     console.log('===============================================');
     console.log(`GPT的System指令：   \n${engine.gpt_prompt}`);
     console.log(`GPT翻譯結果：      \n ${prompt}`);
     console.log('===============================================');
-
     // 拼接生成提示词 将JSON转换成Object
     const templateJson = engine.template;
     const templateJsonString = JSON.stringify(templateJson);

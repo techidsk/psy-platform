@@ -23,6 +23,7 @@ model engine {
   gpt_prompt         String? @db.Text
   gpt_settings       Json?
   template           Json?
+  workflow           Json?
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -55,10 +56,11 @@ model trail {
   id                 Int       @id @default(autoincrement())
   user_experiment_id String?   @db.VarChar(16)
   user_id            Int?
+  engine_id          Int?
   prompt             String?   @db.VarChar(1000)
   state              String?   @db.VarChar(15)
   create_time        DateTime? @default(now()) @db.DateTime(0)
-  engine_id          Int?
+  generate_prompt    String?   @db.VarChar(2000)
   image_url          String?   @db.VarChar(200)
   update_time        DateTime? @db.DateTime(0)
   nano_id            String?   @unique(map: "psy_trail_nano_id_uindex") @db.VarChar(16)
@@ -188,4 +190,13 @@ model user_avatar {
   avatar      Bytes
   avatar_type String
   version     Int
+}
+
+model resource_image {
+  id          Int       @id @unique(map: "id_UNIQUE") @default(autoincrement())
+  file_data   Bytes
+  file_type   String
+  hash        String    @unique
+  create_time DateTime? @default(now()) @db.DateTime(0)
+  refkey      Json?
 }

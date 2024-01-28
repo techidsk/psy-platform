@@ -42,6 +42,7 @@ export async function POST(request: Request) {
         data: {
             state: 'SUCCESS',
             image_url: imageUrl,
+            update_time: new Date(),
         },
     });
     return NextResponse.json({ msg: '发布成功', url: imageUrl });

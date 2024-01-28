@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     data['user_id'] = currentUser?.id;
     const experimentNanoId = data['nano_id']; // 本次实验ID
     // 插入用户实验表
-    const dbExperiment = await db.user_experiments.findFirst({
+    let dbExperiment = await db.user_experiments.findFirst({
         where: {
             nano_id: experimentNanoId,
         },
@@ -41,8 +41,9 @@ export async function POST(request: Request) {
             engine_id: experiment?.engine_id,
             user_id: parseInt(data['user_id']),
         };
+
         console.log('创建用户实验: ', item);
-        await db.user_experiments.create({
+        dbExperiment = await db.user_experiments.create({
             data: {
                 ...item,
                 experiment_id: `${experimentId}`,
@@ -74,7 +75,6 @@ export async function POST(request: Request) {
             user_experiment_id: experimentNanoId,
             user_id: parseInt(data['user_id']),
             prompt: data['prompt'],
-            engine_id: parseInt(data['engine_id']),
             state: 'GENERATING',
             nano_id: trailNanoId,
         },
