@@ -43,20 +43,10 @@ model experiment {
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model map_user_group {
-  id       Int  @id @default(autoincrement())
-  user_id  Int? @unique(map: "psy_map_user_group_user_id_uindex")
-  group_id Int?
-
-  @@index([group_id], map: "idx_group_id")
-}
-
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model trail {
   id                 Int       @id @default(autoincrement())
   user_experiment_id String?   @db.VarChar(16)
   user_id            Int?
-  engine_id          Int?
   prompt             String?   @db.VarChar(1000)
   state              String?   @db.VarChar(15)
   create_time        DateTime? @default(now()) @db.DateTime(0)
@@ -126,15 +116,6 @@ model user_group {
   @@index([project_group_id], map: "idx_project_group_id")
   @@index([project_id], map: "idx_project_id")
   @@index([user_id], map: "idx_user_id")
-}
-
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model user_setting {
-  id        Int  @id @default(autoincrement())
-  user_id   Int? @unique(map: "psy_user_setting_user_id_uindex")
-  engine_id Int?
-
-  @@index([engine_id], map: "idx_engine_id")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
