@@ -28,10 +28,16 @@ export function ProjectDeleteModal({
             if (!response.ok) {
                 // 处理错误响应
                 const errorData = await response.json();
-                console.error('删除失败:', errorData);
-                return { success: false, message: errorData.message || '删除失败' };
+                toast({
+                    title: '删除失败',
+                    description: errorData.msg || '删除失败',
+                    variant: 'destructive',
+                    duration: 5000,
+                });
+                closeModal();
+                return;
             }
-
+            console.log(response);
             toast({
                 title: '删除成功',
                 description: '已成功删除项目',
