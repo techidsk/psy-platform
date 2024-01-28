@@ -9,9 +9,8 @@ import { EngineTableEditButtons } from '@/components/engine/engine-table-edit-bu
 
 async function getEngines() {
     const engines = await db.$queryRaw<any[]>`
-        SELECT e.*, count(s.engine_id) as num
+        SELECT e.*
         FROM engine e
-        LEFT JOIN user_setting s ON s.engine_id = e.id
         group by e.id
     `;
 
@@ -73,13 +72,6 @@ const experimentTableConfig: TableConfig[] = [
         children: (data: any) => {
             let text = Boolean(data.state) ? '可用' : '暂停';
             return <State type="success">{text}</State>;
-        },
-    },
-    {
-        key: 'num',
-        label: '用户数量',
-        children: (data: any) => {
-            return <div className="flex flex-col gap-2">{data.num}</div>;
         },
     },
     {

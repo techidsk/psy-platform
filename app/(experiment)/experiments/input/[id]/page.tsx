@@ -50,12 +50,7 @@ export default async function MainInput({ params: { id } }: { params: { id: stri
                     <ImageList experimentList={list} />
                 </ImageListServer>
                 <div className="flex flex-col gap-4 w-full">
-                    <ExperimentEditor
-                        back="/experiments/engine"
-                        nanoId={id}
-                        trail={false}
-                        experimentList={list}
-                    />
+                    <ExperimentEditor nanoId={id} trail={false} experimentList={list} />
                 </div>
             </div>
         </div>
