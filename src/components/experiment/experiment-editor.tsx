@@ -135,7 +135,6 @@ export function ExperimentEditor({ nanoId, trail = true }: ExperimentEditorProps
 
     async function generate(promptNanoId: string, experimentId: string, engineId: string) {
         // 发送请求生成图片
-        console.log(promptNanoId, experimentId, engineId, nanoId);
         let response = await fetch(getUrl(`/api/generate/`), {
             method: 'POST',
             body: JSON.stringify({
@@ -146,7 +145,6 @@ export function ExperimentEditor({ nanoId, trail = true }: ExperimentEditorProps
         });
 
         let d = await response.json();
-        console.log('upload data is :', d);
         if (response.ok) {
             await fetch(getUrl('/api/upload/oss'), {
                 method: 'POST',
@@ -157,6 +155,7 @@ export function ExperimentEditor({ nanoId, trail = true }: ExperimentEditorProps
                     promptNanoId: promptNanoId,
                     imageUrl: d.url,
                     nano_id: experimentId,
+                    prompt: d.prompt,
                 }),
                 cache: 'no-store',
             });

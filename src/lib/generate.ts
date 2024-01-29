@@ -1,5 +1,5 @@
 require('dotenv').config();
-const url = `http://${process.env.COMFYUI_HOST}/generate/creative`;
+const url = `http://${process.env.COMFYUI_HOST_URL}/result`;
 
 /**
  * 转发到ComfyUI生成接口
@@ -7,16 +7,8 @@ const url = `http://${process.env.COMFYUI_HOST}/generate/creative`;
  * @returns {Promise<any>} - The response data from the web UI.
  * @throws {Error} - If an error occurs during the fetch request.
  */
-async function generate(prompt: string, negative_prompt: string) {
+async function generate(data: any) {
     console.log('Send request to Comfyui');
-    const data = {
-        taskType: 'BASE',
-        negativePrompt: 'nsfw',
-        prompt: prompt,
-        negative_prompt: negative_prompt,
-        gptCreative: 1.0,
-        aspectRatio: '1:1',
-    };
     const response = await fetch(url, {
         method: 'POST',
         headers: {

@@ -1,7 +1,6 @@
 import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { generate } from '@/lib/generate';
-import { nanoid } from 'nanoid';
 import { OpenAIClient, AzureKeyCredential, ChatRequestMessage } from '@azure/openai';
 
 require('dotenv').config();
@@ -11,7 +10,6 @@ const azureApiKey = process.env.OPENAI_API_KEY || '';
 /**
  * 使用OpenAI翻譯提示词
  *
- * TODO: 暂时只支持一句话，后需要增加上下文，并限制token数量
  * @param {string} systemPrompt - The system prompt.
  * @param {string} userPrompt - The messages to be translated.
  * @returns {Promise<string>} - The translated message.
@@ -94,32 +92,12 @@ export async function POST(request: Request) {
     };
 
     console.log('用户已发送提示词', generateData);
-
-    // TODO 修改成发送多条用户的提示词以及上下文
-    let prompt = await translate(engine.gpt_prompt || '', data['prompt']);
-    console.log('===============================================');
-    console.log(`GPT的System指令：   \n${engine.gpt_prompt}`);
-    console.log(`GPT翻譯結果：      \n ${prompt}`);
-    console.log('===============================================');
-    // 拼接生成提示词 将JSON转换成Object
-    const templateJson = engine.template;
-    const templateJsonString = JSON.stringify(templateJson);
-    const template = JSON.parse(templateJsonString);
-    let templateNegativePrompt = '';
-
-    if (template) {
-        const templatePrompt = template.prompt || '';
-        templateNegativePrompt = template.negative_prompt || '';
-        prompt = templatePrompt.replace(/{prompt}/g, prompt);
-    }
-    console.log(`生成提示词：\n${prompt}`);
-    console.log(`生成负面提示词：\n${templateNegativePrompt}`);
-    const response = await generate(prompt, templateNegativePrompt);
-    const imageData = response?.data?.images;
-    if (imageData.length > 0) {
-        let imageUrl = imageData[0];
+    const response = await generate(generateData);
+    console.log(response);
+    const imageUrl = response?.image_url;
+    if (imageUrl) {
         console.log('生成图片url: ', imageUrl);
-        return NextResponse.json({ msg: '发布成功', url: imageUrl });
+        return NextResponse.json({ msg: '发布成功', url: imageUrl, prompt: response?.chat_result });
     } else {
         await db.trail.update({
             where: { nano_id: promptNanoId },

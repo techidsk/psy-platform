@@ -1,6 +1,5 @@
 import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
-import { uploadImage } from '@/lib/upload.js';
 require('dotenv').config();
 
 /**
@@ -43,6 +42,7 @@ export async function POST(request: Request) {
             state: 'SUCCESS',
             image_url: imageUrl,
             update_time: new Date(),
+            generate_prompt: data.prompt,
         },
     });
     return NextResponse.json({ msg: '发布成功', url: imageUrl });
