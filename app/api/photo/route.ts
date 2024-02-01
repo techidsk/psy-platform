@@ -5,7 +5,7 @@ import { deflate } from 'zlib';
  * GET | /api/photo 检查某图片是否存在在数据库中,获取图片目前统一交给/api/psy接口。根据其是否附带查询参数决定其行为。
  * 查询参数名目：
  * - hash 附带为由前端通过SHA-256方法计算的文件哈希值。如果指定该项，则说明该请求用于检查数据库中是否存在某图片。
- *        如果存在，返回请求状态码为200；如果不存在，状态码为404。
+ *        如果存在，返回请求状态码为200,并在结果中返回相应的查询URL；如果不存在，状态码为404。
  *
  *
  * e.g /api/photo?hash=e3d6444b2c81165233ed8275a96d8670bb0a7997a9bfd4a7267037472dcdfbd8 检查该图片是否存在
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         });
 
         if (existRecord) {
-            return new NextResponse(null, { status: 200 });
+            return new NextResponse(`psy://photo/hash/${targetHash}`, { status: 200 });
         }
 
         return new NextResponse('Resource not exist', {
