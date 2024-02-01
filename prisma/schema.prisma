@@ -9,8 +9,12 @@ datasource db {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model platform_setting {
-  id            Int     @id @default(autoincrement())
-  default_image String? @db.VarChar(200)
+  id                   Int       @id @default(autoincrement())
+  default_image        String?   @db.VarChar(200)
+  access_key           String?   @db.VarChar(32)
+  access_end_date      DateTime? @db.Date
+  guest_mode           Boolean?
+  guest_experiment_ids Json?
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -23,6 +27,7 @@ model engine {
   gpt_prompt         String? @db.Text
   gpt_settings       Json?
   template           Json?
+  workflow           Json?
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -42,15 +47,6 @@ model experiment {
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model map_user_group {
-  id       Int  @id @default(autoincrement())
-  user_id  Int? @unique(map: "psy_map_user_group_user_id_uindex")
-  group_id Int?
-
-  @@index([group_id], map: "idx_group_id")
-}
-
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model trail {
   id                 Int       @id @default(autoincrement())
   user_experiment_id String?   @db.VarChar(16)
@@ -58,7 +54,7 @@ model trail {
   prompt             String?   @db.VarChar(1000)
   state              String?   @db.VarChar(15)
   create_time        DateTime? @default(now()) @db.DateTime(0)
-  engine_id          Int?
+  generate_prompt    String?   @db.VarChar(2000)
   image_url          String?   @db.VarChar(200)
   update_time        DateTime? @db.DateTime(0)
   nano_id            String?   @unique(map: "psy_trail_nano_id_uindex") @db.VarChar(16)
@@ -127,15 +123,6 @@ model user_group {
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
-model user_setting {
-  id        Int  @id @default(autoincrement())
-  user_id   Int? @unique(map: "psy_user_setting_user_id_uindex")
-  engine_id Int?
-
-  @@index([engine_id], map: "idx_engine_id")
-}
-
-/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model experiment_steps {
   id            Int     @id @default(autoincrement())
   experiment_id Int?
@@ -190,11 +177,11 @@ model user_avatar {
   version     Int
 }
 
-model resource_image{
-  id          Int    @id @unique(map: "id_UNIQUE") @default(autoincrement())
+model resource_image {
+  id          Int       @id @unique(map: "id_UNIQUE") @default(autoincrement())
   file_data   Bytes
   file_type   String
-  hash        String @unique
-  create_time     DateTime?  @default(now()) @db.DateTime(0)
-  refkey      String?
+  hash        String    @unique
+  create_time DateTime? @default(now()) @db.DateTime(0)
+  refkey      Json?
 }
