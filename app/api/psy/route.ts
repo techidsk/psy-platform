@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { PsyProtocol, PsyResouceName } from '@/lib/pys-protocol';
+import { unzipSync } from 'zlib';
 
-async function getPhoto(photoId: number) {
+async function getPhotoWithId(photoId: number) {
     const photo = await db.resource_image.findUnique({
         where: {
             id: photoId,
+        },
+    });
+    return photo;
+}
+
+async function getPhotoWithHash(photoHash: string) {
+    const photo = await db.resource_image.findFirst({
+        where: {
+            hash: photoHash,
         },
     });
     return photo;
@@ -23,11 +33,16 @@ async function fetchResource(psyObject: PsyProtocol) {
         switch (fstQuery) {
             case 'id':
                 try {
-                    return await getPhoto(parseInt(fstQueryVal));
+                    return await getPhotoWithId(parseInt(fstQueryVal));
                 } catch (error) {
                     return undefined;
                 }
-
+            case 'hash':
+                try {
+                    return await getPhotoWithHash(fstQueryVal);
+                } catch (err) {
+                    return undefined;
+                }
             default:
                 return undefined;
         }
@@ -35,7 +50,10 @@ async function fetchResource(psyObject: PsyProtocol) {
 }
 
 /**
- * GET | /api/psy 根据psy协议获取相应文件资源。需要附带查询参数url
+ * GET | /api/psy 根据psy协议获取相应文件资源。需要附带查询参数url。
+ *
+ * 如果请求的资源为图片，会在后端将资源解压后正确返回图片。
+ *
  *
  * 查询参数名目
  * - url 形如'psy://resoucename/querypath'的查询url
@@ -69,6 +87,14 @@ export async function GET(request: NextRequest) {
         }
 
         const result = await fetchResource(new PsyProtocol(targetPsyString));
+
+        if (result?.file_type.includes('image')) {
+            return new NextResponse(unzipSync(result.file_data), {
+                headers: {
+                    'Content-Type': result?.file_type,
+                },
+            });
+        }
 
         const res =
             result == undefined
