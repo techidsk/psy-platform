@@ -15,6 +15,7 @@ import { getUrl } from '@/lib/url';
 import type { experiment, experiment_steps, engine as experimentEngine } from '@prisma/client';
 import Image from 'next/image';
 import { Modal } from '../ui/modal';
+import { uploadPhotoWithFile } from '@/lib/api/post';
 
 interface ExperimentCreateFormProps extends React.HTMLAttributes<HTMLDivElement> {
     experiment: experiment | null;
@@ -162,8 +163,16 @@ export function ExperimentCreateForm({
         stepSetValue('type', stepType);
     };
 
-    const addExperimentStep = (data: any) => {
+    const addExperimentStep = async (data: StepFormData) => {
         console.log(data, experiment?.id);
+
+        if (data?.step_image) {
+            const { isFetchSuccess, result, resultMsg } = await uploadPhotoWithFile(
+                data?.step_image[0]
+            );
+            data.step_image = isFetchSuccess ? result : '';
+            // console.log('now the data is:',data,'result:',result,'result msg',resultMsg)
+        }
 
         setAddtionalSteps([...addtionalSteps, data]);
         setOpenStepForm(false);
@@ -450,8 +459,11 @@ export function ExperimentCreateForm({
                                     </label>
                                     <input
                                         type="file"
+                                        accept=".png, .jpg, .jpeg"
                                         className="file-input file-input-bordered w-full max-w-xs"
                                         placeholder="请上传图片"
+                                        name="step_image"
+                                        {...stepRegister('step_image')}
                                     />
                                 </div>
                             )}
