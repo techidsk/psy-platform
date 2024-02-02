@@ -57,6 +57,7 @@ export function ExperimentCreateForm({
     });
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isUploading, setIsUploading] = useState<boolean>(false);
     const [engineId, setEngineId] = useState<number>(0);
     const [dispatch, setDispatch] = useState<string>('CREATE');
     const [experimentSteps, setExperimentSteps] = useState<any[]>([]);
@@ -167,6 +168,9 @@ export function ExperimentCreateForm({
         console.log(data, experiment?.id);
 
         if (data?.step_image) {
+
+            setIsUploading(true);
+
             const { isFetchSuccess, result, resultMsg } = await uploadPhotoWithFile(
                 data?.step_image[0]
             );
@@ -178,6 +182,7 @@ export function ExperimentCreateForm({
         setOpenStepForm(false);
 
         setExperimentSteps([...experimentSteps, data]);
+        setIsUploading(false);
     };
 
     function initForm() {
@@ -469,8 +474,17 @@ export function ExperimentCreateForm({
                             )}
                             <div className="flex flex-row-reverse gap-2">
                                 <button className="btn btn-ghost btn-outline" type="submit">
-                                    <Icons.add />
-                                    添加
+                                    {isUploading ? (
+                                        <>
+                                            <Icons.spinner className="animate-spin" />
+                                            上传图片中...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Icons.add />
+                                            添加
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </div>

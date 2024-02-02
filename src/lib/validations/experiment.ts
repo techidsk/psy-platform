@@ -17,4 +17,5 @@ export const exprimentStepSchema = z.object({
     title: z.string().min(1, '标题不能为空').max(100),
     step_content: z.string().min(1, '步骤内容不能为空'),
     type: z.number().optional(),
+    step_image: z.any().optional(),
 });
