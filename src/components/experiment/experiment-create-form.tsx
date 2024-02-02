@@ -168,7 +168,9 @@ export function ExperimentCreateForm({
         console.log(data, experiment?.id);
 
         if (data?.step_image) {
+
             setIsUploading(true);
+
             const { isFetchSuccess, result, resultMsg } = await uploadPhotoWithFile(
                 data?.step_image[0]
             );
