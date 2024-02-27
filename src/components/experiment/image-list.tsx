@@ -62,13 +62,11 @@ export function ImageList({ experimentList, displayNum = 1 }: ImageListProps) {
             </div>
             <div className="flex flex-wrap w-full justify-center items-center">
                 {list.length === 0 && (
-                    <div className="basis-1/2 xl:basis-1/4 p-2">
-                        <div className="flex flex-col justify-center items-center rounded border-2 border-slate-300">
-                            <div className="image-holder w-full flex justify-center items-center">
-                                <div className="w-full h-full flex flex-col gap-8 justify-center items-center">
-                                    <Icons.folder className="mr-2 h-8 w-8" />
-                                    <div className="text-gray-400">暂无历史内容</div>
-                                </div>
+                    <div className="flex flex-col justify-center items-center rounded border-2 border-slate-300 h-[512px] w-[512px]">
+                        <div className="image-holder w-full flex justify-center items-center">
+                            <div className="w-full h-full flex flex-col gap-8 justify-center items-center">
+                                <Icons.folder className="mr-2 h-8 w-8" />
+                                <div className="text-gray-400">暂无历史内容</div>
                             </div>
                         </div>
                     </div>
@@ -82,7 +80,7 @@ export function ImageList({ experimentList, displayNum = 1 }: ImageListProps) {
                             <div className="flex flex-col justify-center items-center rounded border border-slate-300">
                                 {item.state === 'GENERATING' ? (
                                     <div className="image-holder bg-gray-50 w-full flex justify-center items-center">
-                                        <LoadingSpin />
+                                        <LoadingSpin displayNum={displayNum} />
                                     </div>
                                 ) : (
                                     <Image

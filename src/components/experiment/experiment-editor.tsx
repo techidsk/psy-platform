@@ -7,12 +7,14 @@ import { getId } from '@/lib/nano-id';
 import { toast } from '@/hooks/use-toast';
 import { ImageResponse } from '@/types/experiment';
 import { getUrl } from '@/lib/url';
+import { useExperimentState } from '@/state/_experiment_atoms';
 
 interface ExperimentEditorProps {
     nanoId: string;
     back?: string;
     trail?: boolean;
     experimentList?: ImageResponse[];
+    displayNum?: number;
 }
 
 type FetchData = {
@@ -25,7 +27,10 @@ type FetchData = {
     trail?: boolean;
 };
 
-export function ExperimentEditor({ nanoId, trail = true }: ExperimentEditorProps) {
+const LOG_INTERVAL = 300; // 记录日志的时间间隔
+const UPLOAD_INTERVAL = 10000; // 上传日志的时间间隔
+
+export function ExperimentEditor({ nanoId, trail = true, displayNum = 1 }: ExperimentEditorProps) {
     const router = useRouter();
     const ref = useRef<HTMLTextAreaElement>(null);
     const [loading, setLoading] = useState<boolean>(false);
@@ -33,7 +38,6 @@ export function ExperimentEditor({ nanoId, trail = true }: ExperimentEditorProps
     const [experimentId, setExperimentId] = useState<string>();
 
     const currentEngine = usePreExperimentState((state) => state.engine);
-
     /**
      * 获取本次实验的引擎id，如果为空，就跳转到dashboard
      * @param nano_id 用户实验id
@@ -46,33 +50,11 @@ export function ExperimentEditor({ nanoId, trail = true }: ExperimentEditorProps
         })
             .then((r) => r.json())
             .then((data) => {
-                console.log(data);
                 if (data?.engine_id) {
                     setEngineId(data.engine_id);
                 }
             });
     }
-
-    useEffect(() => {
-        // 获取引擎id
-        console.log(currentEngine);
-        if (currentEngine?.id) {
-            setEngineId(currentEngine.id);
-        } else {
-            getExperimentInfo(nanoId);
-        }
-    }, []);
-
-    useEffect(() => {
-        if (!trail) {
-            let tempExperimentId = store('experimentId');
-            if (!tempExperimentId) {
-                // router.push('/dashboard');
-            } else {
-                setExperimentId(tempExperimentId);
-            }
-        }
-    }, []);
 
     function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
         if (loading) {
@@ -111,8 +93,6 @@ export function ExperimentEditor({ nanoId, trail = true }: ExperimentEditorProps
             promptNanoId: promptNanoId,
             trail: trail,
         };
-
-        console.log(data, trail);
         // 判断是否是正式实验
         if (!trail && experimentId) {
             data['experimentId'] = experimentId;
@@ -130,10 +110,10 @@ export function ExperimentEditor({ nanoId, trail = true }: ExperimentEditorProps
         ref.current!.value = '';
         setLoading(false);
         router.refresh();
-        await generate(promptNanoId, data.nano_id, engineId || '');
+        await generate(promptNanoId, data.nano_id);
     }
 
-    async function generate(promptNanoId: string, experimentId: string, engineId: string) {
+    async function generate(promptNanoId: string, experimentId: string) {
         // 发送请求生成图片
         let response = await fetch(getUrl(`/api/generate/`), {
             method: 'POST',
@@ -169,6 +149,93 @@ export function ExperimentEditor({ nanoId, trail = true }: ExperimentEditorProps
             });
         }
     }
+
+    // 记录用户实验日志
+    async function logUserInput() {
+        let value = ref.current?.value.trim();
+        const datetime = new Date();
+        const currentImages = useExperimentState.getState().currentImages;
+
+        if (value === '' || value === undefined || value === null) {
+            return;
+        }
+
+        if (currentImages[0] === '') {
+            return;
+        }
+
+        const data = {
+            images: currentImages,
+            input: value,
+            timestamp: datetime,
+            experiment_id: nanoId,
+        };
+
+        const storageLogName = `userLogs_${nanoId}`;
+        const logs = JSON.parse(store(storageLogName) || '[]');
+        logs.push(data);
+        store(storageLogName, JSON.stringify(logs));
+    }
+
+    // 添加日志记录
+    async function uploadLogs() {
+        const storageLogName = `userLogs_${nanoId}`;
+        const logs = JSON.parse(store(storageLogName) || '[]');
+        if (logs.length > 0) {
+            fetch('/api/log', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(logs),
+            })
+                .then((response) => response.json())
+                .then(() => {
+                    store.remove(storageLogName); // 成功上传后清除本地存储中的日志
+                    console.log('Logs uploaded successfully');
+                })
+                .catch((error) => console.error('Error uploading logs:', error));
+        }
+    }
+
+    useEffect(() => {
+        // 获取引擎id
+        if (currentEngine?.id) {
+            setEngineId(currentEngine.id);
+        } else {
+            getExperimentInfo(nanoId);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!trail) {
+            const tempExperimentId = store('experimentId');
+            if (!tempExperimentId) {
+                // router.push('/dashboard');
+            } else {
+                setExperimentId(tempExperimentId);
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        const logIntervalId = setInterval(() => {
+            (async () => {
+                await logUserInput();
+            })();
+        }, LOG_INTERVAL);
+
+        const uploadIntervalId = setInterval(() => {
+            (async () => {
+                await uploadLogs();
+            })();
+        }, UPLOAD_INTERVAL);
+
+        return () => {
+            clearInterval(logIntervalId);
+            clearInterval(uploadIntervalId);
+        };
+    }, []);
 
     return (
         <>

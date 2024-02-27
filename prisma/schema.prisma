@@ -194,5 +194,5 @@ model trail_logger {
   input         String?   @db.Text
   images        Json?
   timestamp     DateTime? @db.DateTime(0)
-  experiment_id Int?
+  experiment_id String?   @db.VarChar(32)
 }
