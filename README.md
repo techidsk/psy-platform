@@ -1,5 +1,21 @@
 # 说明
 
+## 更新
+
+1. `git pull` 拉取最新的版本
+2. `pnpm install` 安装所需要的组件
+3. `pnpm run build` 构建代码
+4. `pnpm run start` 开启服务, 或者 `pm2 restart psy` 重启服务
+
+## 部署
+
+使用 [PM2](https://pm2.keymetrics.io/docs/usage/quick-start/) 进行部署
+
+### 使用 ecosystem.config.js 部署
+
+输入 `pm2 start ecosystem.config.js` 即可完成部署
+输入 `pm2 logs psy` 查看部署状态
+
 ## 开发
 
 ### ORM
