@@ -23,7 +23,7 @@ export async function GET(request: Request, context: { params: any }) {
         if (response.length === 0) {
             return NextResponse.json({ msg: '没有记录' }, { status: 404 });
         }
-        let csvContent = 'data:text/csv;charset=utf-8,';
+        let csvContent = '\uFEFF';
         csvContent += 'Input,Images,Timestamp\n'; // 添加标题行
         response.forEach((row) => {
             let images = row.images as string[];
