@@ -168,7 +168,6 @@ export function ExperimentCreateForm({
         console.log(data, experiment?.id);
 
         if (data?.step_image) {
-
             setIsUploading(true);
 
             const { isFetchSuccess, result, resultMsg } = await uploadPhotoWithFile(
@@ -467,7 +466,6 @@ export function ExperimentCreateForm({
                                         accept=".png, .jpg, .jpeg"
                                         className="file-input file-input-bordered w-full max-w-xs"
                                         placeholder="请上传图片"
-                                        name="step_image"
                                         {...stepRegister('step_image')}
                                     />
                                 </div>

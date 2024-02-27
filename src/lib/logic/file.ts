@@ -4,28 +4,26 @@
  * @param file
  * @returns {string}
  */
-export async function calculateHash(file: File): string {
+export async function calculateHash(file: File): Promise<string> {
     const hashBuffer = await calculateFileHash(file);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const hashHex = hashArray.map((byte) => byte.toString(16).padStart(2, '0')).join('');
     return hashHex;
 }
 
-function calculateFileHash(file: File) {
+function calculateFileHash(file: File): Promise<ArrayBuffer> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        const hashBuffer = new Uint8Array(32);
 
-        reader.onload = () => {
-            const data = new Uint8Array(reader.result);
-            crypto.subtle
-                .digest('SHA-256', data)
-                .then((hash) => {
-                    resolve(hash);
-                })
-                .catch((error) => {
-                    reject(error);
-                });
+        reader.onload = async () => {
+            try {
+                const arrayBuffer = reader.result as ArrayBuffer;
+                // 使用 crypto.subtle.digest 计算 SHA-256 哈希
+                const hash = await crypto.subtle.digest('SHA-256', arrayBuffer);
+                resolve(hash);
+            } catch (error) {
+                reject(error);
+            }
         };
 
         reader.onerror = () => {
@@ -46,7 +44,7 @@ type CompressedStructure = {
  * @param file
  * @returns {CompressedStructure} 返回一个结构体，里面存放着已经丢失了原先文件类型信息的Blob对象和压缩前的Blob对象所指示的对象类型
  */
-export async function compressBlob(file: Blob): CompressedStructure {
+export async function compressBlob(file: Blob): Promise<CompressedStructure> {
     const compressedStream = file.stream().pipeThrough(new CompressionStream('gzip'));
 
     const fileInfo = file.type;
@@ -61,12 +59,12 @@ export async function compressBlob(file: Blob): CompressedStructure {
     };
 }
 
-async function readableToArray(reader) {
-    const chunks = [];
-    while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        chunks.push(value);
-    }
-    return Uint8Array.from(chunks.flat());
-}
+// async function readableToArray(reader) {
+//     const chunks = [];
+//     while (true) {
+//         const { done, value } = await reader.read();
+//         if (done) break;
+//         chunks.push(value);
+//     }
+//     return Uint8Array.from(chunks.flat());
+// }

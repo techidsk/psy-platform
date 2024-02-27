@@ -25,6 +25,9 @@ export async function GET(request: NextRequest) {
 
     if (searchParams.has('hash')) {
         const targetHash = searchParams.get('hash');
+        if (targetHash == undefined) {
+            return new NextResponse('Illegal request', { status: 401 });
+        }
 
         const existRecord = await db.resource_image.findUnique({
             where: {
@@ -48,6 +51,7 @@ export async function GET(request: NextRequest) {
 }
 
 /**
+ * TODO 上传到OSS
  * POST | /api/photo 上传压缩后的图片资源至后端，默认使用gzip方法进行压缩。需要使用form-data附加数据上传。
  *
  * form-data 必备参数项：
@@ -77,25 +81,33 @@ export async function POST(request: NextRequest) {
     const fileType = formData.get('dataType');
     const hash = formData.get('hash');
 
-    if (!(fileType && compressedData && compressedType)) {
-        return new NextResponse('Illegal request.', { status: 401 });
+    if (
+        !(
+            fileType &&
+            compressedData &&
+            compressedType &&
+            typeof compressedData === 'object' &&
+            'arrayBuffer' in compressedData
+        )
+    ) {
+        return new NextResponse('Illegal request.', { status: 400 });
     }
 
     try {
         const resultData = new Uint8Array(await compressedData.arrayBuffer());
 
-        const resouceImageRecord = await db.resource_image.create({
-            data: {
-                file_data: resultData,
-                file_type: fileType,
-                hash: hash,
-            },
-        });
+        // const resouceImageRecord = await db.resource_image.create({
+        //     data: {
+        //         file_data: resultData,
+        //         file_type: fileType.toString(),
+        //         hash: hash?.toString() || '',
+        //     },
+        // });
 
-        return new NextResponse(
-            JSON.stringify({ ref: `psy://photo/id/${resouceImageRecord.id}` }),
-            { status: 200 }
-        );
+        // return new NextResponse(
+        //     JSON.stringify({ ref: `psy://photo/id/${resouceImageRecord.id}` }),
+        //     { status: 200 }
+        // );
     } catch (error) {
         console.error('error occurs when try to store file to the database', error);
         return new NextResponse(

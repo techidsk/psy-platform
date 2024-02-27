@@ -2,44 +2,38 @@
 
 import { toast } from '@/hooks/use-toast';
 import { getUrl } from '@/lib/url';
-import { type SyntheticEvent } from 'react';
+import { type HeaderUserInfo } from '@/lib/logic/user';
 
-interface UserAvatarUploadButton extends React.HTMLAttributes<HTMLButtonElement> {}
-type User = {
-    username: string;
-    id: number; // 不是nano-id
-    avatar: string;
-};
-type UserProps = {
-    user: User;
-};
-
+interface UserAvatarUploadButton extends React.HTMLAttributes<HTMLButtonElement> {
+    user: HeaderUserInfo;
+    updateFuc: () => void;
+}
 /**
  * 上传用户头像按钮组件，出现在头像框上。
  * @todo 支持头像裁剪功能
  * @param param0
  * @returns
  */
-export function UserAvatarUploadButton({ user, updateFuc }: UserProps): UserAvatarUploadButton {
-    console.log(user);
-
+export function UserAvatarUploadButton({ user, updateFuc }: UserAvatarUploadButton) {
     async function uploadTrigger() {
         const fileInput = document.getElementById('avatar-upload');
 
         fileInput?.click();
     }
 
-    async function uploadFile(e: SyntheticEvent) {
-        console.log(e);
-        console.log(e.target.files);
-        const targetFile: File = e.target.files[0];
+    async function uploadFile(e: React.SyntheticEvent) {
+        const target = e.target as HTMLInputElement; // 类型断言
+        if (!target.files || target.files.length === 0) {
+            return; // 没有文件，直接返回
+        }
+        const targetFile: File = target.files[0];
 
         if (targetFile) {
             const formData = new FormData();
 
-            formData.append('username', user.username);
+            formData.append('username', user.username || '');
             formData.append('type', targetFile.type);
-            formData.append('userid', parseInt(user.id));
+            formData.append('userid', user.id.toString());
             formData.append('data', targetFile);
 
             console.log('prepare for uploading...');
@@ -53,14 +47,14 @@ export function UserAvatarUploadButton({ user, updateFuc }: UserProps): UserAvat
                 updateFuc();
                 return toast({
                     title: '上传头像成功',
-                    description: response.text,
+                    description: <>{response.text}</>,
                     variant: 'default',
                     duration: 5000,
                 });
             } else {
                 return toast({
                     title: '上传失败',
-                    description: response.text,
+                    description: <>{response.text}</>,
                     variant: 'default',
                     duration: 5000,
                 });
@@ -82,7 +76,7 @@ export function UserAvatarUploadButton({ user, updateFuc }: UserProps): UserAvat
                 上传头像
             </button>
             <input
-                id="avatar-upload"
+                data-id="avatar-upload"
                 type="file"
                 accept=".png, .jpg, .jpeg"
                 style={{

@@ -9,7 +9,7 @@ import { getUrl } from '../url';
  * - resultTransferCode：在fetch过程中得到的响应状态码。
  */
 type FetchResult = {
-    result;
+    result: any;
     resultMsg: string;
     resultTransferCode: number;
     isFetchSuccess: boolean;
@@ -24,48 +24,42 @@ type FetchResult = {
  * @param e input onChange 传入的事件
  * @returns {FetchResult} 上传完毕后的获取结果。可通过判定isFetchSucess或result是否是undefined判断是否获取成功。
  */
-export async function uploadPhotoWihInput(e: SyntheticEvent): FetchResult {
-    console.log(e);
-    console.log(e.target.files);
-    const targetFile: File = e.target.files[0];
+export async function uploadPhotoWihInput(
+    e: React.ChangeEvent<HTMLInputElement>
+): Promise<FetchResult> {
+    const targetFile = e.target.files?.[0];
 
     if (targetFile) {
         const hash = await calculateHash(targetFile);
+        const checkFile = await fetch(getUrl(`/api/photo?hash=${hash}`));
 
-        const checkFile = await fetch(getUrl(`/api/photo?hash=${hash}`), {
-            method: 'GET',
-        });
-
-        // 该接口404代码用于指示对应资源不存在在数据库内。好吧，我得承认这设计得很奇怪。
-        if (checkFile.status != 404) {
+        if (checkFile.ok) {
+            // 文件已存在
             return {
-                result: checkFile.body,
-                resultMsg: 'File exist in the database,so return its hash',
+                result: await checkFile.json(),
+                resultMsg: 'File exists in the database',
                 resultTransferCode: checkFile.status,
                 isFetchSuccess: true,
             };
         }
 
-        // 401指示请求不合法。
-        if (checkFile.status == 401) {
+        // 该接口404代码用于指示对应资源不存在在数据库内。好吧，我得承认这设计得很奇怪。
+        if (checkFile.status !== 404) {
             return {
-                result: undefined,
-                resultMsg: 'Illegal requese.请求非法。',
+                result: checkFile.body,
+                resultMsg: 'File exist in the database, so return its hash',
                 resultTransferCode: checkFile.status,
-                isFetchSuccess: false,
+                isFetchSuccess: true,
             };
         }
 
-        const compressResult = await compressBlob(targetFile);
-        console.log('result', compressResult);
+        const { compressedBlob, fileOriginType } = await compressBlob(targetFile);
 
         const formData = new FormData();
-
-        formData.append('data', compressResult.compressedBlob);
+        formData.append('data', compressedBlob);
         formData.append('compressedType', 'gzip');
-        formData.append('dataType', compressResult.fileOriginType);
+        formData.append('dataType', fileOriginType);
         formData.append('hash', hash);
-
         console.log('prepare for uploading...');
 
         const response = await fetch(getUrl('/api/photo'), {
@@ -73,26 +67,19 @@ export async function uploadPhotoWihInput(e: SyntheticEvent): FetchResult {
             body: formData,
         });
 
-        if (response.status == 401) {
+        if (!response.ok) {
+            // 处理上传错误
             return {
                 result: undefined,
-                resultMsg: 'Illegal requese.请求非法。',
+                resultMsg: 'Error uploading file',
                 resultTransferCode: response.status,
                 isFetchSuccess: false,
             };
         }
 
-        if (response.status == 400) {
-            return {
-                result: undefined,
-                resultMsg: response.body,
-                resultTransferCode: response.status,
-                isFetchSuccess: false,
-            };
-        }
-
+        // 上传成功
         return {
-            result: await response.json()?.ref,
+            result: await response.json(),
             resultMsg: 'Success',
             resultTransferCode: response.status,
             isFetchSuccess: true,
@@ -102,7 +89,7 @@ export async function uploadPhotoWihInput(e: SyntheticEvent): FetchResult {
     return {
         result: undefined,
         resultMsg: '传入文件为空',
-        resultTransferCode: null,
+        resultTransferCode: 500,
         isFetchSuccess: false,
     };
 }
@@ -111,7 +98,7 @@ export async function uploadPhotoWihInput(e: SyntheticEvent): FetchResult {
  * 通过传入File对象上传文件
  * @param file
  */
-export async function uploadPhotoWithFile(targetFile: File): FetchResult {
+export async function uploadPhotoWithFile(targetFile: File): Promise<FetchResult> {
     if (targetFile) {
         const hash = await calculateHash(targetFile);
 
@@ -130,16 +117,6 @@ export async function uploadPhotoWithFile(targetFile: File): FetchResult {
             };
         }
 
-        // 401指示请求不合法。
-        if (checkFile.status == 401) {
-            return {
-                result: undefined,
-                resultMsg: 'Illegal requese.请求非法。',
-                resultTransferCode: checkFile.status,
-                isFetchSuccess: false,
-            };
-        }
-
         const compressResult = await compressBlob(targetFile);
         console.log('result', compressResult);
 
@@ -166,17 +143,8 @@ export async function uploadPhotoWithFile(targetFile: File): FetchResult {
             };
         }
 
-        if (response.status == 400) {
-            return {
-                result: undefined,
-                resultMsg: response.body,
-                resultTransferCode: response.status,
-                isFetchSuccess: false,
-            };
-        }
-
         return {
-            result: (await response.json()).ref,
+            result: await response.json(),
             resultMsg: 'Success',
             resultTransferCode: response.status,
             isFetchSuccess: true,
@@ -186,7 +154,7 @@ export async function uploadPhotoWithFile(targetFile: File): FetchResult {
     return {
         result: undefined,
         resultMsg: '传入文件为空',
-        resultTransferCode: null,
+        resultTransferCode: 500,
         isFetchSuccess: false,
     };
 }

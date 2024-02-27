@@ -1,14 +1,11 @@
-import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/session';
 import { getUser } from '@/lib/logic/user';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { format } from 'date-fns';
 import { Icons } from '@/components/icons';
 import { getAvatarUrl } from '@/lib/logic/avatar';
 
 import './setting.css';
-import { UserAvatarUploadButton } from '@/components/user/user-avatar-upload-button';
 import { UserSetttingAvatar } from '@/components/setting/setting-page-avatar';
 
 /**用户设置界面 */
@@ -20,7 +17,7 @@ export default async function Settings() {
     }
 
     const dbUser = await getUser(user.id);
-    const resultUrl = getAvatarUrl(dbUser.avatar, dbUser.username);
+    const resultUrl = getAvatarUrl(dbUser.avatar || '', dbUser.username || '');
     console.log(resultUrl);
     console.log('session user:', user);
     console.log('dbUser', dbUser);
@@ -29,7 +26,7 @@ export default async function Settings() {
         <div className="ml-6 max-w-3xl">
             <div className="flex flex-col gap-6 items-start min-w-[400px]">
                 <div className="flex gap-4 justify-center items-center">
-                    <div className="inline-block" id="avatar-container" style={{ height: 96 }}>
+                    <div className="inline-block" data-id="avatar-container" style={{ height: 96 }}>
                         <UserSetttingAvatar user={dbUser}></UserSetttingAvatar>
                     </div>
                     <div>{dbUser?.username}</div>

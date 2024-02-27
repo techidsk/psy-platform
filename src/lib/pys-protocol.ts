@@ -19,9 +19,9 @@ export enum PsyResouceName {
 export class PsyProtocol {
     targetURLStr: string;
     isLegeal: Boolean;
-    resouceName: string;
-    queryPathArr: Array<string>;
-    quertPath: string;
+    resouceName: string | undefined;
+    queryPathArr: Array<string> | undefined;
+    quertPath: string | undefined;
 
     /**
      * 传入形如`psy://resoucename/querypath`的字符串。

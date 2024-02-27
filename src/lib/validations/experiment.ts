@@ -1,4 +1,3 @@
-import { exportTraceState } from 'next/dist/trace';
 import * as z from 'zod';
 
 export const exprimentSchema = z.object({

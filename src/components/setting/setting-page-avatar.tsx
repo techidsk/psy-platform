@@ -3,15 +3,16 @@ import Image from 'next/image';
 import { UserAvatarUploadButton } from '@/components/user/user-avatar-upload-button';
 import { useState } from 'react';
 import { getAvatarUrl } from '@/lib/logic/avatar';
-import { getUser } from '@/lib/logic/user';
+import { type HeaderUserInfo } from '@/lib/logic/user';
+interface UserSetttingAvatar extends React.HTMLAttributes<HTMLButtonElement> {
+    user: HeaderUserInfo;
+}
 
-interface UserSetttingAvatar extends React.HTMLAttributes<HTMLButtonElement> {}
-
-export async function UserSetttingAvatar({ user }): UserSetttingAvatar {
+export async function UserSetttingAvatar({ user }: UserSetttingAvatar) {
     console.log(user);
 
     const [resultAvatarUrl, setResultAvatarUrl] = useState(
-        getAvatarUrl(user.avatar, user.username)
+        getAvatarUrl(user.avatar || '', user.username || '')
     );
 
     /**
@@ -20,7 +21,7 @@ export async function UserSetttingAvatar({ user }): UserSetttingAvatar {
     const updateImage = () => {
         console.log('heelo');
         setResultAvatarUrl(
-            getAvatarUrl(`psy://avatar/${user.username}`, user.username) +
+            getAvatarUrl(`psy://avatar/${user.username}`, user.username || '') +
                 `&update=${new Date().getTime()}`
         ); // 非常nerd code
     };
@@ -38,11 +39,12 @@ export async function UserSetttingAvatar({ user }): UserSetttingAvatar {
                 loading="lazy"
                 unoptimized
             />
-            <div className="flex flex-col align-middle" id="upload-button" style={{ width: 96 }}>
-                <UserAvatarUploadButton
-                    user={user}
-                    updateFuc={updateImage}
-                ></UserAvatarUploadButton>
+            <div
+                className="flex flex-col align-middle"
+                data-id="upload-button"
+                style={{ width: 96 }}
+            >
+                <UserAvatarUploadButton user={user} updateFuc={updateImage} />
             </div>
         </>
     );

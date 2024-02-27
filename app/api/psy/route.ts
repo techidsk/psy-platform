@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { PsyProtocol, PsyResouceName } from '@/lib/pys-protocol';
 import { unzipSync } from 'zlib';
+import { ta } from 'date-fns/locale';
 
 async function getPhotoWithId(photoId: number) {
     const photo = await db.resource_image.findUnique({
@@ -26,9 +27,15 @@ async function fetchResource(psyObject: PsyProtocol) {
 
     if (targetResouce == PsyResouceName.Photo) {
         const queryArr = psyObject.queryPathArr;
+        if (queryArr == undefined) {
+            return undefined;
+        }
 
         const fstQuery = queryArr.shift();
         const fstQueryVal = queryArr.shift();
+        if (fstQuery == undefined || fstQueryVal == undefined) {
+            return undefined;
+        }
 
         switch (fstQuery) {
             case 'id':
@@ -81,6 +88,9 @@ export async function GET(request: NextRequest) {
 
     if (searchParams.has('url')) {
         const targetPsyString = searchParams.get('url');
+        if (targetPsyString == undefined) {
+            return new NextResponse('Illegal request', { status: 401 });
+        }
 
         if (!PsyProtocol.isStringLegal(targetPsyString)) {
             return new NextResponse('Illegal PsyUrl', { status: 403 });
