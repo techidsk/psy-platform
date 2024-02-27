@@ -1,7 +1,6 @@
 /**
  * 用于获取用户信息的相关逻辑复用
  */
-import { type user } from '@prisma/client';
 import { db } from '../db';
 
 interface HeaderUserInfo {

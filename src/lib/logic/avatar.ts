@@ -12,19 +12,19 @@ import { getUrl } from '../url';
  */
 export function getAvatarUrl(avatarUrl: string, username: string = 'DEFAULTNAME#NOBODY?_'): string {
     // 使用默认头像
-    if (avatarUrl === '' || avatarUrl === undefined || username == 'DEFAULTNAME') {
-        return getUrl(`/api/photo/avatar?username=${username}`);
-    }
+    // if (avatarUrl === '' || avatarUrl === undefined || username == 'DEFAULTNAME') {
+    //     return getUrl(`/api/photo/avatar?username=${username}`);
+    // }
 
-    // 根据头像协议链接确认是外链还是使用用户自定义的头像（存放在数据库中）
-    const imageProtocol = new URL(avatarUrl).protocol;
-    if (imageProtocol == 'psy:') {
-        return getUrl(`/api/photo/avatar?username=${username}&hasAvatar=${avatarUrl}`);
-    }
-    // 使用外链
-    if (imageProtocol == 'https:') {
-        return avatarUrl;
-    }
+    // // 根据头像协议链接确认是外链还是使用用户自定义的头像（存放在数据库中）
+    // const imageProtocol = new URL(avatarUrl).protocol;
+    // if (imageProtocol == 'psy:') {
+    //     return getUrl(`/api/photo/avatar?username=${username}&hasAvatar=${avatarUrl}`);
+    // }
+    // // 使用外链
+    // if (imageProtocol == 'https:') {
+    //     return avatarUrl;
+    // }
 
     // 不符合所有规定的，也使用默认头像
     return getUrl(`/api/photo/avatar?username=DEFAULTNAME#NOBODY?_`);

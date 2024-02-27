@@ -79,8 +79,6 @@ const sidebarNav: SidebarNavItem[] = [
 ];
 
 export default async function DashboardLayout({ children }: DashboardLayoutProps) {
-    console.log('DashboardLayout');
-
     const user = await getCurrentUser();
 
     if (!user) {

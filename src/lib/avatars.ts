@@ -10,27 +10,27 @@ type SVGString = String;
  * @param username 用户名
  * @returns svg字符串
  */
-export function getDefaultAvatar(username: string): SVGString {
+export function getDefaultAvatar(username: string) {
     const fstCharacter = username.at(0);
 
     const hashToColor = (str: string) => {
         const mappingTable = {
-            0: '#FFC0CB', // 粉红色
-            1: '#ADD8E6', // 淡蓝色
-            2: '#90EE90', // 淡绿色
-            3: '#FFD700', // 金色
-            4: '#FFA07A', // 浅鲑色
-            5: '#9370DB', // 紫罗兰色
-            6: '#00FA9A', // 薄荷绿
-            7: '#FF6347', // 番茄红
-            8: '#00CED1', // 深天蓝
-            9: '#FF69B4', // 石榴红
+            '0': '#FFC0CB', // 粉红色
+            '1': '#ADD8E6', // 淡蓝色
+            '2': '#90EE90', // 淡绿色
+            '3': '#FFD700', // 金色
+            '4': '#FFA07A', // 浅鲑色
+            '5': '#9370DB', // 紫罗兰色
+            '6': '#00FA9A', // 薄荷绿
+            '7': '#FF6347', // 番茄红
+            '8': '#00CED1', // 深天蓝
+            '9': '#FF69B4', // 石榴红
         };
-        let sum: number = 0;
-        for (let i = 0; i < str.length; i++) {
-            sum += str.charCodeAt(i);
-        }
-        return mappingTable[`${sum % 10}`];
+
+        const index: keyof typeof mappingTable = (
+            str.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 10
+        ).toString() as keyof typeof mappingTable;
+        return mappingTable[index];
     };
 
     const template = `

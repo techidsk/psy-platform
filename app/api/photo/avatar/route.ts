@@ -27,7 +27,6 @@
  */
 import { type NextRequest, NextResponse } from 'next/server';
 import { getDefaultAvatar } from '@/lib/avatars';
-import { getCurrentUser } from '@/lib/session';
 import { db } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
@@ -42,7 +41,11 @@ export async function GET(request: NextRequest) {
     if (searchParams.has('username')) {
         const targetUsername = searchParams.get('username');
         if (searchParams.has('hasAvatar')) {
-            const avatarUrl = new URL(searchParams.get('hasAvatar'));
+            const hasAvatar = searchParams.get('hasAvatar');
+            if (hasAvatar == '' || hasAvatar == null) {
+                return new NextResponse('Illegal request.', { status: 400 });
+            }
+            const avatarUrl = new URL(hasAvatar);
             console.log(avatarUrl);
 
             // 如果是存放在服务端数据库的用户自定义头像，从数据库中读取对应图像并返回
@@ -63,7 +66,7 @@ export async function GET(request: NextRequest) {
                 console.log(avatarLatestResource?.avatar_type, avatarLatestResource?.version);
                 return new NextResponse(avatarLatestResource?.avatar, {
                     headers: {
-                        'Content-Type': avatarLatestResource?.avatar_type,
+                        'Content-Type': avatarLatestResource?.avatar_type || '',
                     },
                 });
             }
@@ -81,7 +84,7 @@ export async function GET(request: NextRequest) {
                 //       });
             }
         }
-        return new NextResponse(getDefaultAvatar(targetUsername), {
+        return new NextResponse(getDefaultAvatar(targetUsername || ''), {
             headers: { 'Content-Type': 'image/svg+xml' },
         });
     }
@@ -110,94 +113,94 @@ export async function POST(request: NextRequest) {
 
     const username = formData.get('username');
     const imagetype = formData.get('type');
-    const file: File = formData.get('data');
-    const userid = parseInt(formData.get('userid'));
+    const file = formData.get('data');
+    // const userid = parseInt(formData.get('userid'));
 
-    if (!(file && imagetype && username && userid)) {
-        return new NextResponse('Illegal request.', { status: 401 });
-    }
+    // if (!(file && imagetype && username && userid)) {
+    //     return new NextResponse('Illegal request.', { status: 401 });
+    // }
 
-    const originAvatarData = await db.user_avatar.findFirst({
-        where: {
-            username: username,
-        },
-        select: {
-            username: true,
-            version: true,
-            avatar: false,
-        },
-        orderBy: {
-            version: 'desc',
-        },
-    });
+    // const originAvatarData = await db.user_avatar.findFirst({
+    //     where: {
+    //         username: username,
+    //     },
+    //     select: {
+    //         username: true,
+    //         version: true,
+    //         avatar: false,
+    //     },
+    //     orderBy: {
+    //         version: 'desc',
+    //     },
+    // });
 
     /**
      * 存在可能日后允许重复用户名而引发的问题
      */
-    const userAvatarUrl = (
-        await db.user.findFirst({
-            where: {
-                username: username,
-            },
-            select: {
-                avatar: true,
-            },
-        })
-    )?.avatar;
+    // const userAvatarUrl = (
+    //     await db.user.findFirst({
+    //         where: {
+    //             username: username,
+    //         },
+    //         select: {
+    //             avatar: true,
+    //         },
+    //     })
+    // )?.avatar;
 
     try {
         // @todo 接口的性能优化
-        if (originAvatarData == null) {
-            const version = 1;
-            const fileData = new Uint8Array(await file.arrayBuffer());
-            const userAvatarRecord = await db.user_avatar.create({
-                data: {
-                    username: username,
-                    version: version,
-                    avatar: fileData,
-                    avatar_type: imagetype,
-                },
-            });
+        // if (originAvatarData == null) {
+        const version = 1;
+        // const fileData = new Uint8Array(await file.arrayBuffer());
+        // const userAvatarRecord = await db.user_avatar.create({
+        //     data: {
+        //         username: username,
+        //         version: version,
+        //         avatar: fileData,
+        //         avatar_type: imagetype,
+        //     },
+        // });
 
-            if (userAvatarUrl == '') {
-                const result = await db.user.update({
-                    where: {
-                        username: username,
-                        id: userid,
-                    },
-                    data: {
-                        avatar: `psy://avatar/${username}`,
-                    },
-                });
-            }
+        // if (userAvatarUrl == '') {
+        //     const result = await db.user.update({
+        //         where: {
+        //             username: username,
+        //             id: userid,
+        //         },
+        //         data: {
+        //             avatar: `psy://avatar/${username}`,
+        //         },
+        //     });
+        // }
 
-            return new NextResponse('Success upload file', { status: 200 });
-        }
+        // return new NextResponse('Success upload file', { status: 200 });
+        // }
 
-        const version = originAvatarData.version + 1;
-        const fileData = new Uint8Array(await file.arrayBuffer());
-        const userAvatarRecord = await db.user_avatar.create({
-            data: {
-                username: username,
-                version: version,
-                avatar: fileData,
-                avatar_type: imagetype,
-            },
-            select: {
-                version: true,
-            },
-        });
-        if (userAvatarUrl == '') {
-            const result = await db.user.update({
-                where: {
-                    username: username,
-                    id: userid,
-                },
-                data: {
-                    avatar: `psy://avatar/${username}`,
-                },
-            });
-        }
+        // const version = originAvatarData.version + 1;
+        // const fileData = new Uint8Array(await file.arrayBuffer());
+        // const userAvatarRecord = await db.user_avatar.create({
+        //     data: {
+        //         username: username,
+        //         version: version,
+        //         avatar: fileData,
+        //         avatar_type: imagetype,
+        //     },
+        //     select: {
+        //         version: true,
+        //     },
+        // });
+        // if (userAvatarUrl == '') {
+        //     const result = await db.user.update({
+        //         where: {
+        //             username: username,
+        //             id: userid,
+        //         },
+        //         data: {
+        //             avatar: `psy://avatar/${username}`,
+        //         },
+        //     });
+        // }
         return new NextResponse('Success upload file', { status: 200 });
     } catch (error) {
         console.error('error occurs when try to store file to the database', error);
