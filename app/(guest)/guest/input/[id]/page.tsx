@@ -47,7 +47,7 @@ export default async function GuestMainInput({
     // TODO 添加用户实验
     return (
         <div className="bg-white mb-8">
-            <div className="container mx-auto flex flex-col gap-8">
+            <div className="container mx-auto flex flex-col gap-4">
                 <DashboardHeader heading="实验说明" text="请在下方的文本框内输入您的想法和感受。">
                     <div className="flex gap-2">
                         <ExperimentSetting />

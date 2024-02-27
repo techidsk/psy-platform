@@ -43,7 +43,7 @@ export default async function ExperimentHistory({ params: { id } }: any) {
 
     return (
         <div className="h-screen bg-white">
-            <div className="container mx-auto flex flex-col gap-8">
+            <div className="container mx-auto flex flex-col gap-4">
                 <DashboardHeader heading="实验复现" text="点击开始，复现用户实验过程">
                     <ExperimentSetting />
                 </DashboardHeader>

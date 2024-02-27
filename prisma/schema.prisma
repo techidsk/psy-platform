@@ -15,6 +15,7 @@ model platform_setting {
   access_end_date      DateTime? @db.Date
   guest_mode           Boolean?
   guest_experiment_ids Json?
+  display_num          Int?
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -82,6 +83,8 @@ model user {
   last_login_time DateTime? @db.DateTime(0)
   state           Int?      @default(1) @db.TinyInt
   deleted         Int?      @default(0)
+  gender          Int?      @db.TinyInt
+  ages            Int?
 
   @@index([email], map: "idx_email")
   @@index([username], map: "idx_username")
@@ -184,4 +187,12 @@ model resource_image {
   hash        String    @unique
   create_time DateTime? @default(now()) @db.DateTime(0)
   refkey      Json?
+}
+
+model trail_logger {
+  id            Int       @id @default(autoincrement())
+  input         String?   @db.Text
+  images        Json?
+  timestamp     DateTime? @db.DateTime(0)
+  experiment_id Int?
 }

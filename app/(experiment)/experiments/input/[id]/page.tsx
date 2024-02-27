@@ -32,25 +32,43 @@ async function getExperimentInfos(experimentId: string) {
     return formatResult;
 }
 
+async function getAccessKey() {
+    const setting = await db.platform_setting.findFirst({});
+
+    if (!setting) {
+        console.log('未找到平台配置');
+        return null;
+    }
+
+    return setting;
+}
+
 /**正式实验输入测试 */
 export default async function MainInput({ params: { id } }: { params: { id: string } }) {
     // 获取用户实验prompt信息
     const list = await getExperimentInfos(id);
+    const platfomrSetting = await getAccessKey();
+    const displayNum = platfomrSetting?.display_num || 1;
 
     return (
         <div className="bg-white mb-8">
-            <div className="container mx-auto flex flex-col gap-8">
+            <div className="container mx-auto flex flex-col gap-4">
                 <DashboardHeader heading="实验说明" text="请在下方的文本框内输入您的想法和感受。">
                     <div className="flex gap-2">
-                        <ExperimentSetting />
+                        {/* <ExperimentSetting /> */}
                         <ExperimentFinishButton nanoId={id} experimentList={list} />
                     </div>
                 </DashboardHeader>
                 <ImageListServer>
-                    <ImageList experimentList={list} />
+                    <ImageList experimentList={list} displayNum={displayNum} />
                 </ImageListServer>
                 <div className="flex flex-col gap-4 w-full">
-                    <ExperimentEditor nanoId={id} trail={false} experimentList={list} />
+                    <ExperimentEditor
+                        nanoId={id}
+                        trail={false}
+                        experimentList={list}
+                        displayNum={displayNum}
+                    />
                 </div>
             </div>
         </div>
