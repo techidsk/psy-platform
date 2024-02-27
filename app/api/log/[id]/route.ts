@@ -26,9 +26,16 @@ export async function GET(request: Request, context: { params: any }) {
         let csvContent = '\uFEFF';
         csvContent += 'Input,Images,Timestamp\n'; // 添加标题行
         response.forEach((row) => {
+            let input = (row.input as string) || '';
             let images = row.images as string[];
 
-            csvContent += `${row.input},${images.join('|')},${row.timestamp}\n`; // 假设 images 是一个数组，使用 | 来分隔每个图片
+            // 转义引号并处理数据中的逗号和双引号
+            const inputEscaped = `"${input.replace(/"/g, '""')}"`;
+            const imagesEscaped = images.map((image) => image.replace(/"/g, '""')).join('|');
+            const timestampEscaped = `"${row.timestamp}"`;
+
+            // 使用转义后的数据构建CSV行
+            csvContent += `${inputEscaped},${imagesEscaped},${timestampEscaped}\n`;
         });
 
         // 返回CSV文件
