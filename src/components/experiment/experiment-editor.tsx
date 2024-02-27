@@ -27,7 +27,7 @@ type FetchData = {
     trail?: boolean;
 };
 
-const LOG_INTERVAL = 300; // 记录日志的时间间隔
+const LOG_INTERVAL = 100; // 记录日志的时间间隔
 const UPLOAD_INTERVAL = 10000; // 上传日志的时间间隔
 
 export function ExperimentEditor({ nanoId, trail = true, displayNum = 1 }: ExperimentEditorProps) {
