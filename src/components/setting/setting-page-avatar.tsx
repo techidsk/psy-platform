@@ -9,8 +9,6 @@ interface UserSetttingAvatar extends React.HTMLAttributes<HTMLButtonElement> {
 }
 
 export async function UserSetttingAvatar({ user }: UserSetttingAvatar) {
-    console.log(user);
-
     const [resultAvatarUrl, setResultAvatarUrl] = useState(
         getAvatarUrl(user.avatar || '', user.username || '')
     );

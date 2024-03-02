@@ -1,12 +1,14 @@
+import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
+
 import { getUser } from '@/lib/logic/user';
 import { getCurrentUser } from '@/lib/session';
 import Header from '@/components/header';
 import { DashboardNav } from '@/components/sidebar';
 import { SidebarNavItem } from '@/types';
-import { Suspense } from 'react';
-import Loading from './loading';
 import { UserRole } from '@/types/user';
+
+import Loading from './loading';
 
 export const metadata = {
     title: '控制台',
@@ -84,8 +86,9 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
     if (!user) {
         return notFound();
     }
-
+    console.log('user', user);
     const dbUser = await getUser(user.id);
+    console.log('dbUser', dbUser);
 
     const authedSidebar =
         user.role !== 'SUPERADMIN' ? authSidebar(sidebarNav, user.role as UserRole) : sidebarNav;

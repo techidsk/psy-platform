@@ -1,17 +1,9 @@
 'use client';
-import { useRouter } from 'next/navigation';
-
 interface ButtonProps {
     data: any;
 }
 
-export default function CheckExperimentHistoryButton({ data }: ButtonProps) {
-    const router = useRouter();
-
-    function openExperimentPage(id: string) {
-        router.push(`/history/${id}`);
-    }
-
+export default function DownloadExperimentHistoryButton({ data }: ButtonProps) {
     async function downloadCSV(id: string) {
         try {
             const response = await fetch(`/api/log/${id}`);
@@ -37,12 +29,6 @@ export default function CheckExperimentHistoryButton({ data }: ButtonProps) {
     }
     return (
         <div className="flex gap-2">
-            <button
-                className="btn btn-ghost btn-sm"
-                onClick={() => openExperimentPage(data?.nano_id)}
-            >
-                查看详情
-            </button>
             <button className="btn btn-ghost btn-sm" onClick={() => downloadCSV(data?.nano_id)}>
                 下载记录
             </button>

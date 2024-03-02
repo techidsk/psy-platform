@@ -8,6 +8,7 @@ export default async function Closed() {
     // 获取用户默认的实验
     const currentUser = await getCurrentUser();
     if (!currentUser?.id) {
+        console.warn('未登录');
         redirect('/login');
     }
 

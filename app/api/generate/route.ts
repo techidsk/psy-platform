@@ -2,6 +2,7 @@ import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { generate } from '@/lib/generate';
 import { OpenAIClient, AzureKeyCredential, ChatRequestMessage } from '@azure/openai';
+import { assert } from 'console';
 
 require('dotenv').config();
 const endpoint = process.env.OPENAI_ENDPOINT || '';
@@ -50,10 +51,19 @@ export async function POST(request: Request) {
         console.error('未找到对应prompt数据');
         return;
     }
-    const experiment = await db.experiment.findFirst({
+    const userExperiment = await db.user_experiments.findFirst({
         where: { nano_id: experimentId },
+    });
+
+    if (!userExperiment || !userExperiment.experiment_id) {
+        console.error('未找到对应userExperiment数据');
+        return;
+    }
+    const experiment = await db.experiment.findFirst({
+        where: { id: parseInt(userExperiment.experiment_id) },
         select: { engine_id: true },
     });
+
     if (!experiment || !experiment.engine_id) {
         console.error('未找到对应experiment数据');
         return;

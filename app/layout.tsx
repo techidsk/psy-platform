@@ -1,9 +1,11 @@
 'use client';
 import { SessionProvider } from 'next-auth/react';
-import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
+import './globals.css';
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+    console.log('RootLayout');
     return (
         <html lang="en">
             <head></head>

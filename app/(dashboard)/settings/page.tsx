@@ -4,9 +4,9 @@ import { notFound } from 'next/navigation';
 import { format } from 'date-fns';
 import { Icons } from '@/components/icons';
 import { getAvatarUrl } from '@/lib/logic/avatar';
+import { UserSetttingAvatar } from '@/components/setting/setting-page-avatar';
 
 import './setting.css';
-import { UserSetttingAvatar } from '@/components/setting/setting-page-avatar';
 
 /**用户设置界面 */
 export default async function Settings() {

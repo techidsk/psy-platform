@@ -7,11 +7,12 @@ import Image from 'next/image';
 import { db } from '@/lib/db';
 import { dateFormat, formatTime } from '@/lib/date';
 import TableActions from '@/components/table/table-action';
-import CheckExperimentHistoryButton from '@/components/check-experiment-histroy-button';
 import Pagination from '@/components/pagination';
 import { getCurrentUser } from '@/lib/session';
 import { TableSearch } from '@/components/table/table-search';
 import { Prisma } from '@prisma/client';
+import DownloadExperimentHistoryButton from '@/components/history/download-experiment-history-button';
+import CheckExperimentHistoryButton from '@/components/history/check-experiment-history-button';
 
 interface ExperimentProps {
     id: number;
@@ -226,6 +227,19 @@ const experimentTableConfig: TableConfig[] = [
             return (
                 <TableActions>
                     <CheckExperimentHistoryButton data={data} />
+                </TableActions>
+            );
+        },
+    },
+    {
+        key: 'id',
+        label: '下载',
+        auth: ['ADMIN', 'ASSISTANT'],
+        hidden: true,
+        children: (data: any) => {
+            return (
+                <TableActions>
+                    <DownloadExperimentHistoryButton data={data} />
                 </TableActions>
             );
         },
