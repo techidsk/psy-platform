@@ -1,6 +1,8 @@
 'use client';
 
 import { toast } from '@/hooks/use-toast';
+import { uploadPhotoWihInput } from '@/lib/api/post';
+import { compressBlob, calculateHash } from '@/lib/logic/file';
 import { getUrl } from '@/lib/url';
 import { type HeaderUserInfo } from '@/lib/logic/user';
 
@@ -21,7 +23,9 @@ export function UserAvatarUploadButton({ user, updateFuc }: UserAvatarUploadButt
         fileInput?.click();
     }
 
-    async function uploadFile(e: React.SyntheticEvent) {
+    /**
+    async function uploadFile(e: SyntheticEvent) {
+        console.log(e.targetFile)
         const target = e.target as HTMLInputElement; // 类型断言
         if (!target.files || target.files.length === 0) {
             return; // 没有文件，直接返回
@@ -61,6 +65,7 @@ export function UserAvatarUploadButton({ user, updateFuc }: UserAvatarUploadButt
             }
         }
     }
+ */
 
     return (
         <>
@@ -77,12 +82,13 @@ export function UserAvatarUploadButton({ user, updateFuc }: UserAvatarUploadButt
             </button>
             <input
                 data-id="avatar-upload"
+                id="avatar-upload"
                 type="file"
                 accept=".png, .jpg, .jpeg"
                 style={{
                     display: 'none',
                 }}
-                onChange={uploadFile}
+                onChange={uploadPhotoWihInput}
             ></input>
         </>
     );

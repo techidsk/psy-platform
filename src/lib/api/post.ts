@@ -28,63 +28,65 @@ export async function uploadPhotoWihInput(
     e: React.ChangeEvent<HTMLInputElement>
 ): Promise<FetchResult> {
     const targetFile = e.target.files?.[0];
+    // 等待之后完成后端文件上传等后删除该段代码
+    alert('因后端调整，暂时封存图像上传功能');
 
-    if (targetFile) {
-        const hash = await calculateHash(targetFile);
-        const checkFile = await fetch(getUrl(`/api/photo?hash=${hash}`));
+    // if (targetFile) {
+    //     const hash = await calculateHash(targetFile);
+    //     const checkFile = await fetch(getUrl(`/api/photo?hash=${hash}`));
 
-        if (checkFile.ok) {
-            // 文件已存在
-            return {
-                result: await checkFile.json(),
-                resultMsg: 'File exists in the database',
-                resultTransferCode: checkFile.status,
-                isFetchSuccess: true,
-            };
-        }
+    //     if (checkFile.ok) {
+    //         // 文件已存在
+    //         return {
+    //             result: await checkFile.json(),
+    //             resultMsg: 'File exists in the database',
+    //             resultTransferCode: checkFile.status,
+    //             isFetchSuccess: true,
+    //         };
+    //     }
 
-        // 该接口404代码用于指示对应资源不存在在数据库内。好吧，我得承认这设计得很奇怪。
-        if (checkFile.status !== 404) {
-            return {
-                result: checkFile.body,
-                resultMsg: 'File exist in the database, so return its hash',
-                resultTransferCode: checkFile.status,
-                isFetchSuccess: true,
-            };
-        }
+    //     // 该接口404代码用于指示对应资源不存在在数据库内。好吧，我得承认这设计得很奇怪。
+    //     if (checkFile.status !== 404) {
+    //         return {
+    //             result: checkFile.body,
+    //             resultMsg: 'File exist in the database, so return its hash',
+    //             resultTransferCode: checkFile.status,
+    //             isFetchSuccess: true,
+    //         };
+    //     }
 
-        const { compressedBlob, fileOriginType } = await compressBlob(targetFile);
+    //     const { compressedBlob, fileOriginType } = await compressBlob(targetFile);
 
-        const formData = new FormData();
-        formData.append('data', compressedBlob);
-        formData.append('compressedType', 'gzip');
-        formData.append('dataType', fileOriginType);
-        formData.append('hash', hash);
-        console.log('prepare for uploading...');
+    //     const formData = new FormData();
+    //     formData.append('data', compressedBlob);
+    //     formData.append('compressedType', 'gzip');
+    //     formData.append('dataType', fileOriginType);
+    //     formData.append('hash', hash);
+    //     console.log('prepare for uploading...');
 
-        const response = await fetch(getUrl('/api/photo'), {
-            method: 'POST',
-            body: formData,
-        });
+    //     const response = await fetch(getUrl('/api/photo'), {
+    //         method: 'POST',
+    //         body: formData,
+    //     });
 
-        if (!response.ok) {
-            // 处理上传错误
-            return {
-                result: undefined,
-                resultMsg: 'Error uploading file',
-                resultTransferCode: response.status,
-                isFetchSuccess: false,
-            };
-        }
+    //     if (!response.ok) {
+    //         // 处理上传错误
+    //         return {
+    //             result: undefined,
+    //             resultMsg: 'Error uploading file',
+    //             resultTransferCode: response.status,
+    //             isFetchSuccess: false,
+    //         };
+    //     }
 
-        // 上传成功
-        return {
-            result: await response.json(),
-            resultMsg: 'Success',
-            resultTransferCode: response.status,
-            isFetchSuccess: true,
-        };
-    }
+    //     // 上传成功
+    //     return {
+    //         result: await response.json(),
+    //         resultMsg: 'Success',
+    //         resultTransferCode: response.status,
+    //         isFetchSuccess: true,
+    //     };
+    // }
 
     return {
         result: undefined,
