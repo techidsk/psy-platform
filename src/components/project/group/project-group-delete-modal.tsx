@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 import { getUrl } from '@/lib/url';
 import { toast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 interface ProjectAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
     closeModal: Function;
@@ -18,9 +19,15 @@ export function ProjectDeleteModal({
     projectId,
     ...props
 }: ProjectAuthFormProps) {
-    async function deleteProject() {
+    const router = useRouter();
+
+    /**
+     * 删除项目分组
+     * @returns
+     */
+    async function deleteProjectGroup() {
         try {
-            const response = await fetch(getUrl(`/api/project/${projectId}`), {
+            const response = await fetch(getUrl(`/api/project/group/${projectId}`), {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
             });
@@ -34,10 +41,11 @@ export function ProjectDeleteModal({
 
             toast({
                 title: '删除成功',
-                description: '已成功删除项目',
+                description: '已成功删除项目分组',
                 duration: 3000,
             });
             closeModal();
+            router.refresh();
         } catch (error) {
             toast({
                 title: '删除失败',
@@ -52,15 +60,13 @@ export function ProjectDeleteModal({
         closeModal();
     }
 
-    useEffect(() => {}, [projectId]);
-
     return (
         <div className={cn('grid gap-6', className)} {...props}>
             <div className="text-lg flex gap-2 text-red-500">
                 <Icons.alert /> 是否确认删除项目分组?
             </div>
             <div className="flex justify-end gap-4">
-                <button className="btn btn-primary" onClick={deleteProject}>
+                <button className="btn btn-primary" onClick={deleteProjectGroup}>
                     删除
                 </button>
                 <button className="btn" onClick={close}>

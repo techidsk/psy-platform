@@ -5,11 +5,9 @@ import { db } from '@/lib/db';
 import { ImageResponse } from '@/types/experiment';
 import { ImageListServer } from '@/components/experiment/image-list-server';
 import { dateFormat } from '@/lib/date';
-import { ExperimentSetting } from '@/components/experiment/experiment-setting';
 import { ExperimentFinishButton } from '@/components/experiment/experiment-finish-button';
 import { CountDown } from '@/components/countdown';
 import { getCurrentUser } from '@/lib/session';
-import { date } from 'zod';
 
 async function getExperiment(userId: number, experimentId: string) {
     const experiment = await db.user_experiments.findFirst({

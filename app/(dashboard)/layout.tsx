@@ -86,9 +86,9 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
     if (!user) {
         return notFound();
     }
-    console.log('user', user);
+    // console.log('user', user);
     const dbUser = await getUser(user.id);
-    console.log('dbUser', dbUser);
+    // console.log('dbUser', dbUser);
 
     const authedSidebar =
         user.role !== 'SUPERADMIN' ? authSidebar(sidebarNav, user.role as UserRole) : sidebarNav;

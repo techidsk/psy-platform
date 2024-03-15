@@ -72,7 +72,7 @@ async function findProjectGroup(userId: number, project_id: number) {
             },
         });
 
-        console.debug('user:', userId, 'experiments:', experimentList);
+        // console.debug('user:', userId, 'experiments:', experimentList);
 
         // 获取对应的实验列表以及实验顺序
         const experimentTimes = userGroup.project_experiment_times || 0;
@@ -86,7 +86,7 @@ async function findProjectGroup(userId: number, project_id: number) {
             };
         }
 
-        console.debug('user:', userId, 'need to do:', experimentList);
+        // console.debug('user:', userId, 'need to do:', experimentList);
         // TODO 判断是否已经完成本周实验
 
         return {
