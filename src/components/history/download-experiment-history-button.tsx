@@ -27,6 +27,7 @@ export default function DownloadExperimentHistoryButton({ data }: ButtonProps) {
             console.error('Download failed:', error);
         }
     }
+
     return (
         <div className="flex gap-2">
             <button className="btn btn-ghost btn-sm" onClick={() => downloadCSV(data?.nano_id)}>

@@ -1,5 +1,4 @@
 import { db } from '@/lib/db';
-import { tr } from 'date-fns/locale';
 import { NextResponse } from 'next/server';
 
 /**
@@ -12,18 +11,35 @@ export async function GET(request: Request, context: { params: any }) {
     try {
         // 记录日志
         // ...
+        const experimentId = context.params.id;
+        const userExperiment = await db.user_experiments.findFirst({
+            where: { nano_id: experimentId },
+        });
+
+        // TODO 添加下载文件名称
+        // const experiment = await db.experiment.findFirst({
+        //     where: { id: parseInt(userExperiment?.experiment_id) },
+        // });
+
+        const userId = userExperiment?.user_id as number;
+        const user = await db.user.findFirst({
+            where: { id: userId },
+        });
+
         const response = await db.trail_logger.findMany({
-            where: { experiment_id: context.params.id },
+            where: { experiment_id: experimentId },
             select: {
                 input: true,
                 images: true,
                 timestamp: true,
             },
         });
+
         if (response.length === 0) {
             return NextResponse.json({ msg: '没有记录' }, { status: 404 });
         }
         let csvContent = '\uFEFF';
+        csvContent += `${user?.username},${user?.qualtrics},${user?.tel}\n`; // 添加标题行
         csvContent += 'Input,Images,Timestamp\n'; // 添加标题行
         response.forEach((row) => {
             let input = (row.input as string) || '';
@@ -46,7 +62,6 @@ export async function GET(request: Request, context: { params: any }) {
                 'Content-Disposition': `attachment; filename="${filename}"`,
             },
         });
-        return NextResponse.json({ msg: response });
     } catch (error) {
         console.error('更新失败:', error);
         return NextResponse.json({ msg: '服务器错误' }, { status: 500 });
