@@ -7,6 +7,17 @@ import { ImageListServer } from '@/components/experiment/image-list-server';
 import { dateFormat } from '@/lib/date';
 import { ExperimentSetting } from '@/components/experiment/experiment-setting';
 import { ExperimentFinishButton } from '@/components/experiment/experiment-finish-button';
+import { CountDown } from '@/components/countdown';
+import { getCurrentUser } from '@/lib/session';
+import { date } from 'zod';
+
+async function getExperiment(userId: number, experimentId: string) {
+    const experiment = await db.user_experiments.findFirst({
+        where: { user_id: userId, nano_id: experimentId },
+    });
+
+    return experiment;
+}
 
 async function getExperimentInfos(experimentId: string) {
     if (!experimentId) {
@@ -46,9 +57,17 @@ async function getAccessKey() {
 /**正式实验输入测试 */
 export default async function MainInput({ params: { id } }: { params: { id: string } }) {
     // 获取用户实验prompt信息
+    const user = await getCurrentUser();
+    if (!user) {
+        return;
+    }
+    const experiment = await getExperiment(parseInt(user?.id), id);
     const list = await getExperimentInfos(id);
     const platfomrSetting = await getAccessKey();
     const displayNum = platfomrSetting?.display_num || 1;
+    const startTime = experiment?.start_time
+        ? Math.floor(new Date(experiment?.start_time).getTime() / 1000)
+        : new Date().getTime() / 1000;
 
     return (
         <div className="bg-white mb-8">
@@ -59,6 +78,9 @@ export default async function MainInput({ params: { id } }: { params: { id: stri
                         <ExperimentFinishButton nanoId={id} experimentList={list} />
                     </div>
                 </DashboardHeader>
+                <div className="flex justify-center">
+                    <CountDown start={startTime} limit={330} nanoId={id} />
+                </div>
                 <ImageListServer>
                     <ImageList experimentList={list} displayNum={displayNum} />
                 </ImageListServer>

@@ -2,7 +2,8 @@ import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { generate } from '@/lib/generate';
 import { OpenAIClient, AzureKeyCredential, ChatRequestMessage } from '@azure/openai';
-import { assert } from 'console';
+import { getCurrentUser } from '@/lib/session';
+import { AGES_MAP, GENDER_MAP } from '@/common/user';
 
 require('dotenv').config();
 const endpoint = process.env.OPENAI_ENDPOINT || '';
@@ -33,6 +34,19 @@ async function translate(systemPrompt: string, userPrompt: string): Promise<stri
  * @returns
  */
 export async function POST(request: Request) {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+        console.error('用户未登录，无法生成图片');
+        return;
+    }
+    const user = await db.user.findFirst({
+        where: { id: parseInt(currentUser.id) },
+        select: {
+            gender: true,
+            ages: true,
+        },
+    });
+
     const json = await request.json();
     const promptNanoId = json?.id;
     const experimentId = json?.experimentId;
@@ -90,6 +104,15 @@ export async function POST(request: Request) {
         take: 5,
     });
 
+    function getValueFromObj(key: number, map: object) {
+        for (const [k, v] of Object.entries(map)) {
+            if (parseInt(k) === key) {
+                return v;
+            }
+        }
+        return '';
+    }
+
     const generateData = {
         user_prompts: userPrompts,
         engine_id: engine.id,
@@ -99,6 +122,10 @@ export async function POST(request: Request) {
         },
         workflow: engine.workflow,
         template: engine.template,
+        user: {
+            gender: (user?.gender && getValueFromObj(user.gender, GENDER_MAP)) || '',
+            ages: (user?.ages && getValueFromObj(user.ages, AGES_MAP)) || '',
+        },
     };
 
     console.log('用户已发送提示词', generateData);

@@ -6,7 +6,6 @@ import { CenteredHero } from '@/components/experiment/modules/centerd-hero';
 import { redirect } from 'next/navigation';
 
 import './styles.css';
-import { LeftImageHero } from '@/components/experiment/modules/left-image-hero';
 
 // 获取用户在当前项目中的分组实验内容
 // 1. 如果用户从未登陆，则查看是否当前项目，否则显示当前时间尚未开放实验
@@ -26,38 +25,68 @@ async function getExperiment(experimentId: number) {
     return experiment;
 }
 
+async function getUserPrivacy(userId: number) {
+    const user = await db.user.findFirst({
+        where: {
+            id: userId,
+        },
+        select: {
+            gender: true,
+            ages: true,
+        },
+    });
+    return user;
+}
+
 export default async function Dashboard() {
     // 获取用户默认的实验
     const currentUser = await getCurrentUser();
     if (!currentUser?.id) {
         redirect('/login');
     }
+
     const { experiment_id: experimentId } = await getUserGroupExperiments();
     if (!experimentId) {
         redirect('/closed');
     }
+
+    const user = await getUserPrivacy(parseInt(currentUser.id));
+    if (!user) {
+        redirect('/login');
+    }
+
+    let showUserPrivacy = false;
+    if (!(user.gender && user.ages)) {
+        // 需要用户录入性别数据
+        showUserPrivacy = true;
+    }
+
     const experiment = await getExperiment(experimentId);
     const title = experiment?.experiment_name || '默认实验';
     const content = experiment.intro || `欢迎参加我们的心理测验。`;
 
     return (
-        <div className="container mx-auto">
-            <div className="flex flex-col gap-4">
-                <DashboardHeader heading="控制台" text="用户相关操作页面" />
-                <div className="p-2">
-                    <div className="hero">
-                        <div className="hero-content text-center">
-                            <div className="max-w-md">
-                                <CenteredHero title={title} content={content}>
-                                    <ExperimentStarterButtons
-                                        experimentId={experiment?.nano_id || ''}
-                                    />
-                                </CenteredHero>
+        <>
+            <div className="container mx-auto">
+                <div className="flex flex-col gap-4">
+                    <DashboardHeader heading="控制台" text="用户相关操作页面" />
+                    <div className="p-2">
+                        <div className="hero">
+                            <div className="hero-content text-center">
+                                <div className="max-w-md">
+                                    <CenteredHero title={title} content={content}>
+                                        <ExperimentStarterButtons
+                                            experimentId={experiment?.nano_id || ''}
+                                            showUserPrivacy={showUserPrivacy}
+                                            userId={parseInt(currentUser.id)}
+                                        />
+                                    </CenteredHero>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 }

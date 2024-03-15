@@ -124,7 +124,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
                             <p className="px-1 text-xs text-red-600">{errors[''].message}</p>
                         )} */}
                     </div>
-                    <div className="grid gap-1">
+                    {/* <div className="grid gap-1">
                         <label className="sr-only" htmlFor="password">
                             Qualtrics账号
                         </label>
@@ -138,7 +138,7 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
                             className="input input-bordered w-full"
                             {...register('qualtrics')}
                         />
-                    </div>
+                    </div> */}
                     <button
                         className="btn btn-outline btn-primary"
                         disabled={isLoading}
