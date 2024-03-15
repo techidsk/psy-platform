@@ -35,21 +35,15 @@ async function translate(systemPrompt: string, userPrompt: string): Promise<stri
  */
 export async function POST(request: Request) {
     const currentUser = await getCurrentUser();
-    if (!currentUser) {
-        console.error('用户未登录，无法生成图片');
-        return;
-    }
-    const user = await db.user.findFirst({
-        where: { id: parseInt(currentUser.id) },
-        select: {
-            gender: true,
-            ages: true,
-        },
-    });
+    const isGuest = currentUser?.role !== 'USER';
+    const user = currentUser?.id
+        ? await db.user.findFirst({ where: { id: parseInt(currentUser.id) } })
+        : undefined;
 
     const json = await request.json();
     const promptNanoId = json?.id;
     const experimentId = json?.experimentId;
+    const experimentNanoId = json?.experimentNanoId;
     if (!promptNanoId) {
         console.error('未找到对应promptNanoId数据');
         return;
@@ -65,25 +59,32 @@ export async function POST(request: Request) {
         console.error('未找到对应prompt数据');
         return;
     }
-    const userExperiment = await db.user_experiments.findFirst({
-        where: { nano_id: experimentId },
-    });
+    let userExperiment = undefined;
+    if (!isGuest) {
+        userExperiment = await db.user_experiments.findFirst({
+            where: { nano_id: experimentId },
+        });
+    } else {
+        userExperiment = await db.user_experiments.findFirst({
+            where: { nano_id: experimentNanoId },
+        });
+    }
 
     if (!userExperiment || !userExperiment.experiment_id) {
         console.error('未找到对应userExperiment数据');
         return;
     }
+
     const experiment = await db.experiment.findFirst({
         where: { id: parseInt(userExperiment.experiment_id) },
         select: { engine_id: true },
     });
-
     if (!experiment || !experiment.engine_id) {
         console.error('未找到对应experiment数据');
         return;
     }
 
-    // 获取生成信息
+    // 获取生成信息F
     const engine = await db.engine.findFirst({
         where: { id: experiment.engine_id },
     });
@@ -96,7 +97,6 @@ export async function POST(request: Request) {
         console.error('未找到对应engine_description数据');
         return;
     }
-
     const userPrompts = await db.trail.findMany({
         where: { user_id: data.user_id, user_experiment_id: data.user_experiment_id },
         select: { prompt: true, generate_prompt: true },

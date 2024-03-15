@@ -1,17 +1,21 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { usePreExperimentState } from '@/state/_pre_atoms';
 import { ImageResponse } from '@/types/experiment';
 import { getUrl } from '@/lib/url';
 
 interface ExperimentFinishProps extends React.HTMLAttributes<HTMLButtonElement> {
     nanoId: string;
     disable?: boolean;
+    guest?: boolean;
     experimentList: ImageResponse[];
 }
 
-export function ExperimentFinishButton({ nanoId, experimentList }: ExperimentFinishProps) {
+export function ExperimentFinishButton({
+    nanoId,
+    guest = false,
+    experimentList,
+}: ExperimentFinishProps) {
     const [disabled, setDisabled] = useState(true);
     const router = useRouter();
 
@@ -34,8 +38,9 @@ export function ExperimentFinishButton({ nanoId, experimentList }: ExperimentFin
                 id: nanoId,
             }),
         });
+        const resultUrl = guest ? `/guest/result/${nanoId}` : `/result/${nanoId}`;
 
-        router.push(`/result/${nanoId}`);
+        router.push(resultUrl);
     }
 
     return (

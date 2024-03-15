@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
-import Link from 'next/link';
 import { db } from '@/lib/db';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getId } from '@/lib/nano-id';
+import { GuestExperimentStarterButtons } from '@/components/guest/guest-experiment-starter-buttons';
 
 export const metadata: Metadata = {
     title: '欢迎来到测试平台',
@@ -20,7 +20,7 @@ async function getAccessKey() {
     return setting;
 }
 
-async function getExpermentNanoId(experimentId: number) {
+async function getExperiment(experimentId: number) {
     const experiment = await db.experiment.findFirst({
         where: {
             id: experimentId,
@@ -32,11 +32,47 @@ async function getExpermentNanoId(experimentId: number) {
         return null;
     }
 
-    return experiment.nano_id;
+    return experiment;
+}
+
+async function addUserExperiment(experimentId: number, engineId: number, userId: number) {
+    const experimentNanoId = getId();
+    await db.user_experiments.create({
+        data: {
+            experiment_id: `${experimentId}`,
+            nano_id: experimentNanoId,
+            engine_id: engineId,
+            type: 'GUEST_EXPERIMENT',
+            user_id: userId,
+        },
+    });
+    return experimentNanoId;
+}
+
+async function insertGuestUser(nanoId: string) {
+    // 判断是否有用户存在
+    const guestUser = await db.user.findFirst({
+        where: {
+            nano_id: nanoId,
+        },
+    });
+    if (guestUser) {
+        return guestUser;
+    }
+
+    const user = await db.user.create({
+        data: {
+            nano_id: nanoId,
+            user_role: 'GUEST',
+            username: nanoId,
+        },
+    });
+    return user;
 }
 
 export default async function VerifyPage({ params: { id } }: { params: { id: string } }) {
     const platfomrSetting = await getAccessKey();
+
     // 未开放游客模式
     if (platfomrSetting?.guest_mode === false) {
         console.error('Guest Mode is not open');
@@ -63,8 +99,15 @@ export default async function VerifyPage({ params: { id } }: { params: { id: str
     }
 
     const experimentId = experimentIds[Math.floor(Math.random() * experimentIds.length)];
-    const experimentNanoId = await getExpermentNanoId(experimentId);
+    const experiment = await getExperiment(experimentId);
+    // 未绑定引擎
+    if (experiment?.engine_id == null || experiment.engine_id == undefined) {
+        console.error("Experiment doesn't bind engine");
+        return notFound();
+    }
     const userUniqueKey = getId();
+    // const guest = await insertGuestUser(userUniqueKey);
+    // console.log('创建临时用户id: ', guest.id);
 
     return (
         <div className="flex h-screen w-screen flex-col items-center justify-center bg-white">
@@ -77,14 +120,13 @@ export default async function VerifyPage({ params: { id } }: { params: { id: str
                         请牢记在心
                     </div>
                 </div>
-                <p className="px-8 text-center text-sm text-slate-500 dark:text-slate-400">
-                    <Link
-                        href={`/guest/input/${userUniqueKey}?e=${experimentNanoId}`}
-                        className="btn btn-primary"
-                    >
-                        现在开始
-                    </Link>
-                </p>
+                <div className="px-8 text-center text-sm text-slate-500 dark:text-slate-400">
+                    <GuestExperimentStarterButtons
+                        experimentId={experimentId}
+                        userUniqueKey={userUniqueKey}
+                        engineId={experiment?.engine_id}
+                    />
+                </div>
             </div>
         </div>
     );

@@ -15,6 +15,7 @@ interface ExperimentEditorProps {
     trail?: boolean;
     experimentList?: ImageResponse[];
     displayNum?: number;
+    experimentNanoId?: string;
 }
 
 type FetchData = {
@@ -30,7 +31,12 @@ type FetchData = {
 const LOG_INTERVAL = 100; // 记录日志的时间间隔
 const UPLOAD_INTERVAL = 10000; // 上传日志的时间间隔
 
-export function ExperimentEditor({ nanoId, trail = true, displayNum = 1 }: ExperimentEditorProps) {
+export function ExperimentEditor({
+    nanoId,
+    trail = true,
+    displayNum = 1,
+    experimentNanoId = '',
+}: ExperimentEditorProps) {
     const router = useRouter();
     const ref = useRef<HTMLTextAreaElement>(null);
     const [loading, setLoading] = useState<boolean>(false);
@@ -120,6 +126,7 @@ export function ExperimentEditor({ nanoId, trail = true, displayNum = 1 }: Exper
             body: JSON.stringify({
                 id: promptNanoId,
                 experimentId: experimentId,
+                experimentNanoId: experimentNanoId,
             }),
             headers: { 'Content-Type': 'application/json' },
         });

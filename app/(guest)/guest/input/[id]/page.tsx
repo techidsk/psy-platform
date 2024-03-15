@@ -7,6 +7,8 @@ import { ImageListServer } from '@/components/experiment/image-list-server';
 import { dateFormat } from '@/lib/date';
 import { ExperimentSetting } from '@/components/experiment/experiment-setting';
 import { ExperimentFinishButton } from '@/components/experiment/experiment-finish-button';
+import { CountDown } from '@/components/countdown';
+import { notFound } from 'next/navigation';
 
 async function getExperimentInfos(experimentId: string) {
     if (!experimentId) {
@@ -32,6 +34,21 @@ async function getExperimentInfos(experimentId: string) {
     return formatResult;
 }
 
+async function getExperiment(userId: string, experimentId: string) {
+    const user = await db.user.findFirst({
+        where: { nano_id: userId },
+    });
+    if (!user) {
+        return notFound();
+    }
+
+    const experiment = await db.user_experiments.findFirst({
+        where: { user_id: user.id, nano_id: experimentId },
+    });
+
+    return experiment;
+}
+
 /**正式实验输入测试 */
 export default async function GuestMainInput({
     params: { id },
@@ -42,23 +59,36 @@ export default async function GuestMainInput({
 }) {
     // 获取用户实验prompt信息
     const list = await getExperimentInfos(id);
-    console.log('guest id:', id, 'experiment nanoId:', searchParams['e']);
-    // TODO 添加用户到用户表 GUEST身份
-    // TODO 添加用户实验
+    const userExperimentId = searchParams['e'];
+    const guestNanoId = id;
+    const experiment = await getExperiment(guestNanoId, userExperimentId);
+
+    const startTime = experiment?.start_time
+        ? Math.floor(new Date(experiment?.start_time).getTime() / 1000)
+        : new Date().getTime() / 1000;
+
     return (
         <div className="bg-white mb-8">
             <div className="container mx-auto flex flex-col gap-4">
                 <DashboardHeader heading="实验说明" text="请在下方的文本框内输入您的想法和感受。">
                     <div className="flex gap-2">
                         <ExperimentSetting />
-                        <ExperimentFinishButton nanoId={id} experimentList={list} />
+                        <ExperimentFinishButton nanoId={id} guest={true} experimentList={list} />
                     </div>
                 </DashboardHeader>
+                <div className="flex justify-center">
+                    <CountDown start={startTime} limit={330} nanoId={id} />
+                </div>
                 <ImageListServer>
                     <ImageList experimentList={list} />
                 </ImageListServer>
                 <div className="flex flex-col gap-4 w-full">
-                    <ExperimentEditor nanoId={id} trail={false} experimentList={list} />
+                    <ExperimentEditor
+                        nanoId={id}
+                        trail={false}
+                        experimentList={list}
+                        experimentNanoId={searchParams['e']}
+                    />
                 </div>
             </div>
         </div>
