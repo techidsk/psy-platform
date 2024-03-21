@@ -19,7 +19,7 @@ export default async function GuestInput({
     const guestNanoId = id;
     const userExperiment = await getExperiment(guestNanoId, userExperimentId);
 
-    const list = await getExperimentInfos(id);
+    const list = await getExperimentInfos(userExperimentId);
 
     const platfomrSetting = await getAccessKey();
     const displayNum = platfomrSetting?.display_num || 1;
@@ -34,7 +34,7 @@ export default async function GuestInput({
     }
 
     const countDownTime = await getCountDownTime(parseInt(userExperiment?.experiment_id));
-
+    logger.info(`guestNanoId: ${guestNanoId}`);
     return (
         <div className="bg-white mb-8">
             <div className="container mx-auto flex flex-col gap-4">
@@ -57,12 +57,13 @@ export default async function GuestInput({
                 </ImageListServer>
                 <div className="flex flex-col gap-4 w-full">
                     <ExperimentEditor
-                        nanoId={id}
+                        nanoId={userExperimentId}
                         trail={false}
                         experimentList={list}
                         displayNum={displayNum}
                         experimentNanoId={searchParams['e']}
                         guest={true}
+                        guestNanoId={guestNanoId}
                     />
                 </div>
             </div>

@@ -16,6 +16,7 @@ interface UserPrivacyProps extends React.HTMLAttributes<HTMLDivElement> {
     closeModal: Function;
     userId?: number;
     nano_id?: string;
+    guest?: boolean;
 }
 type FormData = z.infer<typeof userPrivacySchema>;
 
@@ -28,6 +29,7 @@ export function UserPrivacyForm({
     nano_id,
     closeModal,
     userId,
+    guest = false,
     ...props
 }: UserPrivacyProps) {
     const {
@@ -113,7 +115,7 @@ export function UserPrivacyForm({
             return;
         }
 
-        await fetch(getUrl(`/api/user/${userId}`), {
+        await fetch(getUrl(`/api/user/privacy/${userId}`), {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

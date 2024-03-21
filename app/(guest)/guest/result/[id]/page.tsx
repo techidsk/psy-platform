@@ -14,7 +14,6 @@ export default function GuestResultPage({ params: { id } }: { params: { id: stri
     const item = JSON.parse(itemStr);
     const userUniqueKey = item.value;
     const needNewUniqueKey = userUniqueKey === null;
-    logger.info(needNewUniqueKey);
     if (needNewUniqueKey) {
         logger.error('未找到合法的用户唯一标识');
     }

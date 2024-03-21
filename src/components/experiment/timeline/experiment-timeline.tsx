@@ -47,12 +47,16 @@ async function getUserPrivacy(userId: number) {
 interface ExperimentTimelineProps {
     experimentId: number; // 实验ID
     userId: number;
+    guest?: boolean;
+    guestUserNanoId?: string;
 }
 
 // 获取实验步骤
 export default async function ExperimentTimeline({
     experimentId,
     userId,
+    guestUserNanoId,
+    guest = false,
 }: ExperimentTimelineProps) {
     // 绑定用户的性别和年龄和Qualtrics
     const user = await getUserPrivacy(userId);
@@ -60,7 +64,7 @@ export default async function ExperimentTimeline({
         redirect('/login');
     }
     let showUserPrivacy = false;
-    if (!(user.gender && user.ages)) {
+    if (user.gender == null || user.ages == null) {
         // 需要用户录入性别数据
         showUserPrivacy = true;
     }
@@ -81,6 +85,8 @@ export default async function ExperimentTimeline({
                     experimentSteps={experimentSteps}
                     showUserPrivacy={showUserPrivacy}
                     userId={userId}
+                    guestUserNanoId={guestUserNanoId}
+                    guest={guest}
                 />
             </div>
         </>

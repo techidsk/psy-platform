@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getUrl } from '@/lib/url';
-import { useRouter } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import store from 'store2';
 import { Modal } from '../ui/modal';
 import { UserPrivacyForm } from '../user/user-privacy-modal';
@@ -13,49 +13,55 @@ interface Buttons extends React.HTMLAttributes<HTMLDivElement> {
     showUserPrivacy?: boolean;
     userId?: number;
     guest?: boolean;
-    userUniqueKey?: string;
+    guestUserNanoId?: string;
 }
 
 export function ExperimentStarterButtons({
     experimentId: experimentNanoId, // 实验 nano_id
     showUserPrivacy,
     userId,
-    userUniqueKey,
+    guestUserNanoId,
     guest = false,
 }: Buttons) {
     const [open, setOpen] = useState(false);
 
     const router = useRouter();
-
-    async function insertGuestUser() {
-        const response = await fetch(getUrl('/api/guest/add'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                nano_id: userUniqueKey,
-            }),
-        });
-        const responeData = await response.json();
-        return responeData.data;
+    const GUEST_UNIQUE_KEY = 'userUniqueKey';
+    const itemStr = store.get(GUEST_UNIQUE_KEY);
+    if (!itemStr) {
+        redirect('/guest');
+    }
+    const item = JSON.parse(itemStr);
+    const now = new Date();
+    // 检查存储的用户ID是否过期
+    if (now.getTime() > item.expiry) {
+        redirect('/guest');
+    }
+    const userUniqueKey = item.value;
+    if (!userUniqueKey) {
+        redirect('/guest');
     }
 
     async function startExperiment() {
-        if (guest) {
-            // 游客模式需要创建用户,才能继续进行操作
-            const guestId = await insertGuestUser();
-        }
         // 创建实验，然后跳转到对应的路径
         const result = await fetch(getUrl('/api/user/experiment'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 experimentId: experimentNanoId,
+                guest: guest,
+                guestUserNanoId: guestUserNanoId,
             }),
         });
         if (result.ok) {
             const responseBody = await result.json();
             const userExperimentNanoId = responseBody.data.userExperimentNanoId;
-            router.push(`/experiments/input/${userExperimentNanoId}`);
+
+            if (guest) {
+                router.push(`/guest/input/${userUniqueKey}?e=${userExperimentNanoId}`);
+            } else {
+                router.push(`/experiments/input/${userExperimentNanoId}`);
+            }
             userExperimentNanoId && store('experimentId', userExperimentNanoId);
         }
     }
@@ -88,7 +94,7 @@ export function ExperimentStarterButtons({
                     disableClickOutside={!open}
                 >
                     <h1 className="text-xl">编辑用户</h1>
-                    <UserPrivacyForm closeModal={closeModel} userId={userId} />
+                    <UserPrivacyForm closeModal={closeModel} userId={userId} guest={guest} />
                 </Modal>
             )}
         </>

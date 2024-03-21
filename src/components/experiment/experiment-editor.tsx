@@ -17,6 +17,7 @@ interface ExperimentEditorProps {
     displayNum?: number;
     experimentNanoId?: string;
     guest?: boolean;
+    guestNanoId?: string;
 }
 
 type FetchData = {
@@ -27,6 +28,8 @@ type FetchData = {
     promptNanoId?: string;
     projectGroupId?: string;
     trail?: boolean;
+    guestNanoId?: string;
+    guest?: boolean;
 };
 
 const LOG_INTERVAL = 100; // 记录日志的时间间隔
@@ -34,6 +37,7 @@ const UPLOAD_INTERVAL = 10000; // 上传日志的时间间隔
 
 export function ExperimentEditor({
     nanoId,
+    guestNanoId,
     trail = true,
     displayNum = 1,
     experimentNanoId = '',
@@ -80,12 +84,15 @@ export function ExperimentEditor({
             nano_id: nanoId, // 本次实验id
             promptNanoId: promptNanoId,
             trail: trail,
+            guestNanoId: guestNanoId,
+            guest: guest,
         };
         // 判断是否是正式实验
         if (!trail && experimentId) {
             data['experimentId'] = experimentId;
         }
-
+        logger.info(data);
+        logger.info(`data @ experiment-editor.tsx`);
         await fetch(getUrl('/api/trail'), {
             method: 'POST',
             headers: {
@@ -110,6 +117,7 @@ export function ExperimentEditor({
                 experimentId: experimentId,
                 experimentNanoId: experimentNanoId,
                 guest: guest,
+                guestNanoId: guestNanoId,
             }),
             headers: { 'Content-Type': 'application/json' },
         });
@@ -126,6 +134,7 @@ export function ExperimentEditor({
                     imageUrl: d.url,
                     nano_id: experimentId,
                     prompt: d.prompt,
+                    guestNanoId: guestNanoId,
                 }),
                 cache: 'no-store',
             });

@@ -16,7 +16,6 @@ export function ExperimentFinishButton({
     guest = false,
     experimentList,
 }: ExperimentFinishProps) {
-    console.log(userExperimentNanoId);
     const [disabled, setDisabled] = useState(true);
 
     const router = useRouter();

@@ -39,7 +39,7 @@ async function getCurrentUserExperiment(userId: string, experimentId: string): P
     }
 
     if (!user) {
-        logger.error('用户不存在');
+        logger.error(`userId: ${userId} 用户不存在 @experiment.ts`);
         return notFound();
     }
 

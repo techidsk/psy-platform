@@ -9,16 +9,20 @@ import { getAccessKey } from '@/lib/platform';
 import { getCountDownTime, getExperiment, getExperimentInfos } from '@/lib/experiment';
 import { logger } from '@/lib/logger';
 
-export default async function MainInput({ params: { id } }: { params: { id: string } }) {
+export default async function MainInput({
+    params: { id: userExperimentId },
+}: {
+    params: { id: string };
+}) {
     // 获取用户实验prompt信息
     const user = await getCurrentUser();
     if (!user) {
         logger.error('当前用户未登录');
         return;
     }
-    const userExperiment = await getExperiment(user?.id, id);
+    const userExperiment = await getExperiment(user?.id, userExperimentId);
 
-    const list = await getExperimentInfos(id);
+    const list = await getExperimentInfos(userExperimentId);
 
     const platfomrSetting = await getAccessKey();
     const displayNum = platfomrSetting?.display_num || 1;
@@ -39,8 +43,12 @@ export default async function MainInput({ params: { id } }: { params: { id: stri
             <div className="container mx-auto flex flex-col gap-4">
                 <DashboardHeader heading="实验说明" text="请在下方的文本框内输入您的想法和感受。">
                     <div className="flex gap-4 items-center">
-                        <CountDown start={startTime} limit={countDownTime} nanoId={id} />
-                        <ExperimentFinishButton nanoId={id} experimentList={list} />
+                        <CountDown
+                            start={startTime}
+                            limit={countDownTime}
+                            nanoId={userExperimentId}
+                        />
+                        <ExperimentFinishButton nanoId={userExperimentId} experimentList={list} />
                     </div>
                 </DashboardHeader>
                 <ImageListServer>
@@ -48,7 +56,7 @@ export default async function MainInput({ params: { id } }: { params: { id: stri
                 </ImageListServer>
                 <div className="flex flex-col gap-4 w-full">
                     <ExperimentEditor
-                        nanoId={id}
+                        nanoId={userExperimentId}
                         trail={false}
                         experimentList={list}
                         displayNum={displayNum}

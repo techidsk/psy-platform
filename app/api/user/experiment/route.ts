@@ -11,50 +11,44 @@ import { getUserGroupExperiments } from '@/lib/user_experiment';
  */
 export async function POST(request: Request) {
     const data = await request.json();
+    const guest = data['guest'] || false;
+    const guestUserNanoId = data['guestUserNanoId'] || '';
+    const {
+        project_group_id: projectGroupId,
+        experiment_id: experimentId,
+        user_id: userId,
+    } = await getUserGroupExperiments(guest, guestUserNanoId);
 
-    const currentUser = await getCurrentUser();
-    data['user_id'] = currentUser?.id;
+    if (!projectGroupId) {
+        return NextResponse.json({ msg: '项目分组不存在' });
+    }
 
+    if (!userId) {
+        return NextResponse.json({ msg: '未找到合法的userId @ /api/user/experiment/route.ts' });
+    }
+
+    // 获取实验属性
     const experiment = await db.experiment.findFirst({
         where: {
             nano_id: data['experimentId'],
         },
     });
 
-    const { project_group_id: projectGroupId, experiment_id: experimentId } =
-        await getUserGroupExperiments();
-
     if (experiment) {
+        // 创建用户实验 user_experiments
         const userExperimentNanoId = getId();
-        let item: any = {
-            nano_id: userExperimentNanoId,
-            type: 'EXPERIMENT',
-            engine_id: experiment?.engine_id,
-            user_id: parseInt(data['user_id']),
-        };
-
-        console.log('创建用户实验: ', item);
-        let dbExperiment = await db.user_experiments.create({
+        await db.user_experiments.create({
             data: {
-                ...item,
+                nano_id: userExperimentNanoId,
+                type: 'EXPERIMENT',
+                engine_id: experiment?.engine_id,
+                user_id: userId,
                 experiment_id: `${experimentId}`,
                 project_group_id: projectGroupId,
             },
         });
         // 更新用户实验次数
-        await db.user_group.update({
-            where: {
-                user_id_project_group_id: {
-                    user_id: parseInt(data['user_id']),
-                    project_group_id: projectGroupId,
-                },
-            },
-            data: {
-                project_experiment_times: {
-                    increment: 1,
-                },
-            },
-        });
+
         return NextResponse.json({
             msg: '发布成功',
             data: {

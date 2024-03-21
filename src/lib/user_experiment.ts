@@ -5,8 +5,9 @@ import { getCurrentUser } from './session';
 interface projectGroupResult {
     status: string;
     message?: string;
-    experiment_id: number | undefined;
-    project_group_id: number | undefined;
+    experiment_id: number | undefined; // 下一组实验ID
+    project_group_id: number | undefined; // 用户所属的项目分组id
+    user_id?: number; // 用户id
 }
 
 async function findAvailableProject() {
@@ -105,7 +106,7 @@ async function findProjectGroup(
                 return {
                     status: 'FINISHED',
                     message: '已经完成所有实验',
-                    experiment_id: undefined,
+                    experiment_id: 0,
                     project_group_id: userProjectGroupId,
                 };
             }
@@ -119,7 +120,7 @@ async function findProjectGroup(
             return {
                 status: 'FINISHED',
                 message: '已经完成所有实验',
-                experiment_id: undefined,
+                experiment_id: 0,
                 project_group_id: userProjectGroupId,
             };
         }
@@ -131,11 +132,12 @@ async function findProjectGroup(
             project_group_id: userProjectGroupId,
         };
     } else {
+        logger.info(`<用户${userId}> 未分配项目分组@user_group，开始进行分配`);
         // 用户在当前项目并没有对应的项目，随机分配用户到对应的项目分组中
         const userProjectGroupId = await getRandomProjectGroup(projectId);
         const experimentList = await findGroupExperiments(userProjectGroupId);
         if (!experimentList[0]) {
-            logger.error(`用户分组${userProjectGroupId} 未分配可用实验`);
+            logger.error(`<用户${userId}> 被分配的 项目分组[${userProjectGroupId}] 未分配可用实验`);
             throw new Error('暂未分配项目实验');
         }
 
@@ -148,6 +150,7 @@ async function findProjectGroup(
                 state: 1,
             },
         });
+        logger.info(`<用户${userId}> 已分配到项目分组[${userProjectGroupId}]`);
 
         // 返回对应顺序的实验id
         return {
@@ -162,26 +165,43 @@ async function findProjectGroup(
  * 获取用户在当前项目中的分组实验
  * @returns
  */
-export async function getUserGroupExperiments(guest: boolean = false, guestUserId: number = 0) {
+export async function getUserGroupExperiments(
+    guest: boolean = false,
+    guestUserNanoId: string = ''
+): Promise<projectGroupResult> {
     let userId: number;
-    if (!guest) {
-        const user = await getCurrentUser();
-        if (!user) {
-            throw new Error('用户未登陆');
-        }
-        userId = parseInt(user?.id);
-    } else {
-        if (guestUserId <= 0) {
+    if (guest) {
+        let guestUser;
+        if (guestUserNanoId === '') {
             throw new Error('未指定游客ID');
         }
-        userId = guestUserId;
+        guestUser = await db.user.findFirst({
+            where: { nano_id: guestUserNanoId },
+        });
+        if (!guestUser) {
+            guestUser = await db.user.create({
+                data: {
+                    nano_id: guestUserNanoId,
+                    user_role: 'GUEST',
+                    username: guestUserNanoId,
+                },
+            });
+            logger.warn('未找到对应的游客用户');
+        }
+        userId = guestUser.id;
+    } else {
+        const user = await getCurrentUser();
+        if (!user) {
+            throw new Error('用户未登陆: user_experiment.ts');
+        }
+        userId = parseInt(user?.id);
     }
 
     // TODO 需要支持同时激活多个项目
     const currentProject = await findAvailableProject();
     logger.info(`当前激活的项目: [${currentProject.project_name}]@<${currentProject?.id}>`);
     const response = await findProjectGroup(userId, currentProject?.id, guest);
-
+    response['user_id'] = userId;
     return response;
 }
 

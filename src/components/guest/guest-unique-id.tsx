@@ -1,11 +1,13 @@
 'use client';
-import { logger } from '@/lib/logger';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import store from 'store2';
 
 export default function GuestUniqueKey({ userUniqueKey }: { userUniqueKey: string }) {
     const [userKey, setUserKey] = useState<string | null>();
     const GUEST_UNIQUE_KEY = 'userUniqueKey';
+
+    const router = useRouter();
 
     useEffect(() => {
         // 尝试从 localStorage 获取用户ID
@@ -42,11 +44,20 @@ export default function GuestUniqueKey({ userUniqueKey }: { userUniqueKey: strin
         <div className="flex flex-col space-y-4 text-center">
             <h1 className="text-4xl font-semibold tracking-tight">欢迎参加本次实验</h1>
             {userKey && (
-                <div className="text text-slate-500 dark:text-slate-400">
-                    这是您本次实验的唯一ID{'  '}
-                    <kbd className="kbd kbd-md">{userKey}</kbd>
-                    请牢记在心
-                </div>
+                <>
+                    <div className="text text-slate-500 dark:text-slate-400">
+                        这是您本次实验的唯一ID{'  '}
+                        <kbd className="kbd kbd-md">{userKey}</kbd>
+                        请牢记在心
+                    </div>
+
+                    <button
+                        className="btn btn-primary"
+                        onClick={() => router.push(`/guest/dashboard/${userKey}`)}
+                    >
+                        开始
+                    </button>
+                </>
             )}
         </div>
     );

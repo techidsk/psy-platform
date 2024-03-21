@@ -1,8 +1,7 @@
 import { Metadata } from 'next';
 import { db } from '@/lib/db';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getId } from '@/lib/nano-id';
-import { GuestExperimentStarterButtons } from '@/components/guest/guest-experiment-starter-buttons';
 import { logger } from '@/lib/logger';
 import GuestUniqueKey from '@/components/guest/guest-unique-id';
 
@@ -35,20 +34,6 @@ async function getExperiment(experimentId: number) {
     }
 
     return experiment;
-}
-
-async function addUserExperiment(experimentId: number, engineId: number, userId: number) {
-    const experimentNanoId = getId();
-    await db.user_experiments.create({
-        data: {
-            experiment_id: `${experimentId}`,
-            nano_id: experimentNanoId,
-            engine_id: engineId,
-            type: 'GUEST_EXPERIMENT',
-            user_id: userId,
-        },
-    });
-    return experimentNanoId;
 }
 
 export default async function VerifyPage({ params: { id } }: { params: { id: string } }) {
@@ -93,13 +78,13 @@ export default async function VerifyPage({ params: { id } }: { params: { id: str
         <div className="flex h-screen w-screen flex-col items-center justify-center bg-white">
             <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
                 <GuestUniqueKey userUniqueKey={userUniqueKey} />
-                <div className="px-8 text-center text-sm text-slate-500 dark:text-slate-400">
+                {/* <div className="px-8 text-center text-sm text-slate-500 dark:text-slate-400">
                     <GuestExperimentStarterButtons
                         experimentId={experimentId}
                         userUniqueKey={userUniqueKey}
                         engineId={experiment?.engine_id}
                     />
-                </div>
+                </div> */}
             </div>
         </div>
     );

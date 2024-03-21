@@ -14,6 +14,8 @@ interface ExperimentTimelineProps {
     experimentSteps: experiment_steps[];
     showUserPrivacy: boolean;
     userId: number;
+    guestUserNanoId?: string;
+    guest?: boolean;
 }
 
 export default function ExperimentStepTimeline({
@@ -21,9 +23,10 @@ export default function ExperimentStepTimeline({
     experimentSteps,
     showUserPrivacy,
     userId,
+    guestUserNanoId,
+    guest,
 }: ExperimentTimelineProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const router = useRouter();
     // 下一步
     const nextStep = () => {
         if (currentIndex < experimentSteps.length - 1) {
@@ -65,6 +68,8 @@ export default function ExperimentStepTimeline({
                 showUserPrivacy={showUserPrivacy}
                 userId={userId}
                 experimentNanoId={experiment.nano_id || ''}
+                guest={guest}
+                guestUserNanoId={guestUserNanoId}
             />
         </>
     );
@@ -112,6 +117,8 @@ interface TemplateProps {
     showUserPrivacy: boolean;
     userId: number;
     experimentNanoId: string;
+    guest?: boolean;
+    guestUserNanoId?: string;
 }
 
 function Template({
@@ -123,6 +130,8 @@ function Template({
     showUserPrivacy,
     userId,
     experimentNanoId,
+    guest,
+    guestUserNanoId,
 }: TemplateProps) {
     const title = step?.title || '默认实验';
     const content = step?.content as any;
@@ -154,6 +163,8 @@ function Template({
                                 experimentId={experimentNanoId}
                                 showUserPrivacy={showUserPrivacy}
                                 userId={userId}
+                                guest={guest}
+                                guestUserNanoId={guestUserNanoId}
                             />
                         </>
                     )}
