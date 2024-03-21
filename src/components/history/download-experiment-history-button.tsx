@@ -1,10 +1,15 @@
 'use client';
+
+import { logger } from '@/lib/logger';
+
 interface ButtonProps {
     data: any;
 }
 
 export default function DownloadExperimentHistoryButton({ data }: ButtonProps) {
-    async function downloadCSV(id: string) {
+    async function downloadCSV(data: any) {
+        const id = data.nano_id;
+        const filename = `[${data.experiment_name}]-${data.nano_id}`;
         try {
             const response = await fetch(`/api/log/${id}`);
             if (!response.ok) {
@@ -16,7 +21,7 @@ export default function DownloadExperimentHistoryButton({ data }: ButtonProps) {
             // 创建a标签并模拟点击以下载文件
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', `${id}.csv`);
+            link.setAttribute('download', `${filename}.zip`);
             document.body.appendChild(link); // 需要添加到文档中才能触发点击
             link.click();
 
@@ -28,9 +33,12 @@ export default function DownloadExperimentHistoryButton({ data }: ButtonProps) {
         }
     }
 
+    logger.info(`download data : ${data}`);
+    logger.info(data);
+
     return (
         <div className="flex gap-2">
-            <button className="btn btn-ghost btn-sm" onClick={() => downloadCSV(data?.nano_id)}>
+            <button className="btn btn-ghost btn-sm" onClick={() => downloadCSV(data)}>
                 下载记录
             </button>
         </div>
