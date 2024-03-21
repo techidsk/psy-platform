@@ -10,14 +10,9 @@ import { logger } from '@/lib/logger';
  */
 export async function POST(request: Request) {
     const data = await request.json();
-    logger.info(`data @ /api/trail`);
-    logger.info(data);
     const currentUser = await getCurrentUser();
     const guest = data['guest'] || false;
 
-    logger.info(guest);
-    logger.info(data['guest']);
-    logger.info(Boolean(data['guest'] === 'true'));
     if (!guest) {
         data['user_id'] = currentUser?.id;
     } else {
@@ -25,8 +20,6 @@ export async function POST(request: Request) {
         const guestUser = await db.user.findFirst({
             where: { nano_id: guestNanoId },
         });
-        logger.info('guestuser is :');
-        logger.info(guestUser);
         data['user_id'] = guestUser?.id;
     }
 
@@ -35,7 +28,6 @@ export async function POST(request: Request) {
     const trailNanoId = data['promptNanoId'];
     const prompt = data['prompt'];
     const userId = data['user_id'];
-    logger.info(`${userId} @ api/trail`);
     // 插入用户submit记录用以生成图片
     await db.trail.create({
         data: {

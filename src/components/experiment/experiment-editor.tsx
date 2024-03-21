@@ -91,8 +91,6 @@ export function ExperimentEditor({
         if (!trail && experimentId) {
             data['experimentId'] = experimentId;
         }
-        logger.info(data);
-        logger.info(`data @ experiment-editor.tsx`);
         await fetch(getUrl('/api/trail'), {
             method: 'POST',
             headers: {

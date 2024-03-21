@@ -34,7 +34,6 @@ export default async function GuestInput({
     }
 
     const countDownTime = await getCountDownTime(parseInt(userExperiment?.experiment_id));
-    logger.info(`guestNanoId: ${guestNanoId}`);
     return (
         <div className="bg-white mb-8">
             <div className="container mx-auto flex flex-col gap-4">
