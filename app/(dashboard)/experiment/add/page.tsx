@@ -17,7 +17,7 @@ export default async function CreateExperiment({ searchParams }: any) {
     const engines = await getEngines();
 
     return (
-        <div className="container h-screen lg:max-w-none bg-white">
+        <div className="container lg:max-w-none bg-white">
             <SubpageHeader>
                 <ExperimentEditButton className="btn btn-primary btn-sm" edit={true} />
             </SubpageHeader>

@@ -23,6 +23,7 @@ type UserTableProps = {
     create_time: Date;
     last_login_time: Date;
     user_group_id: number;
+    wechat_id?: string;
     qualtrics?: string;
     user_group_name: string;
     user_engine_name: string;
@@ -48,11 +49,12 @@ async function getUsers(
     const email = searchParams?.email || '';
     const tel = searchParams?.tel || '';
     const qualtrics = searchParams?.qualtrics || '';
+    const wechat_id = searchParams?.wechat_id || '';
     const group_name = searchParams?.group_name || '';
     const user_role = searchParams?.role || '';
     // 判断当前用户角色
     const users = await db.$queryRaw<UserTableProps[]>`
-        SELECT u.id, u.username, u.email, u.tel, u.avatar, u.user_role, u.create_time, u.qualtrics, u.last_login_time,
+        SELECT u.id, u.username, u.email, u.tel, u.avatar, u.user_role, u.create_time, u.qualtrics, u.last_login_time, u.wechat_id,
         g.group_name as user_group_name, count(m.id) as manager_count
         FROM user u
         LEFT JOIN user m ON u.id = m.manager_id
@@ -67,6 +69,7 @@ async function getUsers(
         ${email ? Prisma.sql`AND u.email LIKE '%${Prisma.raw(email)}%'` : Prisma.empty}
         ${tel ? Prisma.sql`AND u.tel LIKE '%${Prisma.raw(tel)}%'` : Prisma.empty}
         ${qualtrics ? Prisma.sql`AND u.qualtrics LIKE '%${Prisma.raw(qualtrics)}%'` : Prisma.empty}
+        ${wechat_id ? Prisma.sql`AND u.wechat_id LIKE '%${Prisma.raw(wechat_id)}%'` : Prisma.empty}
         ${
             group_name
                 ? Prisma.sql`AND g.group_name LIKE '%${Prisma.raw(group_name)}%'`
@@ -167,6 +170,13 @@ const userTableConfig: TableConfig[] = [
         },
     },
     {
+        key: 'wechat_id',
+        label: '微信',
+        children: (data: any) => {
+            return <div className="flex flex-col gap-2">{data.wechat_id}</div>;
+        },
+    },
+    {
         key: 'user_role',
         label: '角色',
         children: (data: UserTableProps) => {
@@ -255,6 +265,7 @@ const searchDatas = [
     { name: 'email', type: 'input', placeholder: '请输入电子邮件' },
     { name: 'tel', type: 'input', placeholder: '请输入联系电话' },
     { name: 'qualtrics', type: 'input', placeholder: '请输入Qualtrics账号' },
+    { name: 'wechat_id', type: 'input', placeholder: '请输入微信账号' },
     { name: 'group_name', type: 'input', placeholder: '请输入用户组' },
     {
         name: 'role',

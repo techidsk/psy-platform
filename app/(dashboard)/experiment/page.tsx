@@ -11,6 +11,7 @@ import Image from 'next/image';
 import { TableSearch } from '@/components/table/table-search';
 import Pagination from '@/components/pagination';
 import { Prisma } from '@prisma/client';
+import { logger } from '@/lib/logger';
 
 async function getExperiments(
     searchParams: { [key: string]: string | undefined },
@@ -113,20 +114,43 @@ const experimentTableConfig: TableConfig[] = [
         },
     },
     {
+        key: 'countdown',
+        label: '实验时间',
+        children: (data: any) => {
+            return (
+                <div className="flex flex-col gap-2">
+                    <div>{data.countdown}分钟</div>
+                </div>
+            );
+        },
+    },
+    {
+        key: 'pic_mode',
+        label: '开启图片',
+        children: (data: any) => {
+            let text = Boolean(data.pic_mode) ? '开启' : '关闭';
+            let type = Boolean(data.pic_mode) ? 'success' : 'warn';
+            return <State type={type}>{text}</State>;
+        },
+    },
+    {
         key: 'available',
         label: '状态',
         children: (data: any) => {
             let text = Boolean(data.available) ? '可用' : '暂停';
-            return <State type="success">{text}</State>;
+            let type = Boolean(data.pic_mode) ? 'success' : 'warn';
+            return <State type={type}>{text}</State>;
         },
     },
     {
         key: 'create_time',
         label: '创建时间',
         children: (data: any) => {
+            const datetimeStr = dateFormat(data.create_time);
             return (
                 <div className="flex flex-col gap-2">
-                    <span>{dateFormat(data.create_time)}</span>
+                    <span>{datetimeStr.split(' ')[0]}</span>
+                    <span>{datetimeStr.split(' ')[1]}</span>
                 </div>
             );
         },

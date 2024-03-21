@@ -8,7 +8,6 @@ const url = `http://${process.env.COMFYUI_HOST_URL}/result`;
  * @throws {Error} - If an error occurs during the fetch request.
  */
 async function generate(data: any) {
-    console.log('Send request to Comfyui');
     const response = await fetch(url, {
         method: 'POST',
         headers: {

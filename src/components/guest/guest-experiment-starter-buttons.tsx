@@ -1,6 +1,5 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
 import { getUrl } from '@/lib/url';
 import { useRouter } from 'next/navigation';
 import store from 'store2';
@@ -16,9 +15,19 @@ export function GuestExperimentStarterButtons({
     experimentId, // 实验 nano_id
     userUniqueKey,
     engineId,
-    children,
 }: Buttons) {
     const router = useRouter();
+
+    async function insertGuestUser() {
+        const guestUser = await fetch(getUrl('/api/guest/add'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                nano_id: userUniqueKey,
+            }),
+        });
+        return guestUser;
+    }
 
     async function startExperiment() {
         await insertGuestUser();
@@ -39,19 +48,10 @@ export function GuestExperimentStarterButtons({
         });
         if (result.ok) {
             const responseBody = await result.json();
-            router.push(`/guest/input/${userUniqueKey}?e=${responseBody.data.user_experiment_id}`);
-            experimentNanoId && store('experimentId', experimentNanoId);
+            const userExperimentNanoId = responseBody.data.userExperimentNanoId;
+            router.push(`/guest/input/${userUniqueKey}?e=${userExperimentNanoId}`);
+            userExperimentNanoId && store('experimentId', userExperimentNanoId);
         }
-    }
-
-    async function insertGuestUser() {
-        const result = await fetch(getUrl('/api/guest/add'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                nano_id: userUniqueKey,
-            }),
-        });
     }
 
     return (

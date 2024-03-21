@@ -4,6 +4,7 @@ import { generate } from '@/lib/generate';
 import { OpenAIClient, AzureKeyCredential, ChatRequestMessage } from '@azure/openai';
 import { getCurrentUser } from '@/lib/session';
 import { AGES_MAP, GENDER_MAP } from '@/common/user';
+import { logger } from '@/lib/logger';
 
 require('dotenv').config();
 const endpoint = process.env.OPENAI_ENDPOINT || '';
@@ -35,12 +36,12 @@ async function translate(systemPrompt: string, userPrompt: string): Promise<stri
  */
 export async function POST(request: Request) {
     const currentUser = await getCurrentUser();
-    const isGuest = currentUser?.role !== 'USER';
     const user = currentUser?.id
         ? await db.user.findFirst({ where: { id: parseInt(currentUser.id) } })
         : undefined;
 
     const json = await request.json();
+    const isGuest: boolean = Boolean(json?.guest);
     const promptNanoId = json?.id;
     const experimentId = json?.experimentId;
     const experimentNanoId = json?.experimentNanoId;
@@ -60,6 +61,8 @@ export async function POST(request: Request) {
         return;
     }
     let userExperiment = undefined;
+    logger.info(`${isGuest ? 'Guest模式' : '普通用户模式'}`);
+    logger.info(json);
     if (!isGuest) {
         userExperiment = await db.user_experiments.findFirst({
             where: { nano_id: experimentId },
@@ -77,7 +80,7 @@ export async function POST(request: Request) {
 
     const experiment = await db.experiment.findFirst({
         where: { id: parseInt(userExperiment.experiment_id) },
-        select: { engine_id: true },
+        select: { engine_id: true, pic_mode: true },
     });
     if (!experiment || !experiment.engine_id) {
         console.error('未找到对应experiment数据');
@@ -128,13 +131,18 @@ export async function POST(request: Request) {
         },
     };
 
-    console.log('用户已发送提示词', generateData);
-    const response = await generate(generateData);
-    console.log(response);
-    const imageUrl = response?.image_url;
+    // 是否开启生成图片模式
+    const picMode = Boolean(experiment.pic_mode);
+    let imageUrl = '';
+    let prompt = '';
+    if (picMode) {
+        const response = await generate(generateData);
+        imageUrl = response?.image_url;
+        prompt = response?.chat_result;
+    }
     if (imageUrl) {
-        console.log('生成图片url: ', imageUrl);
-        return NextResponse.json({ msg: '发布成功', url: imageUrl, prompt: response?.chat_result });
+        logger.info(`生成图片url: ${imageUrl}`);
+        return NextResponse.json({ msg: '发布成功', url: imageUrl, prompt: prompt });
     } else {
         await db.trail.update({
             where: { nano_id: promptNanoId },

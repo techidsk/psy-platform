@@ -5,18 +5,20 @@ import { ImageResponse } from '@/types/experiment';
 import { getUrl } from '@/lib/url';
 
 interface ExperimentFinishProps extends React.HTMLAttributes<HTMLButtonElement> {
-    nanoId: string;
+    nanoId: string; // user_experiment表中的nano_id
     disable?: boolean;
     guest?: boolean;
     experimentList: ImageResponse[];
 }
 
 export function ExperimentFinishButton({
-    nanoId,
+    nanoId: userExperimentNanoId,
     guest = false,
     experimentList,
 }: ExperimentFinishProps) {
+    console.log(userExperimentNanoId);
     const [disabled, setDisabled] = useState(true);
+
     const router = useRouter();
 
     useEffect(() => {
@@ -28,24 +30,35 @@ export function ExperimentFinishButton({
     }, [experimentList]);
 
     async function finish() {
-        // 完成实验
         await fetch(getUrl('/api/experiment/finish'), {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                id: nanoId,
-            }),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: userExperimentNanoId }),
         });
-        const resultUrl = guest ? `/guest/result/${nanoId}` : `/result/${nanoId}`;
-
+        const resultUrl = guest
+            ? `/guest/result/${userExperimentNanoId}`
+            : `/result/${userExperimentNanoId}`;
         router.push(resultUrl);
     }
 
+    useEffect(() => {
+        const handleBeforeUnload = (event: any) => {
+            event.preventDefault();
+            event.returnValue = '';
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, []);
+
     return (
-        <button className="btn btn-ghost btn-outline" disabled={disabled} onClick={finish}>
-            完成实验
-        </button>
+        <>
+            <button className="btn btn-ghost btn-outline" disabled={disabled} onClick={finish}>
+                完成实验
+            </button>
+        </>
     );
 }

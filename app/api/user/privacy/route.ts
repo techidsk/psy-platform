@@ -25,6 +25,7 @@ export async function GET(request: Request, context: { params: any }) {
                 tel: true,
                 email: true,
                 qualtrics: true,
+                wechat_id: true,
                 manager_id: true,
                 avatar: true,
                 gender: true,

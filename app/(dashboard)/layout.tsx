@@ -40,7 +40,7 @@ const sidebarNav: SidebarNavItem[] = [
         title: '实验记录',
         href: '/history',
         icon: 'history',
-        auth: ['ADMIN', 'ASSISTANT', 'USER'],
+        auth: ['ADMIN', 'ASSISTANT'],
     },
     {
         title: '用户列表',

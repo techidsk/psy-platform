@@ -12,19 +12,22 @@ import { logger } from '@/lib/logger';
 // 3. 如果有项目分组，随机选择分组，并则查看是否有对应实验，如果没有则显示当前时间无可用实验
 // 4. 如果有对应实验，则返回实验内容
 
-export default async function Dashboard() {
+interface GuestDashboardProps {
+    guestUserId: number;
+}
+
+export default async function GuestDashboard({ guestUserId }: GuestDashboardProps) {
     // 获取用户默认的实验
-    const currentUser = await getCurrentUser();
-    if (!currentUser?.id) {
+    if (guestUserId) {
         redirect('/login');
     }
 
     // TODO 查看用户下次实验记录时间以及是否需要开始下次实验
     const { experiment_id: experimentId } = await getUserGroupExperiments();
-    logger.info(`<用户${currentUser.id}> 需要进行实验 ${experimentId}`);
+    logger.info(`<临时用户${guestUserId}> 需要进行实验 ${experimentId}`);
 
     if (!experimentId) {
-        redirect('/closed');
+        redirect('/guest/closed');
     }
 
     return (
@@ -32,10 +35,7 @@ export default async function Dashboard() {
             <div className="container mx-auto">
                 <div className="flex flex-col gap-4">
                     <DashboardHeader heading="控制台" text="用户相关操作页面" />
-                    <ExperimentTimeline
-                        experimentId={experimentId}
-                        userId={parseInt(currentUser.id)}
-                    />
+                    <ExperimentTimeline experimentId={experimentId} userId={guestUserId} />
                 </div>
             </div>
         </>

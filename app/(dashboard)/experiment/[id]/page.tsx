@@ -3,6 +3,7 @@ import { ExperimentCreateForm } from '@/components/experiment/experiment-create-
 import { db } from '@/lib/db';
 import SubpageHeader, { SubpageContentHeader } from '@/components/subpage-header';
 import { ExperimentEditButton } from '@/components/experiment/experiment-edit-button';
+import { logger } from '@/lib/logger';
 
 /**
  * 判断数据库是否存在,如果存在则进入编辑流程.
@@ -50,13 +51,13 @@ export default async function ExperimentDetail({ params: { id }, searchParams }:
     if (experiment && experiment.id) {
         steps = await getExperimentSteps(experiment.id);
     } else {
-        console.log('experiment not found');
+        logger.error('未找到实验{}', id);
     }
 
     const edit = searchParams.edit === 'true';
 
     return (
-        <div className="container h-screen lg:max-w-none bg-white">
+        <div className="container lg:max-w-none bg-white">
             <SubpageHeader>
                 <ExperimentEditButton className="btn btn-primary btn-sm" edit={Boolean(edit)} />
             </SubpageHeader>

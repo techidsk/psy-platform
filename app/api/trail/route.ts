@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
-import { getCurrentUser, getUserGroupExperiments } from '@/lib/session';
+import { getCurrentUser } from '@/lib/session';
 
 /**
  * /api/trail
@@ -13,63 +13,6 @@ export async function POST(request: Request) {
     const currentUser = await getCurrentUser();
     data['user_id'] = currentUser?.id;
     const experimentNanoId = data['nano_id']; // 本次实验ID
-    // 插入用户实验表
-    // let dbExperiment = await db.user_experiments.findFirst({
-    //     where: {
-    //         nano_id: experimentNanoId,
-    //     },
-    // });
-    // 用户输入提示词进行生成
-    //
-
-    // if (!dbExperiment) {
-    //     // 判断当前用户的所属业务分组
-    //     const { project_group_id: projectGroupId, experiment_id: experimentId } =
-    //         await getUserGroupExperiments();
-
-    //     console.log(
-    //         '未找到用户实验记录，创建新实验：projectGroupId: ',
-    //         projectGroupId,
-    //         'experimentId: ',
-    //         experimentId
-    //     );
-
-    //     const experiment = await db.experiment.findFirst({
-    //         where: { id: experimentId },
-    //     });
-
-    //     let item: any = {
-    //         nano_id: getId(),
-    //         type: data['trail'] ? 'TRAIL' : 'EXPERIMENT',
-    //         engine_id: experiment?.engine_id,
-    //         user_id: parseInt(data['user_id']),
-    //     };
-
-    //     console.log('创建用户实验: ', item);
-    //     dbExperiment = await db.user_experiments.create({
-    //         data: {
-    //             ...item,
-    //             experiment_id: `${experimentId}`,
-    //             project_group_id: projectGroupId,
-    //         },
-    //     });
-
-    //     if (!data['trail']) {
-    //         await db.user_group.update({
-    //             where: {
-    //                 user_id_project_group_id: {
-    //                     user_id: parseInt(data['user_id']),
-    //                     project_group_id: projectGroupId,
-    //                 },
-    //             },
-    //             data: {
-    //                 project_experiment_times: {
-    //                     increment: 1,
-    //                 },
-    //             },
-    //         });
-    //     }
-    // }
 
     let trailNanoId = data['promptNanoId'];
     // 插入用户submit记录用以生成图片

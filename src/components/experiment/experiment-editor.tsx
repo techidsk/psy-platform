@@ -1,6 +1,5 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { usePreExperimentState } from '@/state/_pre_atoms';
 import { useRouter } from 'next/navigation';
 import store from 'store2';
 import { getId } from '@/lib/nano-id';
@@ -8,6 +7,7 @@ import { toast } from '@/hooks/use-toast';
 import { ImageResponse } from '@/types/experiment';
 import { getUrl } from '@/lib/url';
 import { useExperimentState } from '@/state/_experiment_atoms';
+import { logger } from '@/lib/logger';
 
 interface ExperimentEditorProps {
     nanoId: string;
@@ -16,6 +16,7 @@ interface ExperimentEditorProps {
     experimentList?: ImageResponse[];
     displayNum?: number;
     experimentNanoId?: string;
+    guest?: boolean;
 }
 
 type FetchData = {
@@ -36,31 +37,12 @@ export function ExperimentEditor({
     trail = true,
     displayNum = 1,
     experimentNanoId = '',
+    guest = false,
 }: ExperimentEditorProps) {
     const router = useRouter();
     const ref = useRef<HTMLTextAreaElement>(null);
     const [loading, setLoading] = useState<boolean>(false);
-    const [engineId, setEngineId] = useState<string>();
     const [experimentId, setExperimentId] = useState<string>();
-
-    const currentEngine = usePreExperimentState((state) => state.engine);
-    /**
-     * 获取本次实验的引擎id，如果为空，就跳转到dashboard
-     * @param nano_id 用户实验id
-     */
-    async function getExperimentInfo(nano_id: string) {
-        await fetch(getUrl('/api/experiment/log'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nano_id: nano_id }),
-        })
-            .then((r) => r.json())
-            .then((data) => {
-                if (data?.engine_id) {
-                    setEngineId(data.engine_id);
-                }
-            });
-    }
 
     function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
         if (loading) {
@@ -127,13 +109,14 @@ export function ExperimentEditor({
                 id: promptNanoId,
                 experimentId: experimentId,
                 experimentNanoId: experimentNanoId,
+                guest: guest,
             }),
             headers: { 'Content-Type': 'application/json' },
         });
 
         let d = await response.json();
         if (response.ok) {
-            await fetch(getUrl('/api/upload/oss'), {
+            await fetch(getUrl('/api/trail/update'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -204,15 +187,6 @@ export function ExperimentEditor({
                 .catch((error) => console.error('Error uploading logs:', error));
         }
     }
-
-    useEffect(() => {
-        // 获取引擎id
-        if (currentEngine?.id) {
-            setEngineId(currentEngine.id);
-        } else {
-            getExperimentInfo(nanoId);
-        }
-    }, []);
 
     useEffect(() => {
         if (!trail) {

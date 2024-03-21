@@ -24,7 +24,7 @@ export default async function EngineForm({ params: { id } }: any) {
     const engine = await getEngine(id);
 
     return (
-        <div className="container h-screen lg:max-w-none bg-white">
+        <div className="container lg:max-w-none bg-white">
             <SubpageHeader />
             <div className="flex flex-col gap-4">
                 <SubpageContentHeader heading={`${engine?.id ? '编辑用户' : '创建新用户'}`} />

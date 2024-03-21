@@ -5,6 +5,7 @@ export const exprimentSchema = z.object({
     description: z.string().optional().or(z.literal('')),
     intro: z.string().optional().or(z.literal('')),
     engine_id: z.number().optional(),
+    countdown: z.number().min(5).max(60).optional(),
 });
 
 export const exprimentSettingSchema = z.object({
@@ -17,4 +18,5 @@ export const exprimentStepSchema = z.object({
     step_content: z.string().min(1, '步骤内容不能为空'),
     type: z.number().optional(),
     step_image: z.any().optional(),
+    pre: z.boolean().optional(),
 });

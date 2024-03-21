@@ -15,7 +15,7 @@ import { getUrl } from '@/lib/url';
 import type { experiment, experiment_steps, engine as experimentEngine } from '@prisma/client';
 import Image from 'next/image';
 import { Modal } from '../ui/modal';
-import { uploadPhotoWithFile } from '@/lib/api/post';
+import { ExperimentStepForm } from './experiment-step-form';
 
 interface ExperimentCreateFormProps extends React.HTMLAttributes<HTMLDivElement> {
     experiment: experiment | null;
@@ -26,7 +26,6 @@ interface ExperimentCreateFormProps extends React.HTMLAttributes<HTMLDivElement>
 }
 
 type FormData = z.infer<typeof exprimentSchema>;
-type StepFormData = z.infer<typeof exprimentStepSchema>;
 
 export function ExperimentCreateForm({
     className,
@@ -46,25 +45,16 @@ export function ExperimentCreateForm({
     } = useForm<FormData>({
         resolver: zodResolver(exprimentSchema),
     });
-    const {
-        register: stepRegister,
-        handleSubmit: stepHandleSubmit,
-        formState: { errors: stepErrors },
-        reset: stepReset,
-        setValue: stepSetValue,
-    } = useForm<StepFormData>({
-        resolver: zodResolver(exprimentStepSchema),
-    });
-
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [isUploading, setIsUploading] = useState<boolean>(false);
     const [engineId, setEngineId] = useState<number>(0);
     const [dispatch, setDispatch] = useState<string>('CREATE');
     const [experimentSteps, setExperimentSteps] = useState<any[]>([]);
 
+    const [step, setStep] = useState<experiment_steps | null>();
+
     const [openStepForm, setOpenStepForm] = useState<boolean>(false);
-    const [stepType, setStepType] = useState<number>(0);
-    const [addtionalSteps, setAddtionalSteps] = useState<any[]>([]);
+
+    const [tab, setTab] = useState('PROPERTY');
 
     const router = useRouter();
 
@@ -88,7 +78,8 @@ export function ExperimentCreateForm({
                 },
                 body: JSON.stringify({
                     ...data,
-                    steps: [...experimentSteps, ...addtionalSteps],
+                    nano_id: nano_id,
+                    steps: [...experimentSteps],
                 }),
             });
             setIsLoading(false);
@@ -116,7 +107,7 @@ export function ExperimentCreateForm({
                 body: JSON.stringify({
                     ...data,
                     nano_id: nano_id,
-                    steps: addtionalSteps,
+                    steps: [...experimentSteps],
                 }),
             });
             setIsLoading(false);
@@ -145,216 +136,214 @@ export function ExperimentCreateForm({
 
     const addSteps = (e: any) => {
         e.preventDefault();
+        setStep(null);
         setOpenStepForm(true);
-        stepReset();
-        setStepType(0);
-        stepSetValue('type', 0);
     };
 
-    const editSteps = (e: any) => {
+    const editSteps = (e: any, step: experiment_steps) => {
         e.preventDefault();
+        setStep(step);
+        setOpenStepForm(true);
     };
 
     const previewSteps = (e: any) => {
         e.preventDefault();
     };
 
-    const updateStepType = (stepType: number) => {
-        setStepType(stepType);
-        stepSetValue('type', stepType);
-    };
-
-    const addExperimentStep = async (data: StepFormData) => {
-        console.log(data, experiment?.id);
-
-        if (data?.step_image) {
-            setIsUploading(true);
-
-            const { isFetchSuccess, result, resultMsg } = await uploadPhotoWithFile(
-                data?.step_image[0]
-            );
-            data.step_image = isFetchSuccess ? result : '';
-            // console.log('now the data is:',data,'result:',result,'result msg',resultMsg)
-        }
-
-        setAddtionalSteps([...addtionalSteps, data]);
-        setOpenStepForm(false);
-
-        setExperimentSteps([...experimentSteps, data]);
-        setIsUploading(false);
-    };
-
     function initForm() {
         if (experiment) {
+            // 编辑实验
             setValue('experiment_name', experiment.experiment_name || '');
             setValue('description', experiment.description || '');
             setValue('intro', experiment.intro || '');
+            setValue('countdown', experiment.countdown || 20);
+
             if (experiment.engine_id) {
                 setValue('engine_id', experiment.engine_id);
                 setEngineId(experiment.engine_id);
             }
-            steps && setExperimentSteps(steps);
+            setExperimentSteps(steps as experiment_steps[]);
         }
     }
 
     useEffect(() => {
+        // 判断是否是编辑模式
+        // 如果是编辑模式
+        // 则需要保留原有数据，否则显示
+        initForm();
         if (edit) {
             reset();
         } else {
-            initForm();
             setDispatch('UPDATE');
         }
     }, []);
 
     return (
         <div className={cn('grid gap-6', className)} {...props}>
+            <div role="tablist" className="tabs tabs-boxed">
+                <a
+                    role="tab"
+                    className={`tab ${tab === 'PROPERTY' ? 'tab-active' : ''}`}
+                    onClick={() => setTab('PROPERTY')}
+                >
+                    实验属性
+                </a>
+                <a
+                    role="tab"
+                    className={`tab ${tab === 'TIMELINE' ? 'tab-active' : ''}`}
+                    onClick={() => setTab('TIMELINE')}
+                >
+                    实验流程
+                </a>
+            </div>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="grid gap-2">
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="experiment_name">
-                            实验名称
-                        </label>
-                        <input
-                            data-name="experiment_name"
-                            placeholder="请输入实验名称"
-                            type="text"
-                            autoCapitalize="none"
-                            autoComplete="experiment_name"
-                            autoCorrect="off"
-                            disabled={isLoading || !edit}
-                            className="input input-bordered w-full"
-                            {...register('experiment_name')}
-                        />
-                        {errors?.experiment_name && (
-                            <p className="px-1 text-xs text-red-600">
-                                {errors.experiment_name.message}
-                            </p>
-                        )}
-                    </div>
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="description">
-                            实验描述
-                        </label>
-                        <textarea
-                            data-name="description"
-                            placeholder="请输入实验描述"
-                            autoCapitalize="none"
-                            autoComplete="description"
-                            autoCorrect="off"
-                            disabled={isLoading || !edit}
-                            className="textarea textarea-bordered w-full"
-                            rows={2}
-                            {...register('description')}
-                        />
-                    </div>
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="intro">
-                            项目介绍
-                        </label>
-                        <textarea
-                            data-name="intro"
-                            placeholder="请输入项目介绍"
-                            autoCapitalize="none"
-                            autoComplete="intro"
-                            autoCorrect="off"
-                            disabled={isLoading || !edit}
-                            className="textarea textarea-bordered w-full"
-                            rows={8}
-                            {...register('intro')}
-                        />
-                    </div>
-                    <div className="grid gap-2">
-                        <label className="text-lg" htmlFor="engine_id">
-                            选择引擎
-                        </label>
-                        <div className="flex gap-4">
-                            {engines?.map((engine) => {
-                                return (
-                                    <div
-                                        key={engine.id}
-                                        className="flex flex-col items-center gap-2"
-                                    >
-                                        <Image
-                                            className="rounded"
-                                            src={engine.engine_image}
-                                            alt={engine.engine_name}
-                                            width={96}
-                                            height={96}
-                                        />
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="radio"
-                                                className="radio"
-                                                defaultValue={engine.engine_name}
-                                                checked={engine.id === engineId}
-                                                disabled={isLoading || !edit}
-                                                onClick={() => selectEngine(engine.id)}
-                                            />
-                                            <label htmlFor={engine.engine_name}>
-                                                {engine.engine_name}
-                                            </label>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                    <div className="grid gap-2">
-                        <div className="flex gap-4">
-                            <label className="text-lg" htmlFor="engine_id">
-                                实验步骤
-                            </label>
-                            {!(isLoading || !edit) && (
-                                <button
-                                    className="btn btn-sm btn-ghost"
-                                    onClick={(e) => addSteps(e)}
-                                >
-                                    <Icons.add size={16} />
-                                </button>
-                            )}
-                        </div>
-                        <div className="flex gap-4">
-                            <ul className="steps steps-vertical">
-                                {experimentSteps && experimentSteps.length > 0 ? (
-                                    experimentSteps?.map((step) => {
-                                        return (
-                                            <li className="step flex gap-2" key={step.id}>
-                                                <div className="flex gap-2 items-center">
-                                                    <div className="flex gap-2 items-center">
-                                                        <div>{step.step_name}</div>
-                                                        {step.type && <StepType type={step.type} />}
-                                                    </div>
-                                                    {!(isLoading || !edit) ? (
-                                                        <div>
-                                                            <button
-                                                                className="btn btn-sm btn-ghost"
-                                                                onClick={(e) => editSteps(e)}
-                                                            >
-                                                                <Icons.edit size={16} />
-                                                                编辑
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <div>
-                                                            <button
-                                                                className="btn btn-sm btn-ghost"
-                                                                onClick={(e) => previewSteps(e)}
-                                                            >
-                                                                <Icons.preview size={16} />
-                                                                查看
-                                                            </button>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </li>
-                                        );
-                                    })
-                                ) : (
-                                    <div>当前暂无步骤，请手动添加</div>
+                    {tab === 'PROPERTY' && (
+                        <>
+                            <div className="grid gap-1">
+                                <label className="sr-only" htmlFor="experiment_name">
+                                    实验名称
+                                </label>
+                                <input
+                                    data-name="experiment_name"
+                                    placeholder="请输入实验名称"
+                                    type="text"
+                                    autoCapitalize="none"
+                                    autoComplete="experiment_name"
+                                    autoCorrect="off"
+                                    disabled={isLoading || !edit}
+                                    className="input input-bordered w-full"
+                                    {...register('experiment_name')}
+                                />
+                                {errors?.experiment_name && (
+                                    <p className="px-1 text-xs text-red-600">
+                                        {errors.experiment_name.message}
+                                    </p>
                                 )}
-                            </ul>
-                        </div>
-                    </div>
+                            </div>
+                            <div className="grid gap-1">
+                                <label className="sr-only" htmlFor="description">
+                                    实验描述
+                                </label>
+                                <textarea
+                                    data-name="description"
+                                    placeholder="请输入实验描述"
+                                    autoCapitalize="none"
+                                    autoComplete="description"
+                                    autoCorrect="off"
+                                    disabled={isLoading || !edit}
+                                    className="textarea textarea-bordered w-full"
+                                    rows={2}
+                                    {...register('description')}
+                                />
+                            </div>
+                            <div className="grid gap-1">
+                                <label className="sr-only" htmlFor="intro">
+                                    项目介绍
+                                </label>
+                                <textarea
+                                    data-name="intro"
+                                    placeholder="请输入项目介绍"
+                                    autoCapitalize="none"
+                                    autoComplete="intro"
+                                    autoCorrect="off"
+                                    disabled={isLoading || !edit}
+                                    className="textarea textarea-bordered w-full"
+                                    rows={8}
+                                    {...register('intro')}
+                                />
+                            </div>
+                            <div className="grid gap-1">
+                                <label className="sr-only" htmlFor="intro">
+                                    实验时间
+                                </label>
+                                <input
+                                    data-name="countdown"
+                                    placeholder="请输入时间时间"
+                                    type="number"
+                                    min={5}
+                                    max={60}
+                                    disabled={isLoading || !edit}
+                                    className="input input-bordered w-full"
+                                    {...register('countdown', { valueAsNumber: true })}
+                                />
+                                {errors?.countdown && (
+                                    <p className="px-1 text-xs text-red-600">
+                                        {errors.countdown.message}
+                                    </p>
+                                )}
+                            </div>
+                            <div className="grid gap-2">
+                                <label className="text-lg" htmlFor="engine_id">
+                                    选择引擎
+                                </label>
+                                <div className="flex gap-4">
+                                    {engines?.map((engine) => {
+                                        return (
+                                            <div
+                                                key={engine.id}
+                                                className="flex flex-col items-center gap-2"
+                                            >
+                                                <Image
+                                                    className="rounded"
+                                                    src={engine.engine_image}
+                                                    alt={engine.engine_name}
+                                                    width={96}
+                                                    height={96}
+                                                />
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="radio"
+                                                        className="radio"
+                                                        defaultValue={engine.engine_name}
+                                                        checked={engine.id === engineId}
+                                                        disabled={isLoading || !edit}
+                                                        onChange={() => selectEngine(engine.id)}
+                                                    />
+                                                    <label htmlFor={engine.engine_name}>
+                                                        {engine.engine_name}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </>
+                    )}
+                    {tab === 'TIMELINE' && (
+                        <>
+                            <div className="grid gap-2">
+                                <div className="flex gap-4 items-center justify-between">
+                                    <label className="text-lg" htmlFor="engine_id">
+                                        实验步骤
+                                    </label>
+                                    {!(isLoading || !edit) && (
+                                        <button
+                                            className="btn btn-sm btn-outline"
+                                            onClick={(e) => addSteps(e)}
+                                        >
+                                            <Icons.add size={16} />
+                                            新增
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="flex gap-4">
+                                    <ul className="steps steps-vertical w-full">
+                                        {
+                                            <StepItem
+                                                experimentSteps={experimentSteps}
+                                                isLoading={isLoading}
+                                                edit={Boolean(edit)}
+                                                editSteps={editSteps}
+                                                previewSteps={previewSteps}
+                                            />
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        </>
+                    )}
                     {edit && (
                         <div className="flex justify-end">
                             <button className="btn btn-primary" disabled={isLoading} type="submit">
@@ -374,122 +363,117 @@ export function ExperimentCreateForm({
                     onClose={() => setOpenStepForm(false)}
                     disableClickOutside={!open}
                 >
-                    <h3 className="font-bold text-lg">实验流程配置</h3>
-                    <form onSubmit={stepHandleSubmit(addExperimentStep)}>
-                        <div className="grid gap-2">
-                            <div className="grid gap-1">
-                                <label className="sr-only" htmlFor="step_type">
-                                    步骤样式
-                                </label>
-                                <div className="flex gap-2">
-                                    {stepTypes.map((type) => {
-                                        return (
-                                            <div key={type.id} className="flex items-center gap-2">
-                                                <input
-                                                    type="radio"
-                                                    className="radio"
-                                                    defaultValue={type.id}
-                                                    checked={type.id === stepType}
-                                                    disabled={isLoading || !edit}
-                                                    onClick={() => updateStepType(type.id)}
-                                                />
-                                                <label htmlFor={type.name}>{type.name}</label>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                            <div className="grid gap-1">
-                                <label className="sr-only" htmlFor="step_name">
-                                    步骤名称
-                                </label>
-                                <input
-                                    data-name="step_name"
-                                    placeholder="请输入步骤名称"
-                                    type="text"
-                                    autoCapitalize="none"
-                                    autoCorrect="off"
-                                    className="input input-bordered w-full"
-                                    {...stepRegister('step_name')}
-                                />
-                                {stepErrors?.step_name && (
-                                    <p className="px-1 text-xs text-red-600">
-                                        {stepErrors.step_name.message}
-                                    </p>
-                                )}
-                            </div>
-                            <div className="grid gap-1">
-                                <label className="sr-only" htmlFor="title">
-                                    标题
-                                </label>
-                                <input
-                                    data-name="title"
-                                    placeholder="请输入步骤标题"
-                                    type="text"
-                                    autoCapitalize="none"
-                                    autoCorrect="off"
-                                    className="input input-bordered w-full"
-                                    {...stepRegister('title')}
-                                />
-                                {stepErrors?.title && (
-                                    <p className="px-1 text-xs text-red-600">
-                                        {stepErrors.title.message}
-                                    </p>
-                                )}
-                            </div>
-                            <div className="grid gap-1">
-                                <label className="sr-only" htmlFor="step_content">
-                                    内容
-                                </label>
-                                <textarea
-                                    data-name="step_content"
-                                    placeholder="请输入显示内容"
-                                    autoCapitalize="none"
-                                    autoCorrect="off"
-                                    className="textarea textarea-bordered w-full"
-                                    rows={5}
-                                    {...stepRegister('step_content')}
-                                />
-                                {stepErrors?.step_content && (
-                                    <p className="px-1 text-xs text-red-600">
-                                        {stepErrors.step_content.message}
-                                    </p>
-                                )}
-                            </div>
-                            {stepTypes.find((type) => type.id === stepType && type.image) && (
-                                <div className="grid gap-1">
-                                    <label className="sr-only" htmlFor="step_image">
-                                        上传图片
-                                    </label>
-                                    <input
-                                        type="file"
-                                        accept=".png, .jpg, .jpeg"
-                                        className="file-input file-input-bordered w-full max-w-xs"
-                                        placeholder="请上传图片"
-                                        {...stepRegister('step_image')}
-                                    />
-                                </div>
-                            )}
-                            <div className="flex flex-row-reverse gap-2">
-                                <button className="btn btn-ghost btn-outline" type="submit">
-                                    {isUploading ? (
-                                        <>
-                                            <Icons.spinner className="animate-spin" />
-                                            上传图片中...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Icons.add />
-                                            添加
-                                        </>
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                    <ExperimentStepForm
+                        step={step}
+                        closeModal={() => setOpenStepForm(false)}
+                        experimentSteps={experimentSteps}
+                        setExperimentSteps={setExperimentSteps}
+                    />
                 </Modal>
             )}
         </div>
+    );
+}
+interface StepItemProps {
+    experimentSteps: experiment_steps[] | null;
+    isLoading: boolean;
+    edit: boolean;
+    editSteps: Function;
+    previewSteps: Function;
+}
+
+function StepItem({ experimentSteps, isLoading, edit, editSteps, previewSteps }: StepItemProps) {
+    return (
+        <>
+            {experimentSteps && experimentSteps.length > 0 ? (
+                <>
+                    {experimentSteps
+                        .filter((step) => step.pre)
+                        ?.map((step) => {
+                            console.log(step);
+                            return (
+                                <li className="step flex gap-2" key={`${step.id}-${step.pre}`}>
+                                    <div className="flex gap-2 items-center justify-between w-full">
+                                        <div className="flex gap-2 items-center">
+                                            <div>{step.step_name}</div>
+                                            {step.type && <StepType type={step.type} />}
+                                        </div>
+                                        {!(isLoading || !edit) ? (
+                                            <div>
+                                                <button
+                                                    className="btn btn-sm btn-ghost"
+                                                    onClick={(e) => editSteps(e, step)}
+                                                >
+                                                    <Icons.edit size={16} />
+                                                    编辑
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                {/* <button
+                                                className="btn btn-sm btn-ghost"
+                                                onClick={(e) =>
+                                                    previewSteps(e)
+                                                }
+                                            >
+                                                <Icons.preview
+                                                    size={16}
+                                                />
+                                                查看
+                                            </button> */}
+                                            </div>
+                                        )}
+                                    </div>
+                                </li>
+                            );
+                        })}
+                    <li>
+                        <div className="flex gap-2 items-center">
+                            <div className="flex gap-2 items-center">
+                                <div>正式实验</div>
+                            </div>{' '}
+                        </div>
+                    </li>
+                    {experimentSteps
+                        .filter((step) => !step.pre)
+                        ?.map((step, index) => {
+                            return (
+                                <li className="step flex gap-2" key={step.id}>
+                                    <div className="flex gap-2 items-center justify-between w-full">
+                                        <div className="flex gap-2 items-center">
+                                            <div>{step.step_name}</div>
+                                            {step.type && <StepType type={step.type} />}
+                                        </div>
+                                        {!(isLoading || !edit) ? (
+                                            <div>
+                                                <button
+                                                    className="btn btn-sm btn-ghost"
+                                                    onClick={(e) => editSteps(e, step)}
+                                                >
+                                                    <Icons.edit size={16} />
+                                                    编辑
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                {/* <button
+                                                    className="btn btn-sm btn-ghost"
+                                                    onClick={(e) => previewSteps(e)}
+                                                >
+                                                    <Icons.preview size={16} />
+                                                    查看
+                                                </button> */}
+                                            </div>
+                                        )}
+                                    </div>
+                                </li>
+                            );
+                        })}
+                </>
+            ) : (
+                <div>当前暂无步骤，请手动添加</div>
+            )}
+        </>
     );
 }
 
@@ -505,21 +489,3 @@ const StepType = ({ type }: { type: number }) => {
             return <span className="badge badge-outline">仅图文</span>;
     }
 };
-
-const stepTypes = [
-    {
-        id: 1,
-        name: '仅图文',
-        image: false,
-    },
-    {
-        id: 2,
-        name: '左侧图片',
-        image: true,
-    },
-    {
-        id: 3,
-        name: '右侧图片',
-        image: true,
-    },
-];

@@ -9,35 +9,54 @@ import { UserPrivacyForm } from '../user/user-privacy-modal';
 
 interface Buttons extends React.HTMLAttributes<HTMLDivElement> {
     experimentId?: string;
+    projectGroupId?: string;
     showUserPrivacy?: boolean;
     userId?: number;
+    guest?: boolean;
+    userUniqueKey?: string;
 }
 
 export function ExperimentStarterButtons({
-    experimentId, // 实验 nano_id
+    experimentId: experimentNanoId, // 实验 nano_id
     showUserPrivacy,
     userId,
-    children,
+    userUniqueKey,
+    guest = false,
 }: Buttons) {
     const [open, setOpen] = useState(false);
 
     const router = useRouter();
 
+    async function insertGuestUser() {
+        const response = await fetch(getUrl('/api/guest/add'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                nano_id: userUniqueKey,
+            }),
+        });
+        const responeData = await response.json();
+        return responeData.data;
+    }
+
     async function startExperiment() {
+        if (guest) {
+            // 游客模式需要创建用户,才能继续进行操作
+            const guestId = await insertGuestUser();
+        }
         // 创建实验，然后跳转到对应的路径
         const result = await fetch(getUrl('/api/user/experiment'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                experimentId: experimentId,
+                experimentId: experimentNanoId,
             }),
         });
         if (result.ok) {
             const responseBody = await result.json();
-            const newExperimentId = responseBody.data.experimentNanoId;
-            router.push(`/experiments/input/${newExperimentId}`);
-            // 保存实验id
-            newExperimentId && store('experimentId', newExperimentId);
+            const userExperimentNanoId = responseBody.data.userExperimentNanoId;
+            router.push(`/experiments/input/${userExperimentNanoId}`);
+            userExperimentNanoId && store('experimentId', userExperimentNanoId);
         }
     }
 

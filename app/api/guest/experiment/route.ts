@@ -33,7 +33,7 @@ export async function POST(request: Request) {
         return NextResponse.json({
             msg: '发布成功',
             data: {
-                user_experiment_id: userExperiment.nano_id,
+                userExperimentNanoId: userExperiment.nano_id,
             },
         });
     }

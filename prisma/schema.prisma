@@ -43,6 +43,8 @@ model experiment {
   engine_id       Int?
   setting         Json?
   intro           String?   @db.Text
+  countdown       Int?      @default(1200)
+  pic_mode        Int?      @default(1) @db.TinyInt
 
   @@index([engine_id], map: "idx_engine_id")
 }
@@ -85,6 +87,7 @@ model user {
   deleted         Int?      @default(0)
   gender          Int?      @db.TinyInt
   ages            Int?
+  wechat_id       String?   @db.VarChar(50)
 
   @@index([email], map: "idx_email")
   @@index([username], map: "idx_username")
@@ -127,13 +130,14 @@ model user_group {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model experiment_steps {
-  id            Int     @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   experiment_id Int?
-  step_name     String? @db.VarChar(50)
+  step_name     String?  @db.VarChar(50)
   order         Int?
   type          Int?
-  title         String? @db.VarChar(50)
+  title         String?  @db.VarChar(50)
   content       Json?
+  pre           Boolean? @default(true)
 
   @@unique([experiment_id, order], map: "idx_experiment_order_id")
   @@index([experiment_id], map: "idx_experiment_id")
@@ -195,4 +199,6 @@ model trail_logger {
   images        Json?
   timestamp     DateTime? @db.DateTime(0)
   experiment_id String?   @db.VarChar(32)
+
+  @@index([experiment_id], map: "idx_experiment_id")
 }

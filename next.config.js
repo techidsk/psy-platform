@@ -30,6 +30,9 @@ const nextConfig = {
     env: {
         NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     },
+    experimental: {
+        serverComponentsExternalPackages: ['pino', 'pino-pretty'],
+    },
     /**
      * 为所有API路由响应头添加允许跨域头，以支持本地开发时远程调用开发机的API。
      */
