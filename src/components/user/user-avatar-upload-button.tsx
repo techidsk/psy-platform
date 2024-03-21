@@ -82,7 +82,6 @@ export function UserAvatarUploadButton({ user, updateFuc }: UserAvatarUploadButt
             </button>
             <input
                 data-id="avatar-upload"
-                id="avatar-upload"
                 type="file"
                 accept=".png, .jpg, .jpeg"
                 style={{

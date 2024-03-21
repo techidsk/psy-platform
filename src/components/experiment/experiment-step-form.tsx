@@ -11,6 +11,7 @@ import { Icons } from '@/components/icons';
 import type { experiment_steps } from '@prisma/client';
 import { uploadPhotoWithFile } from '@/lib/api/post';
 import TiptapEditor from '../editor/tiptap-editor';
+import { getUrl } from '@/lib/url';
 
 interface ExperimentStepFormProps extends React.HTMLAttributes<HTMLDivElement> {
     step?: experiment_steps | null;
@@ -75,6 +76,20 @@ export function ExperimentStepForm({
         console.log('Submit', data);
         setIsUploading(false);
         closeModal();
+    };
+
+    const handleFileChange = async (event: any) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const formData = new FormData();
+            formData.append('imageData', file); // 'file' 是用户选择的文件
+            const response = await fetch(getUrl('/api/upload/oss'), {
+                method: 'POST',
+                body: formData,
+            });
+            const data = await response.json();
+            setValue('step_image', data.url);
+        }
     };
 
     function initForm() {
@@ -225,7 +240,7 @@ export function ExperimentStepForm({
                                     accept=".png, .jpg, .jpeg"
                                     className="file-input file-input-bordered w-full max-w-xs"
                                     placeholder="请上传图片"
-                                    {...register('step_image')}
+                                    onChange={(e) => handleFileChange(e)}
                                 />
                             </div>
                         )}
