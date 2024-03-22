@@ -13,6 +13,7 @@ import { TableSearch } from '@/components/table/table-search';
 import { Prisma } from '@prisma/client';
 import DownloadExperimentHistoryButton from '@/components/history/download-experiment-history-button';
 import CheckExperimentHistoryButton from '@/components/history/check-experiment-history-button';
+import { logger } from '@/lib/logger';
 
 interface ExperimentProps {
     id: number;
@@ -51,12 +52,22 @@ async function getHistory(
 
     const experiments = await db.$queryRaw<ExperimentProps[]>`
         SELECT e.*, u.username, u.avatar, n.engine_name, n.engine_image, 
-        eper.experiment_name, g.group_name
+        eper.experiment_name, g.group_name, num, project_group_experiment_num
         FROM user_experiments e
         LEFT JOIN user u ON u.id = e.user_id
         LEFT JOIN experiment eper ON eper.id = e.experiment_id
         LEFT JOIN project_group g ON g.id = e.project_group_id
         LEFT JOIN engine n ON n.id = e.engine_id
+        LEFT JOIN (
+            SELECT count(id) as num, user_id, project_group_id 
+            FROM user_experiments 
+            GROUP BY user_id, project_group_id
+            ) ue ON ue.user_id = u.id AND ue.project_group_id = g.id
+        LEFT JOIN (
+            SELECT count(id) as project_group_experiment_num, project_group_id
+            FROM project_group_experiments
+            GROUP BY project_group_id
+        ) pge ON pge.project_group_id = e.project_group_id
         WHERE 1 = 1 
         ${role === 'USER' ? Prisma.sql`and e.user_id = ${currentUser.id}` : Prisma.empty}
         ${role === 'ASSITANT' ? Prisma.sql`and e.manager_id = ${currentUser.id}` : Prisma.empty}
@@ -159,9 +170,18 @@ const experimentTableConfig: TableConfig[] = [
         label: '所属分组',
         auth: ['ADMIN', 'ASSISTANT'],
         children: (data: any) => {
+            logger.info(data);
             return (
                 <div className="flex flex-col gap-2">
                     <span>{data.group_name}</span>
+                    <div className="flex gap-2 items-center">
+                        <progress
+                            className="progress w-12"
+                            value={data.num}
+                            max={data.project_group_experiment_num}
+                        />
+                        <span>{`${data.num} / ${data.project_group_experiment_num}`}</span>
+                    </div>
                 </div>
             );
         },

@@ -25,10 +25,24 @@ const sidebarNav: SidebarNavItem[] = [
         icon: 'dashboard',
     },
     {
+        title: '项目列表',
+        href: '/projects',
+        icon: 'projects',
+        auth: ['ADMIN', 'ASSISTANT'],
+        category: '项目',
+    },
+    {
+        title: '项目分组列表',
+        href: '/project/groups',
+        icon: 'projectGroups',
+        auth: ['ADMIN', 'ASSISTANT'],
+    },
+    {
         title: '实验管理',
         href: '/experiment',
         icon: 'billing',
         auth: ['ADMIN', 'ASSISTANT'],
+        category: '实验',
     },
     {
         title: '引擎管理',
@@ -37,7 +51,7 @@ const sidebarNav: SidebarNavItem[] = [
         auth: ['ADMIN', 'ASSISTANT'],
     },
     {
-        title: '实验记录',
+        title: '用户实验',
         href: '/history',
         icon: 'history',
         auth: ['ADMIN', 'ASSISTANT'],
@@ -47,18 +61,13 @@ const sidebarNav: SidebarNavItem[] = [
         href: '/users',
         icon: 'users',
         auth: ['ADMIN', 'ASSISTANT'],
+        category: '用户',
     },
     {
-        title: '项目列表',
-        href: '/projects',
-        icon: 'projects',
-        auth: ['ADMIN', 'ASSISTANT'],
-    },
-    {
-        title: '项目分组列表',
-        href: '/project/groups',
-        icon: 'projectGroups',
-        auth: ['ADMIN', 'ASSISTANT'],
+        title: '用户设置',
+        href: '/settings',
+        icon: 'settings',
+        auth: ['ADMIN', 'ASSISTANT', 'USER'],
     },
     // {
     //     title: '用户组',
@@ -67,16 +76,11 @@ const sidebarNav: SidebarNavItem[] = [
     //     auth: ['ADMIN', 'ASSISTANT'],
     // },
     {
-        title: '用户设置',
-        href: '/settings',
-        icon: 'settings',
-        auth: ['ADMIN', 'ASSISTANT', 'USER'],
-    },
-    {
         title: '平台设置',
         href: '/platform/settings',
         icon: 'wrench',
         auth: ['ADMIN', 'ASSISTANT'],
+        category: '其他',
     },
 ];
 
@@ -86,12 +90,11 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
     if (!user) {
         return notFound();
     }
-    // console.log('user', user);
     const dbUser = await getUser(user.id);
-    // console.log('dbUser', dbUser);
 
     const authedSidebar =
         user.role !== 'SUPERADMIN' ? authSidebar(sidebarNav, user.role as UserRole) : sidebarNav;
+
     return (
         <div className="mx-auto flex flex-col space-y-4 items-center bg-white">
             <header className="container sticky top-0 w-full bg-white">

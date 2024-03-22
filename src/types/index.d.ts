@@ -17,6 +17,7 @@ export type SidebarNavItem = {
     external?: boolean;
     auth?: string[];
     icon?: keyof typeof Icons;
+    category?: string;
 } & (
     | {
           href: string;

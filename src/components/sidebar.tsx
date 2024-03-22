@@ -20,23 +20,28 @@ export function DashboardNav({ items }: DashboardNavProps) {
     }
 
     return (
-        <nav className="grid items-start gap-2">
+        <nav className="grid items-start gap-1">
             {items.map((item, index) => {
                 const Icon = Icons[item.icon || 'arrowRight'];
                 return (
                     item.href && (
-                        <Link key={index} href={item.disabled ? '/' : item.href}>
-                            <span
-                                className={cn(
-                                    'group flex items-center rounded-md px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-100',
-                                    path === item.href ? 'bg-slate-200' : 'transparent',
-                                    item.disabled && 'cursor-not-allowed opacity-80'
-                                )}
-                            >
-                                <Icon className="mr-2 h-4 w-4" />
-                                <span>{item.title}</span>
-                            </span>
-                        </Link>
+                        <>
+                            {item.category && (
+                                <div className="text-lg px-3 mt-2 select-none">{item.category}</div>
+                            )}
+                            <Link key={index} href={item.disabled ? '/' : item.href}>
+                                <div
+                                    className={cn(
+                                        'group flex items-center rounded-md px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-100',
+                                        path === item.href ? 'bg-slate-200' : 'transparent',
+                                        item.disabled && 'cursor-not-allowed opacity-80'
+                                    )}
+                                >
+                                    <Icon className="mr-2 h-4 w-4" />
+                                    <span>{item.title}</span>
+                                </div>
+                            </Link>
+                        </>
                     )
                 );
             })}
