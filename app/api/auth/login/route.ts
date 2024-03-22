@@ -33,13 +33,19 @@ export async function POST(request: Request) {
     }
 
     // 更新用户最后登录时间
-    console.log(user.id, new Date())
     await db.user.update({
         where: {
             id: user.id,
         },
         data: {
             last_login_time: new Date(),
+        },
+    });
+
+    await db.user_login_log.create({
+        data: {
+            user_id: user.id,
+            login_time: new Date(),
         },
     });
 
