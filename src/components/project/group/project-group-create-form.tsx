@@ -30,6 +30,7 @@ interface ProjectGroupFormProps extends React.HTMLAttributes<HTMLDivElement> {
     projectGroup?: project_group;
     experiments?: ProjectGroupExperiment[];
     projectGroupId?: number;
+    add?: boolean; // 是否是新建操作
 }
 type FormData = z.infer<typeof projectGroupFormSchema>;
 const itemName = 'project-group-add-experiment';
@@ -43,6 +44,7 @@ export function ProjectGroupCreateForm({
     projectGroup,
     experiments,
     projectGroupId,
+    add = false,
     ...props
 }: ProjectGroupFormProps) {
     const {
@@ -209,12 +211,12 @@ export function ProjectGroupCreateForm({
     }
 
     useEffect(() => {
-        if (edit) {
+        if (add) {
             setDispatch('UPDATE');
         } else {
             setDispatch('CREATE');
         }
-    }, [edit]);
+    }, [add]);
 
     useEffect(() => {
         if (edit) {

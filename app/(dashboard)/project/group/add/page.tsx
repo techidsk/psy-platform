@@ -7,7 +7,7 @@ export default function CreateProjectGroup() {
             <SubpageHeader />
             <div className="flex flex-col gap-4">
                 <SubpageContentHeader heading="创建新项目分组" />
-                <ProjectGroupCreateForm className="w-full px-2" edit={true} />
+                <ProjectGroupCreateForm className="w-full px-2" edit={true} add={true} />
             </div>
         </div>
     );
