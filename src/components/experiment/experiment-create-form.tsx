@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
 import { cn } from '@/lib/utils';
-import { exprimentSchema, exprimentStepSchema } from '@/lib/validations/experiment';
+import { exprimentSchema } from '@/lib/validations/experiment';
 import { Icons } from '@/components/icons';
 import { getUrl } from '@/lib/url';
 
@@ -23,6 +23,7 @@ interface ExperimentCreateFormProps extends React.HTMLAttributes<HTMLDivElement>
     edit?: boolean;
     engines?: experimentEngine[] | null;
     steps?: experiment_steps[] | null;
+    add?: boolean;
 }
 
 type FormData = z.infer<typeof exprimentSchema>;
@@ -34,6 +35,7 @@ export function ExperimentCreateForm({
     edit,
     engines,
     steps,
+    add = false,
     ...props
 }: ExperimentCreateFormProps) {
     const {
@@ -68,7 +70,6 @@ export function ExperimentCreateForm({
             return;
         }
         setIsLoading(true);
-        console.log(dispatch, data);
         if (dispatch === 'UPDATE') {
             // TODO: dispatch为update则进行patch操作
             const patchResult = await fetch(getUrl('/api/experiment/patch'), {
@@ -165,6 +166,14 @@ export function ExperimentCreateForm({
             setExperimentSteps(steps as experiment_steps[]);
         }
     }
+
+    useEffect(() => {
+        if (add) {
+            setDispatch('UPDATE');
+        } else {
+            setDispatch('CREATE');
+        }
+    }, [add]);
 
     useEffect(() => {
         // 判断是否是编辑模式

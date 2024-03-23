@@ -5,6 +5,7 @@ const projectFormSchema = z.object({
     project_description: z.string().optional(),
     start_time: z.coerce.date().optional(),
     end_time: z.coerce.date().optional(),
+    id: z.number().optional(),
 });
 
 export { projectFormSchema };

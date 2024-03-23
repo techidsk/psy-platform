@@ -25,6 +25,7 @@ interface ProjectFormProps extends React.HTMLAttributes<HTMLDivElement> {
     project?: projects;
     projectGroups?: project_group[];
     projectGroupsIds?: number[];
+    add?: boolean;
 }
 type FormData = z.infer<typeof projectFormSchema>;
 const itemName = 'project-group-ids';
@@ -37,6 +38,7 @@ export function ProjectCreateForm({
     project,
     projectGroups,
     projectGroupsIds,
+    add = false,
     ...props
 }: ProjectFormProps) {
     const {
@@ -57,6 +59,7 @@ export function ProjectCreateForm({
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(dayjs().add(1, 'day').toDate());
+    const [dispatch, setDispatch] = useState<string>('CREATE');
 
     const setSelectIds = useTableState((state) => state.setSelectIds);
     const setProjectId = useProjectState((state) => state.setProjectId);
@@ -84,6 +87,44 @@ export function ProjectCreateForm({
             } else {
                 toast({
                     title: '创建失败',
+                    description: responseBody.msg || '请查看系统消息',
+                    variant: 'destructive',
+                    duration: 5000,
+                });
+            }
+        } catch (error) {
+            console.error('请求失败:', error);
+            toast({
+                title: '请求错误',
+                description: '无法连接到服务器，请稍后再试。',
+                variant: 'destructive',
+                duration: 5000,
+            });
+        }
+    }
+
+    async function patchProject(data: FormData) {
+        try {
+            const result = await fetch(getUrl(`/api/project/patch`), {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...data,
+                }),
+            });
+            const responseBody = await result.json();
+            if (result.ok) {
+                toast({
+                    title: '更新成功',
+                    description: responseBody.msg || '已成功更新项目',
+                    duration: 3000,
+                });
+                if (closeModal) {
+                    closeModal();
+                }
+            } else {
+                toast({
+                    title: '更新失败',
                     description: responseBody.msg || '请查看系统消息',
                     variant: 'destructive',
                     duration: 5000,
@@ -145,7 +186,11 @@ export function ProjectCreateForm({
         }
 
         setIsLoading(true);
-        await addProject(data);
+        if (dispatch === 'UPDATE') {
+            await patchProject({ ...data, id: project?.id });
+        } else {
+            await addProject(data);
+        }
         setIsLoading(false);
 
         router.back();
@@ -160,6 +205,14 @@ export function ProjectCreateForm({
             setEndDate(project.end_time || new Date());
         }
     }
+
+    useEffect(() => {
+        if (add) {
+            setDispatch('UPDATE');
+        } else {
+            setDispatch('CREATE');
+        }
+    }, [add]);
 
     useEffect(() => {
         if (edit) {

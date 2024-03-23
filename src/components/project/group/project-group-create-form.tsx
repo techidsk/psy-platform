@@ -65,8 +65,6 @@ export function ProjectGroupCreateForm({
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [dispatch, setDispatch] = useState<string>('CREATE');
 
-    const setSelectIds = useTableState((state) => state.setSelectIds);
-
     // 创建项目
     async function addProjectGroup(data: FormData) {
         try {

@@ -19,7 +19,6 @@ export default async function Dashboard() {
         redirect('/login');
     }
     const needExperiment = currentUser.role === 'USER';
-    logger.info(needExperiment);
 
     // TODO 查看用户下次实验记录时间以及是否需要开始下次实验
     const { experiment_id: nextExperimentId, project_group_id: projectGroupId } =
