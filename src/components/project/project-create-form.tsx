@@ -204,6 +204,7 @@ export function ProjectCreateForm({
         if (project) {
             setValue('project_name', project.project_name || '');
             setValue('project_description', project.project_description || '');
+            setValue('state', project.state || 'AVAILABLE');
             setStartDate(project.start_time || new Date());
             setEndDate(project.end_time || new Date());
         }
@@ -266,6 +267,26 @@ export function ProjectCreateForm({
                             <p className="px-1 text-xs text-red-600">
                                 {errors.project_description.message}
                             </p>
+                        )}
+                    </div>
+                    <div className="grid gap-1">
+                        <label className="sr-only" htmlFor="state">
+                            项目状态
+                        </label>
+                        <select
+                            className="select select-bordered w-full max-w-xs"
+                            disabled={isLoading || !edit}
+                            {...register('state')}
+                        >
+                            <option disabled selected>
+                                请选择项目状态
+                            </option>
+                            <option value={'AVAILABLE'}>可用</option>
+                            <option value={'DRAFT'}>未激活</option>
+                            <option value={'ACHIVED'}>已归档</option>
+                        </select>
+                        {errors?.state && (
+                            <p className="px-1 text-xs text-red-600">{errors.state.message}</p>
                         )}
                     </div>
                     <div className="grid gap-2">

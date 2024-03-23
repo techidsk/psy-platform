@@ -43,7 +43,7 @@ export async function PATCH(request: Request) {
 
         const experiment = await db.experiment.update({
             where: { nano_id: data['nano_id'] },
-            data: params,
+            data: { ...params, pic_mode: params.pic_mode ? 1 : 0 },
         });
         logger.info('已成功更新实验设置');
         // 全部删除再进行添加操作

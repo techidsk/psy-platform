@@ -6,6 +6,7 @@ export const exprimentSchema = z.object({
     intro: z.string().optional().or(z.literal('')),
     engine_id: z.number().optional(),
     countdown: z.number().min(5).max(60).optional(),
+    pic_mode: z.boolean().optional(),
 });
 
 export const exprimentSettingSchema = z.object({

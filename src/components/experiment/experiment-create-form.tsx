@@ -16,6 +16,7 @@ import type { experiment, experiment_steps, engine as experimentEngine } from '@
 import Image from 'next/image';
 import { Modal } from '../ui/modal';
 import { ExperimentStepForm } from './experiment-step-form';
+import { logger } from '@/lib/logger';
 
 interface ExperimentCreateFormProps extends React.HTMLAttributes<HTMLDivElement> {
     experiment: experiment | null;
@@ -158,6 +159,7 @@ export function ExperimentCreateForm({
             setValue('description', experiment.description || '');
             setValue('intro', experiment.intro || '');
             setValue('countdown', experiment.countdown || 20);
+            setValue('pic_mode', Boolean(experiment.pic_mode));
 
             if (experiment.engine_id) {
                 setValue('engine_id', experiment.engine_id);
@@ -268,7 +270,7 @@ export function ExperimentCreateForm({
                                 </label>
                                 <input
                                     data-name="countdown"
-                                    placeholder="请输入时间时间"
+                                    placeholder="请输入实验持续时间（单位：分钟）"
                                     type="number"
                                     min={5}
                                     max={60}
@@ -279,6 +281,22 @@ export function ExperimentCreateForm({
                                 {errors?.countdown && (
                                     <p className="px-1 text-xs text-red-600">
                                         {errors.countdown.message}
+                                    </p>
+                                )}
+                            </div>
+                            <div className="grid gap-1">
+                                <label className="text-lg" htmlFor="pic_mode">
+                                    开启生成图片
+                                </label>
+                                <input
+                                    type="checkbox"
+                                    className="toggle"
+                                    disabled={isLoading || !edit}
+                                    {...register('pic_mode')}
+                                />
+                                {errors?.pic_mode && (
+                                    <p className="px-1 text-xs text-red-600">
+                                        {errors.pic_mode.message}
                                     </p>
                                 )}
                             </div>

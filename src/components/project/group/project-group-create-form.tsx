@@ -270,7 +270,7 @@ export function ProjectGroupCreateForm({
                         </label>
                         <input
                             data-name="gap"
-                            placeholder="请输入项目实验间隔"
+                            placeholder="请输入项目实验间隔（单位：小时）"
                             disabled={isLoading || !edit}
                             className="input input-bordered w-full"
                             {...register('gap', { valueAsNumber: true })}

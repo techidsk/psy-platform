@@ -138,7 +138,7 @@ const experimentTableConfig: TableConfig[] = [
         label: '状态',
         children: (data: any) => {
             let text = Boolean(data.available) ? '可用' : '暂停';
-            let type = Boolean(data.pic_mode) ? 'success' : 'warn';
+            let type = Boolean(data.available) ? 'success' : 'warn';
             return <State type={type}>{text}</State>;
         },
     },

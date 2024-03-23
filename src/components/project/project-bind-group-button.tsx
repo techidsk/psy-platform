@@ -25,10 +25,6 @@ export function ProjectBindGroupButton({ className, ...props }: ButtonProps) {
     // const selectedProjectId = useProjectState((state) => state.projectId);
 
     async function onClick() {
-        console.log({
-            project_id: selectedProjectId,
-            group_ids: selectedIds[itemName],
-        });
         const result = await fetch(getUrl('/api/project/group/bind'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
