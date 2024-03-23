@@ -56,11 +56,12 @@ export default async function ProjectDetail({ params: { id }, searchParams }: an
             <div className="flex flex-col gap-4">
                 <SubpageContentHeader heading="项目详情" />
                 <ProjectCreateForm
-                    className="w-full p-2"
+                    className="w-full p-2 h-[800px]"
                     edit={Boolean(edit)}
                     project={project}
                     projectGroups={projectGroups}
                     projectGroupsIds={projectGroups?.map((item) => item.id)}
+                    add={false}
                 />
             </div>
         </div>

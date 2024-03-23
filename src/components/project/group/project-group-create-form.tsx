@@ -209,9 +209,9 @@ export function ProjectGroupCreateForm({
 
     useEffect(() => {
         if (add) {
-            setDispatch('UPDATE');
-        } else {
             setDispatch('CREATE');
+        } else {
+            setDispatch('UPDATE');
         }
     }, [add]);
 

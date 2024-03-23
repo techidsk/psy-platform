@@ -18,6 +18,7 @@ import { projects, project_group } from '@prisma/client';
 import { JsonValue } from '@prisma/client/runtime/library';
 import { useTableState } from '@/state/_table_atom';
 import { useProjectState } from '@/state/_project_atoms';
+import { logger } from '@/lib/logger';
 interface ProjectFormProps extends React.HTMLAttributes<HTMLDivElement> {
     closeModal?: Function;
     edit?: boolean;
@@ -186,6 +187,8 @@ export function ProjectCreateForm({
         }
 
         setIsLoading(true);
+
+        logger.info(`dispatch: ${dispatch}`);
         if (dispatch === 'UPDATE') {
             await patchProject({ ...data, id: project?.id });
         } else {
@@ -208,9 +211,9 @@ export function ProjectCreateForm({
 
     useEffect(() => {
         if (add) {
-            setDispatch('UPDATE');
-        } else {
             setDispatch('CREATE');
+        } else {
+            setDispatch('UPDATE');
         }
     }, [add]);
 

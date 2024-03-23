@@ -169,9 +169,9 @@ export function ExperimentCreateForm({
 
     useEffect(() => {
         if (add) {
-            setDispatch('UPDATE');
-        } else {
             setDispatch('CREATE');
+        } else {
+            setDispatch('UPDATE');
         }
     }, [add]);
 
