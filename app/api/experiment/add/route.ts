@@ -25,6 +25,7 @@ export async function POST(request: Request) {
             data: {
                 ...data,
                 creator: parseInt(currentUser.id),
+                pic_mode: data.pic_mode ? 1 : 0,
             },
         });
 
