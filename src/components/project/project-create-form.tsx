@@ -140,8 +140,6 @@ export function ProjectCreateForm({
      * @returns
      */
     async function onSubmit(data: FormData) {
-        console.log(data);
-
         if (isLoading) {
             return;
         }
@@ -149,6 +147,9 @@ export function ProjectCreateForm({
         setIsLoading(true);
         await addProject(data);
         setIsLoading(false);
+
+        router.back();
+        router.refresh();
     }
 
     function initForm() {

@@ -22,7 +22,6 @@ async function getEngines() {
             num: Number(engine.num),
         };
     });
-    console.log(formatResult);
     return formatResult;
 }
 

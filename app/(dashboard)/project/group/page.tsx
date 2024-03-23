@@ -36,6 +36,7 @@ async function getProjectGroups(
     // 判断当前用户角色
     const projectGroups = await db.$queryRaw<ProjectGroupTableProps[]>`
         SELECT * from project_group
+        WHERE state = 'UNASSIGNED'
         LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
     `;
 
@@ -50,7 +51,6 @@ export default async function ProjectGroup({
     const currentPage = searchParams.page ? parseInt(searchParams.page) || 1 : 1;
     const currentPageSize = searchParams.pagesize ? parseInt(searchParams.pagesize) || 10 : 10;
     const datas = await getProjectGroups(searchParams, currentPage, currentPageSize);
-    console.log(datas);
     let end = currentPage;
     if (datas.length === currentPageSize) {
         end = currentPage + 1;
@@ -102,11 +102,11 @@ const projectTableConfig: TableConfig[] = [
             let obj = data.status
                 ? {
                       text: '可用',
-                      state: 'success',
+                      state: 'AVAILABLE',
                   }
                 : {
-                      text: '未激活',
-                      state: 'pending',
+                      text: '未分配',
+                      state: 'UNASSIGNED',
                   };
 
             return (

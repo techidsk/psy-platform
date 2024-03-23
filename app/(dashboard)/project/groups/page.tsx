@@ -137,6 +137,22 @@ const projectTableConfig: TableConfig[] = [
         },
     },
     {
+        key: 'gap',
+        label: '实验间隔',
+        children: (data: any) => {
+            const hours = data.gap;
+            const days = Math.floor(hours / 24);
+            const hoursLeft = hours % 24;
+
+            return (
+                <div className="flex gap-2">
+                    {days > 0 && <span>{`${days} 天`}</span>}
+                    <span>{`${hoursLeft} 小时`}</span>
+                </div>
+            );
+        },
+    },
+    {
         key: 'state',
         label: '状态',
         children: (data: ProjectGroupTableProps) => {

@@ -12,8 +12,10 @@ export default function SubpageHeader({ back, children }: BackHeaderProp) {
     function onClick() {
         if (back) {
             router.push(back);
+            router.refresh();
         } else {
             router.back();
+            router.refresh();
         }
     }
 

@@ -55,10 +55,11 @@ async function getUsers(
     // 判断当前用户角色
     const users = await db.$queryRaw<UserTableProps[]>`
         SELECT u.id, u.username, u.email, u.tel, u.avatar, u.user_role, u.create_time, u.qualtrics, u.last_login_time, u.wechat_id,
-        g.group_name as user_group_name, count(m.id) as manager_count
-        FROM user u
+        count(m.id) as manager_count, pg.group_name as user_group_name
+        FROM user u 
         LEFT JOIN user m ON u.id = m.manager_id
         LEFT JOIN user_group g ON g.id = u.user_group_id
+        LEFT JOIN project_group pg ON pg.id = g.project_group_id
         WHERE u.deleted = 0 and u.user_role != 'SUPERADMIN'
         ${
             role !== 'ADMIN'

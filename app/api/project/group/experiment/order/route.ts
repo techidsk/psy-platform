@@ -33,6 +33,9 @@ export async function POST(request: Request, context: { params: any }) {
 
         const projectGroupId = projectGroupExperiment.project_group_id;
         const currentIndex = projectGroupExperiment.experiment_index;
+
+        const tempIndex = 255; // 或者选择一个绝对不会冲突的值
+
         await db.$transaction(async (trans) => {
             if ('UP' === order) {
                 const prevProjectGroupExperiment = await trans.project_group_experiments.findFirst({
@@ -43,9 +46,6 @@ export async function POST(request: Request, context: { params: any }) {
                     orderBy: { experiment_index: 'desc' },
                 });
                 if (prevProjectGroupExperiment) {
-                    // 使用临时值来避免唯一约束问题
-                    const tempIndex = -1;
-
                     // 更新当前实验的 index 为临时值
                     await trans.project_group_experiments.update({
                         where: { id: projectGroupExperimentId },
@@ -74,7 +74,6 @@ export async function POST(request: Request, context: { params: any }) {
                 });
                 if (nextProjectGroupExperiment) {
                     // 使用临时值来避免唯一约束问题
-                    const tempIndex = -1; // 或者选择一个绝对不会冲突的值
 
                     // 更新当前实验的 index 为临时值
                     await trans.project_group_experiments.update({
@@ -105,6 +104,7 @@ export async function POST(request: Request, context: { params: any }) {
 
         return NextResponse.json({ msg: '已删除分组' });
     } catch (error) {
+        logger.error(error);
         return NextResponse.json({ msg: '删除失败' }, { status: 500 });
     }
 }

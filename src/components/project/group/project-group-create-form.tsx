@@ -73,6 +73,7 @@ export function ProjectGroupCreateForm({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...data,
+                    gap: data.gap || 3,
                 }),
             });
             const responseBody = await result.json();
@@ -189,7 +190,7 @@ export function ProjectGroupCreateForm({
         }
         setIsLoading(true);
         if (dispatch === 'UPDATE') {
-            await patchProjectGroup(data);
+            await patchProjectGroup({ ...data, id: projectGroup?.id });
         } else {
             await addProjectGroup(data);
         }
@@ -203,11 +204,19 @@ export function ProjectGroupCreateForm({
         if (projectGroup) {
             setValue('group_name', projectGroup.group_name || '');
             setValue('description', projectGroup.description || '');
+            setValue('gap', projectGroup.gap || 3);
         }
     }
 
     useEffect(() => {
-        console.log(experiments, projectGroup);
+        if (edit) {
+            setDispatch('UPDATE');
+        } else {
+            setDispatch('CREATE');
+        }
+    }, [edit]);
+
+    useEffect(() => {
         if (edit) {
             reset();
         } else {
@@ -254,6 +263,21 @@ export function ProjectGroupCreateForm({
                             <p className="px-1 text-xs text-red-600">
                                 {errors.description.message}
                             </p>
+                        )}
+                    </div>
+                    <div className="grid gap-1">
+                        <label className="sr-only" htmlFor="gap">
+                            实验间隔
+                        </label>
+                        <input
+                            data-name="gap"
+                            placeholder="请输入项目实验间隔"
+                            disabled={isLoading || !edit}
+                            className="input input-bordered w-full"
+                            {...register('gap', { valueAsNumber: true })}
+                        />
+                        {errors?.gap && (
+                            <p className="px-1 text-xs text-red-600">{errors.gap.message}</p>
                         )}
                     </div>
                     {projectGroupId && (

@@ -240,7 +240,7 @@ export async function findLastExperiment(userId: string, projectGroupId: number)
             id: projectGroupId,
         },
     });
-    const gap = projectGroup?.gap || 7; // 实验间隔默认7天
+    const gap = projectGroup?.gap || 3; // 实验间隔默认3小时
 
     const currentTimeStamp = new Date().getTime();
     logger.info(
@@ -250,10 +250,10 @@ export async function findLastExperiment(userId: string, projectGroupId: number)
     );
 
     const timeStampDiffMinuts = (currentTimeStamp - lastStartTimeStamp) / 1000 / 60; // 分钟数
-    if (timeStampDiffMinuts < gap * 24 * 60) {
+    if (timeStampDiffMinuts < gap * 60) {
         return {
             status: true,
-            timeStamp: gap * 24 * 60 * 60 * 1000 - (currentTimeStamp - lastStartTimeStamp),
+            timeStamp: gap * 60 * 60 * 1000 - (currentTimeStamp - lastStartTimeStamp),
         };
     }
 

@@ -18,9 +18,6 @@ export default async function Settings() {
 
     const dbUser = await getUser(user.id);
     const resultUrl = getAvatarUrl(dbUser.avatar || '', dbUser.username || '');
-    console.log(resultUrl);
-    console.log('session user:', user);
-    console.log('dbUser', dbUser);
 
     return (
         <div className="ml-6 max-w-3xl">

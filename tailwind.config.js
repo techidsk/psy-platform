@@ -9,7 +9,11 @@ module.exports = {
         './src/**/*.{js,ts,jsx,tsx}',
     ],
     theme: {
-        extend: {},
+        extend: {
+            height: {
+                'screen-96px': 'calc(100vh - 96px)',
+            },
+        },
     },
     daisyui: {
         themes: ['light'],
