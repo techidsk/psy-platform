@@ -17,7 +17,7 @@ export default function Error({
         console.error(error);
         setErrorMessage(error.message);
     }, [error]);
-
+    // TODO 优化报错提示
     return (
         <div className="container mx-auto">
             <div className="flex flex-col gap-4">
@@ -26,7 +26,8 @@ export default function Error({
                         <div className="hero-content text-center">
                             <div className="max-w-md">
                                 <CenteredHero title={'出现异常'} content={''}>
-                                    <button onClick={() => reset()}>{errorMessage}</button>
+                                    {/* <button onClick={() => reset()}>{errorMessage}</button> */}
+                                    <div>暂时没有可用实验项目</div>
                                 </CenteredHero>
                             </div>
                         </div>

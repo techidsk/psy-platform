@@ -1,3 +1,4 @@
+import { ca } from 'date-fns/locale';
 import { db } from './db';
 import { logger } from './logger';
 import { getCurrentUser } from './session';
@@ -134,30 +135,42 @@ async function findProjectGroup(
     } else {
         logger.info(`<用户${userId}> 未分配项目分组@user_group，开始进行分配`);
         // 用户在当前项目并没有对应的项目，随机分配用户到对应的项目分组中
-        const userProjectGroupId = await getRandomProjectGroup(projectId);
-        const experimentList = await findGroupExperiments(userProjectGroupId);
-        if (!experimentList[0]) {
-            logger.error(`<用户${userId}> 被分配的 项目分组[${userProjectGroupId}] 未分配可用实验`);
-            throw new Error('暂未分配项目实验');
-        }
+        try {
+            const userProjectGroupId = await getRandomProjectGroup(projectId);
+            const experimentList = await findGroupExperiments(userProjectGroupId);
+            if (!experimentList[0]) {
+                logger.error(
+                    `<用户${userId}> 被分配的 项目分组[${userProjectGroupId}] 未分配可用实验`
+                );
+                throw new Error('暂未分配项目实验');
+            }
 
-        // 插入用户到项目分组中
-        await db.user_group.create({
-            data: {
-                user_id: userId,
-                project_id: projectId,
+            // 插入用户到项目分组中
+            await db.user_group.create({
+                data: {
+                    user_id: userId,
+                    project_id: projectId,
+                    project_group_id: userProjectGroupId,
+                    state: 1,
+                },
+            });
+            logger.info(`<用户${userId}> 已分配到项目分组[${userProjectGroupId}]`);
+
+            // 返回对应顺序的实验id
+            return {
+                status: 'SUCCESS',
+                experiment_id: experimentList[0].experiment_id,
                 project_group_id: userProjectGroupId,
-                state: 1,
-            },
-        });
-        logger.info(`<用户${userId}> 已分配到项目分组[${userProjectGroupId}]`);
-
-        // 返回对应顺序的实验id
-        return {
-            status: 'SUCCESS',
-            experiment_id: experimentList[0].experiment_id,
-            project_group_id: userProjectGroupId,
-        };
+            };
+        } catch (e) {
+            logger.error(`用户${userId} 获取实验信息时出现错误 :${e}`);
+            return {
+                status: 'ERROR',
+                message: '未分配到项目分组',
+                experiment_id: 0,
+                project_group_id: 0,
+            };
+        }
     }
 }
 
