@@ -98,10 +98,6 @@ export async function POST(request: Request, context: { params: any }) {
                 return NextResponse.json({ msg: '参数错误' }, { status: 400 });
             }
         });
-        await db.project_group_experiments.delete({
-            where: { id: parseInt(context.params.id) },
-        });
-
         return NextResponse.json({ msg: '已删除分组' });
     } catch (error) {
         logger.error(error);
