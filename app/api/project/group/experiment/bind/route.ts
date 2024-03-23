@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/session';
+import { logger } from '@/lib/logger';
 
 /**
  * /api/project/group/experiment/bind
@@ -19,11 +20,26 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json();
+    const projectGroupId = data.projectGroupId as string;
+    const lastExperiment = await db.project_group_experiments.findFirst({
+        where: {
+            project_group_id: parseInt(projectGroupId),
+        },
+        orderBy: { experiment_id: 'desc' },
+    });
+
+    const lateIndex = lastExperiment ? lastExperiment.experiment_index + 1 : 0;
+    const params = data.experimentIds.map((item: number, index: number) => {
+        return {
+            project_group_id: parseInt(projectGroupId),
+            experiment_id: item,
+            experiment_index: lateIndex + index,
+        };
+    });
+
     try {
-        await db.project_group_experiments.create({
-            data: {
-                ...data,
-            },
+        await db.project_group_experiments.createMany({
+            data: params,
         });
         return NextResponse.json({ msg: '添加成功' });
     } catch (err) {

@@ -11,9 +11,10 @@ interface CountDownProp {
     limit: number; // 限制的时间 是分钟数
     nanoId: string;
     guest?: boolean;
+    mini?: boolean;
 }
 
-export function CountDown({ start, limit, nanoId, guest = false }: CountDownProp) {
+export function CountDown({ start, limit, nanoId, guest = false, mini = true }: CountDownProp) {
     const router = useRouter();
     usePageLeave();
     const calculateTimeLeft = () => {
@@ -108,12 +109,20 @@ export function CountDown({ start, limit, nanoId, guest = false }: CountDownProp
     const formatTime = (time: number) => time.toString().padStart(2, '0');
 
     // 将剩余时间转换为时分秒
+    const hours = formatTime(Math.floor(timeLeft / 3600));
     const minutes = formatTime(Math.floor((timeLeft % 3600) / 60));
     const seconds = formatTime(Math.round(timeLeft) % 60); // 取余数，保证数字始终是两位数，例如：59秒转换为“59timeLeft % 60;
     // 格式化时间显示，保证数字始终是两位数
+    console.log(hours, minutes, seconds);
 
-    return (
+    return mini ? (
         <span className="countdown font-mono text-2xl">
+            <StyleSpan value={minutes} />:
+            <StyleSpan value={seconds} />
+        </span>
+    ) : (
+        <span className="countdown font-mono text-3xl">
+            <StyleSpan value={hours} />:
             <StyleSpan value={minutes} />:
             <StyleSpan value={seconds} />
         </span>

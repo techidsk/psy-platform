@@ -6,6 +6,7 @@ import { redirect, useRouter } from 'next/navigation';
 import store from 'store2';
 import { Modal } from '../ui/modal';
 import { UserPrivacyForm } from '../user/user-privacy-modal';
+import { logger } from '@/lib/logger';
 
 interface Buttons extends React.HTMLAttributes<HTMLDivElement> {
     experimentId?: string;
@@ -56,7 +57,7 @@ export function ExperimentStarterButtons({
         if (result.ok) {
             const responseBody = await result.json();
             const userExperimentNanoId = responseBody.data.userExperimentNanoId;
-
+            logger.info(`guest: ${guest}`);
             if (guest) {
                 router.push(`/guest/input/${userUniqueKey}?e=${userExperimentNanoId}`);
             } else {

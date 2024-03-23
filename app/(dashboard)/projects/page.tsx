@@ -125,7 +125,7 @@ const projectTableConfig: TableConfig[] = [
                     state: 'success',
                 },
                 DRAFT: {
-                    text: '草稿',
+                    text: '未激活',
                     state: 'pending',
                 },
                 ACHIVED: {
@@ -179,7 +179,7 @@ const searchDatas = [
         values: [
             { value: '', label: '' },
             { value: 'AVAILABLE', label: '可用' },
-            { value: 'DRAFT', label: '草稿' },
+            { value: 'DRAFT', label: '未激活' },
             { value: 'ACHIVED', label: '已归档' },
         ],
     },

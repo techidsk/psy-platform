@@ -34,6 +34,8 @@ import {
     MonitorPlay,
     BookOpen,
     RefreshCw,
+    ArrowUp,
+    ArrowDown,
 } from 'lucide-react';
 
 const CheckedRight = () => (
@@ -104,4 +106,6 @@ export const Icons = {
     refresh: RefreshCw,
     checkedRight: CheckedRight,
     uncheckedRight: UncheckedRight,
+    up: ArrowUp,
+    down: ArrowDown,
 };

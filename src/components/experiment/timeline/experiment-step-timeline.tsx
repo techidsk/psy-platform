@@ -6,7 +6,6 @@ import { LeftImageHero } from '../modules/left-image-hero';
 import { RightImageHero } from '../modules/right-image-hero';
 import { CenteredHero } from '../modules/centerd-hero';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { ExperimentStarterButtons } from '../experiment-starter-buttons';
 
 interface ExperimentTimelineProps {

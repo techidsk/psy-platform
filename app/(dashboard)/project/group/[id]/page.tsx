@@ -25,11 +25,13 @@ async function getProjectGroup(id: string) {
 async function getExperimentsByIds(id: number) {
     const experiments = await db.$queryRaw<any[]>`
         SELECT e.*, 
-        en.engine_name, en.engine_image, en.gpt_prompt, en.gpt_settings, en.template
+        en.engine_name, en.engine_image, en.gpt_prompt, en.gpt_settings, en.template, 
+        pge.experiment_index, pge.id as project_group_unique_id
         FROM experiment e
         LEFT JOIN engine en ON en.id = e.engine_id
         LEFT JOIN project_group_experiments pge ON pge.experiment_id = e.id
         WHERE pge.project_group_id = ${id}
+        ORDER BY pge.experiment_index ASC
     `;
 
     if (!experiments) {
@@ -57,6 +59,7 @@ export default async function ProjectGroupDetail({ params: { id }, searchParams 
                     edit={Boolean(edit)}
                     projectGroup={projectGroup}
                     experiments={experiments}
+                    projectGroupId={id}
                 />
             </div>
         </div>

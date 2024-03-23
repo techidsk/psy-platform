@@ -56,6 +56,7 @@ export default async function ProjectAddExperiment({
                     <ExperimentTableConfirmButton
                         className="btn btn-primary btn-sm"
                         itemName={itemName}
+                        projectGroupId={searchParams.project_group_id}
                     />
                 </DashboardHeader>
                 <div className="w-full overflow-auto">

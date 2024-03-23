@@ -105,7 +105,7 @@ const projectTableConfig: TableConfig[] = [
                       state: 'success',
                   }
                 : {
-                      text: '草稿',
+                      text: '未激活',
                       state: 'pending',
                   };
 

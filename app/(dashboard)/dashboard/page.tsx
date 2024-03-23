@@ -2,7 +2,7 @@ import './styles.css';
 import { DashboardHeader } from '@/components/dashboard-header';
 import { getCurrentUser } from '@/lib/session';
 import { redirect } from 'next/navigation';
-import { getUserGroupExperiments } from '@/lib/user_experiment';
+import { findLastExperiment, getUserGroupExperiments } from '@/lib/user_experiment';
 import ExperimentTimeline from '@/components/experiment/timeline/experiment-timeline';
 import { logger } from '@/lib/logger';
 
@@ -18,24 +18,39 @@ export default async function Dashboard() {
     if (!currentUser?.id) {
         redirect('/login');
     }
-
+    const needExperiment = currentUser.role === 'USER';
     // TODO 查看用户下次实验记录时间以及是否需要开始下次实验
-    const { experiment_id: experimentId } = await getUserGroupExperiments();
-    logger.info(`<用户${currentUser.id}> 需要进行实验 ${experimentId}`);
+    const { experiment_id: nextExperimentId, project_group_id: projectGroupId } =
+        await getUserGroupExperiments();
 
-    if (!experimentId) {
+    if (!nextExperimentId) {
         redirect('/closed');
     }
+    if (!projectGroupId) {
+        redirect('/closed');
+    }
+
+    const result = await findLastExperiment(currentUser.id, projectGroupId);
+    const needWait = result?.status || false;
+    const timeStamp = result.timeStamp;
+    logger.info(`<用户${currentUser.id}> 需要等待 ${timeStamp} 进行实验 ${nextExperimentId}`);
+    if (needWait) {
+        redirect(`/dashboard/wait?t=${timeStamp}`);
+    }
+    logger.info(`<用户${currentUser.id}> 需要进行实验 ${nextExperimentId}`);
 
     return (
         <>
             <div className="container mx-auto">
                 <div className="flex flex-col gap-4">
                     <DashboardHeader heading="控制台" text="用户相关操作页面" />
-                    <ExperimentTimeline
-                        experimentId={experimentId}
-                        userId={parseInt(currentUser.id)}
-                    />
+                    {needExperiment && (
+                        <ExperimentTimeline
+                            nextExperimentId={nextExperimentId}
+                            userId={parseInt(currentUser.id)}
+                            guest={false}
+                        />
+                    )}
                 </div>
             </div>
         </>

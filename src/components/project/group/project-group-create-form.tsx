@@ -14,14 +14,22 @@ import { useRouter } from 'next/navigation';
 import { experiment, project_group } from '@prisma/client';
 import { JsonValue } from '@prisma/client/runtime/library';
 import { useTableState } from '@/state/_table_atom';
-import { NoAuthTable, Table } from '@/components/table/table';
 import { TableConfig } from '@/types/table';
+
+interface ProjectGroupExperiment extends experiment {
+    engine_name: string;
+    engine_image: string;
+    experiment_index: number;
+    project_group_unique_id: number; // project_group_experiment 的 id
+}
+
 interface ProjectGroupFormProps extends React.HTMLAttributes<HTMLDivElement> {
     closeModal?: Function;
     edit?: boolean;
     nano_id?: string;
     projectGroup?: project_group;
-    experiments?: experiment[];
+    experiments?: ProjectGroupExperiment[];
+    projectGroupId?: number;
 }
 type FormData = z.infer<typeof projectGroupFormSchema>;
 const itemName = 'project-group-add-experiment';
@@ -34,6 +42,7 @@ export function ProjectGroupCreateForm({
     edit,
     projectGroup,
     experiments,
+    projectGroupId,
     ...props
 }: ProjectGroupFormProps) {
     const {
@@ -138,7 +147,7 @@ export function ProjectGroupCreateForm({
         // TODO 添加实验
         // const enginesArray = engines as number[];
         // setSelectIds(enginesArray, itemName);
-        router.push(`/project/experiment`);
+        router.push(`/project/experiment?project_group_id=${projectGroupId}`);
     }
 
     function showProjectGroup(event: any, id: number) {
@@ -146,9 +155,27 @@ export function ProjectGroupCreateForm({
         console.log('show experiment', id);
     }
 
-    function removeGroupFromProject(event: any, id: number) {
+    async function removeGroupFromProject(event: any, id: number) {
         event.preventDefault();
         console.log('remove experiment', id);
+        await fetch(getUrl(`/api/project/group/experiment/${id}`), {
+            method: 'DELETE',
+        });
+        // 刷新
+        router.refresh();
+    }
+
+    async function adjustExperimentOrder(event: any, id: number, order: string) {
+        event.preventDefault();
+        await fetch(getUrl(`/api/project/group/experiment/order`), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id,
+                order,
+            }),
+        });
+        router.refresh();
     }
 
     /**
@@ -169,6 +196,7 @@ export function ProjectGroupCreateForm({
         setIsLoading(false);
         // 跳转
         router.back();
+        router.refresh();
     }
 
     function initForm() {
@@ -228,38 +256,113 @@ export function ProjectGroupCreateForm({
                             </p>
                         )}
                     </div>
-                    <div className="grid gap-2">
-                        <div className="flex gap-2 items-center">
-                            <label className="" htmlFor="project_groups">
-                                分组实验列表
-                            </label>
-                            {edit && (
-                                <div className="flex">
-                                    <button
-                                        className="btn btn-ghost btn-sm"
-                                        onClick={(e) =>
-                                            addProjectGroups(e, experiments?.map((e) => e.id))
-                                        }
-                                    >
-                                        <Icons.add />
-                                        添加
-                                    </button>
-                                </div>
-                            )}
+                    {projectGroupId && (
+                        <div className="grid gap-2">
+                            <div className="flex gap-2 items-center">
+                                <label className="" htmlFor="project_groups">
+                                    分组实验列表
+                                </label>
+                                {edit && (
+                                    <div className="flex">
+                                        <button
+                                            className="btn btn-ghost btn-sm"
+                                            onClick={(e) =>
+                                                addProjectGroups(
+                                                    e,
+                                                    experiments?.map((e) => e.id)
+                                                )
+                                            }
+                                        >
+                                            <Icons.add />
+                                            添加
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex gap-4 flex-wrap">
+                                {experiments && experiments.length > 0 ? (
+                                    <ul className="timeline timeline-vertical timeline-start">
+                                        {experiments.map((experiment, index) => (
+                                            <li
+                                                key={`${experiment.experiment_index}-${experiment.id}`}
+                                            >
+                                                {index > 0 && <hr />}
+                                                <div className="timeline-start">{index + 1}</div>
+                                                <div className="timeline-middle">
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        viewBox="0 0 20 20"
+                                                        fill="currentColor"
+                                                        className="w-5 h-5"
+                                                    >
+                                                        <path
+                                                            fillRule="evenodd"
+                                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+                                                            clipRule="evenodd"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                                <div className="timeline-end timeline-box">
+                                                    <div className="flex gap-2">
+                                                        {experiment.experiment_name}
+                                                        <button
+                                                            className="btn btn-xs btn-ghost"
+                                                            onClick={(e) => {
+                                                                adjustExperimentOrder(
+                                                                    e,
+                                                                    experiment.project_group_unique_id,
+                                                                    'up'
+                                                                );
+                                                            }}
+                                                        >
+                                                            <Icons.up />
+                                                        </button>
+                                                        <button
+                                                            className="btn btn-xs btn-ghost"
+                                                            onClick={(e) => {
+                                                                adjustExperimentOrder(
+                                                                    e,
+                                                                    experiment.project_group_unique_id,
+                                                                    'down'
+                                                                );
+                                                            }}
+                                                        >
+                                                            <Icons.down />
+                                                        </button>
+                                                        <button
+                                                            className="btn btn-xs btn-primary"
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                router.push(
+                                                                    `/experiment/${experiment.nano_id}`
+                                                                );
+                                                            }}
+                                                        >
+                                                            查看
+                                                        </button>
+                                                        <button
+                                                            className="btn btn-xs btn-outline btn-error"
+                                                            onClick={(e) =>
+                                                                removeGroupFromProject(
+                                                                    e,
+                                                                    experiment.project_group_unique_id
+                                                                )
+                                                            }
+                                                        >
+                                                            移除
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                {index < experiments.length - 1 && <hr />}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <span className="badge">暂无实验</span>
+                                )}
+                            </div>
                         </div>
-                        <div className="flex gap-4 flex-wrap">
-                            {experiments && experiments.length > 0 ? (
-                                <div className="w-full overflow-auto">
-                                    <NoAuthTable
-                                        configs={groupExperimentConfig}
-                                        datas={experiments}
-                                    />
-                                </div>
-                            ) : (
-                                <span className="badge">暂无实验</span>
-                            )}
-                        </div>
-                    </div>
+                    )}
                     {edit && (
                         <div className="flex justify-end">
                             <button

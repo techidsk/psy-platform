@@ -170,13 +170,24 @@ const experimentTableConfig: TableConfig[] = [
         label: '所属分组',
         auth: ['ADMIN', 'ASSISTANT'],
         children: (data: any) => {
-            logger.info(data);
+            const ratio = data.num / data.project_group_experiment_num || 0;
+            let progress_type = '';
+            if (ratio < 0.3) {
+                progress_type = 'progress-error';
+            } else if (ratio < 0.6) {
+                progress_type = 'progress-warning';
+            } else if (ratio < 0.9) {
+                progress_type = 'progress-info';
+            } else if (ratio < 1) {
+                progress_type = 'progress-success';
+            }
+
             return (
                 <div className="flex flex-col gap-2">
                     <span>{data.group_name}</span>
                     <div className="flex gap-2 items-center">
                         <progress
-                            className="progress w-12"
+                            className={`progress w-12 ${progress_type}`}
                             value={data.num}
                             max={data.project_group_experiment_num}
                         />

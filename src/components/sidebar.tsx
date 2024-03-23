@@ -25,7 +25,7 @@ export function DashboardNav({ items }: DashboardNavProps) {
                 const Icon = Icons[item.icon || 'arrowRight'];
                 return (
                     item.href && (
-                        <>
+                        <div key={item.title}>
                             {item.category && (
                                 <div className="text-lg px-3 mt-2 select-none">{item.category}</div>
                             )}
@@ -41,7 +41,7 @@ export function DashboardNav({ items }: DashboardNavProps) {
                                     <span>{item.title}</span>
                                 </div>
                             </Link>
-                        </>
+                        </div>
                     )
                 );
             })}

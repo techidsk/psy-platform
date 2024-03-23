@@ -8,7 +8,7 @@ import { useTableState } from '@/state/_table_atom';
 
 interface ExperimentTableConfirmButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
     itemName: string;
-    projectGroupId?: number;
+    projectGroupId?: string;
 }
 
 export function ExperimentTableConfirmButton({
@@ -31,6 +31,21 @@ export function ExperimentTableConfirmButton({
      */
     async function onClick() {
         console.log(selectedIds[itemName]);
+        setIsLoading(true);
+        await fetch('/api/project/group/experiment/bind', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                projectGroupId,
+                experimentIds: selectedIds[itemName],
+            }),
+        });
+        resetSelected();
+        setIsLoading(false);
+        router.back();
+        router.refresh();
     }
 
     return (
@@ -55,7 +70,7 @@ export function ExperimentTableConfirmButton({
                 ) : (
                     <Icons.add className="h-4 w-4" />
                 )}
-                确定关联
+                添加实验
             </button>
         </div>
     );

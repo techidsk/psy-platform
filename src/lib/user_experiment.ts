@@ -205,8 +205,14 @@ export async function getUserGroupExperiments(
     return response;
 }
 
-async function findLastExperiment(userId: string, projectGroupId: number) {
-    const userExperiment = await db.user_experiments.findFirst({
+/**
+ * 判断是否需要等待实验完成以及等待时间
+ * @param userId
+ * @param projectGroupId
+ * @returns
+ */
+export async function findLastExperiment(userId: string, projectGroupId: number) {
+    const lastUserExperiment = await db.user_experiments.findFirst({
         where: {
             user_id: parseInt(userId),
             project_group_id: projectGroupId,
@@ -214,15 +220,45 @@ async function findLastExperiment(userId: string, projectGroupId: number) {
                 not: null,
             },
         },
+        orderBy: { start_time: 'desc' },
     });
-    if (!userExperiment) {
+    if (!lastUserExperiment) {
         // TODO 用户未进行过实验
+        logger.info(`用户[${userId}] 未进行过实验`);
+        return {
+            status: false,
+            timeStamp: 0,
+        };
     }
-    const lastExperiment = await db.experiment.findFirst({
+    const lastStartTimeStamp =
+        lastUserExperiment && lastUserExperiment.start_time
+            ? new Date(lastUserExperiment.start_time).getTime()
+            : 0;
+
+    const projectGroup = await db.project_group.findFirst({
         where: {
-            nano_id: userExperiment?.experiment_id,
+            id: projectGroupId,
         },
     });
+    const gap = projectGroup?.gap || 7; // 实验间隔默认7天
 
-    return lastExperiment;
+    const currentTimeStamp = new Date().getTime();
+    logger.info(
+        `用户[${userId}] 上次实验开始时间: ${lastStartTimeStamp}，\n
+        现在${currentTimeStamp}, ${currentTimeStamp - lastStartTimeStamp} \n
+        已经间隔: ${(currentTimeStamp - lastStartTimeStamp) / 1000 / 60} 分`
+    );
+
+    const timeStampDiffMinuts = (currentTimeStamp - lastStartTimeStamp) / 1000 / 60; // 分钟数
+    if (timeStampDiffMinuts < gap * 24 * 60) {
+        return {
+            status: true,
+            timeStamp: gap * 24 * 60 * 60 * 1000 - (currentTimeStamp - lastStartTimeStamp),
+        };
+    }
+
+    return {
+        status: false,
+        timeStamp: 0,
+    };
 }

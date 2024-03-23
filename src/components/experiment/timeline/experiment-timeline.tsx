@@ -45,7 +45,7 @@ async function getUserPrivacy(userId: number) {
 }
 
 interface ExperimentTimelineProps {
-    experimentId: number; // 实验ID
+    nextExperimentId: number; // 实验ID
     userId: number;
     guest?: boolean;
     guestUserNanoId?: string;
@@ -53,7 +53,7 @@ interface ExperimentTimelineProps {
 
 // 获取实验步骤
 export default async function ExperimentTimeline({
-    experimentId,
+    nextExperimentId,
     userId,
     guestUserNanoId,
     guest = false,
@@ -69,12 +69,12 @@ export default async function ExperimentTimeline({
         showUserPrivacy = true;
     }
 
-    const experimentData = getExperiment(experimentId);
-    const experimentStepData = getExperimentSteps(experimentId);
+    const experimentData = getExperiment(nextExperimentId);
+    const experimentStepData = getExperimentSteps(nextExperimentId);
     const [experiment, experimentSteps] = await Promise.all([experimentData, experimentStepData]);
 
     if (experimentSteps.length === 0) {
-        logger.warn(`[实验${experimentId}] 没有添加实验步骤`);
+        logger.warn(`[实验${nextExperimentId}] 没有添加实验步骤`);
     }
 
     return (

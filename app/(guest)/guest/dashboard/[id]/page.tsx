@@ -33,7 +33,7 @@ export default async function GuestDashboard({ params: { id } }: GuestDashboardP
             <div className="container mx-auto">
                 <div className="flex flex-col gap-4">
                     <ExperimentTimeline
-                        experimentId={nextExperimentId}
+                        nextExperimentId={nextExperimentId}
                         userId={userId}
                         guest={true}
                         guestUserNanoId={id}
