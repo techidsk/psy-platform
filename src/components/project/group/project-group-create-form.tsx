@@ -33,7 +33,6 @@ interface ProjectGroupFormProps extends React.HTMLAttributes<HTMLDivElement> {
     add?: boolean; // 是否是新建操作
 }
 type FormData = z.infer<typeof projectGroupFormSchema>;
-const itemName = 'project-group-add-experiment';
 
 // 创建项目分组表单
 export function ProjectGroupCreateForm({

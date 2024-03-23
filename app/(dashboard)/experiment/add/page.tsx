@@ -29,6 +29,7 @@ export default async function CreateExperiment({ searchParams }: any) {
                     experiment={null}
                     engines={engines}
                     nano_id={id}
+                    add={true}
                 />
             </div>
         </div>
