@@ -28,19 +28,22 @@ export function ExperimentStarterButtons({
 
     const router = useRouter();
     const GUEST_UNIQUE_KEY = 'userUniqueKey';
-    const itemStr = store.get(GUEST_UNIQUE_KEY);
-    if (!itemStr) {
-        redirect('/guest');
-    }
-    const item = JSON.parse(itemStr);
-    const now = new Date();
-    // 检查存储的用户ID是否过期
-    if (now.getTime() > item.expiry) {
-        redirect('/guest');
-    }
-    const userUniqueKey = item.value;
-    if (!userUniqueKey) {
-        redirect('/guest');
+    let userUniqueKey = '';
+    if (guest) {
+        const itemStr = store.get(GUEST_UNIQUE_KEY);
+        if (!itemStr) {
+            redirect('/guest');
+        }
+        const item = JSON.parse(itemStr);
+        const now = new Date();
+        // 检查存储的用户ID是否过期
+        if (now.getTime() > item.expiry) {
+            redirect('/guest');
+        }
+        userUniqueKey = item.value;
+        if (!userUniqueKey) {
+            redirect('/guest');
+        }
     }
 
     async function startExperiment() {
