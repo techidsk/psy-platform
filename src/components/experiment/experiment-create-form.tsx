@@ -512,12 +512,12 @@ function StepItem({ experimentSteps, isLoading, edit, editSteps, previewSteps }:
 const StepType = ({ type }: { type: number }) => {
     switch (type) {
         case 1:
-            return <span className="badge badge-outline">仅图文</span>;
+            return <span className="badge badge-outline">仅文字</span>;
         case 2:
             return <span className="badge badge-outline">左侧图片</span>;
         case 3:
             return <span className="badge badge-outline">右侧图片</span>;
         default:
-            return <span className="badge badge-outline">仅图文</span>;
+            return <span className="badge badge-outline">仅文字</span>;
     }
 };

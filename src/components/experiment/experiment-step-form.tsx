@@ -281,7 +281,7 @@ const orderTypes = [
 const stepTypes = [
     {
         id: 1,
-        name: '仅图文',
+        name: '仅文字',
         image: false,
     },
     {
