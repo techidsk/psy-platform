@@ -11,7 +11,6 @@ import Image from 'next/image';
 import { TableSearch } from '@/components/table/table-search';
 import Pagination from '@/components/pagination';
 import { Prisma } from '@prisma/client';
-import { logger } from '@/lib/logger';
 
 async function getExperiments(
     searchParams: { [key: string]: string | undefined },
@@ -26,26 +25,49 @@ async function getExperiments(
     const engine_name = searchParams?.engine_name || '';
 
     const experiments = await db.$queryRaw<any[]>`
-        SELECT e.*, engine_image, engine_name
-        FROM experiment e 
-        LEFT JOIN engine en ON en.id = e.engine_id
-        WHERE e.creator = ${currentUser.id}
-        and e.available = 1
-        ${
-            experiment_name
-                ? Prisma.sql`AND e.experiment_name LIKE '%${Prisma.raw(experiment_name)}%'`
-                : Prisma.empty
-        }
-        ${
-            engine_name
-                ? Prisma.sql`AND en.engine_name LIKE '%${Prisma.raw(engine_name)}%'`
-                : Prisma.empty
-        }
-        ORDER BY e.create_time DESC
-        LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
+        SELECT 
+            e.*, 
+            MAX(p.project_name) AS project_name,
+            MAX(pg.group_name) AS group_name,
+            GROUP_CONCAT(DISTINCT CONCAT(en.engine_name, '_', en.engine_image, '_', en.id)) AS engines
+        FROM 
+            experiment e 
+            LEFT JOIN engine en ON JSON_CONTAINS(e.engine_ids, CAST(en.id AS JSON), '$')
+            LEFT JOIN project_group_experiments pge ON e.id = pge.experiment_id
+            LEFT JOIN project_group pg ON pge.project_group_id = pg.id
+            LEFT JOIN projects p ON pg.project_id = p.id
+        WHERE 
+            e.creator = ${currentUser.id}
+            AND e.available = 1
+            ${
+                experiment_name
+                    ? Prisma.sql`AND e.experiment_name LIKE '%${Prisma.raw(experiment_name)}%'`
+                    : Prisma.empty
+            }
+            ${
+                engine_name
+                    ? Prisma.sql`AND en.engine_name LIKE '%${Prisma.raw(engine_name)}%'`
+                    : Prisma.empty
+            }
+        GROUP BY 
+            e.id
+        ORDER BY 
+            e.id DESC
+        LIMIT 
+            ${pageSize} OFFSET ${(page - 1) * pageSize}
     `;
 
-    return experiments;
+    return experiments.map((experiment) => {
+        const engineInfos = experiment.engines.split(',');
+
+        return {
+            ...experiment,
+            engines: engineInfos.map((engineInfo: string) => {
+                const [engine_name, engine_image, engine_id] = engineInfo.split('_');
+                return { engine_name, engine_image, engine_id };
+            }),
+        };
+    });
 }
 
 /** 实验流程设计与管理 */
@@ -83,8 +105,35 @@ export default async function ExperimentList({
         </div>
     );
 }
+interface Engine {
+    engine_name: string;
+    engine_image: string;
+    engine_id: number;
+}
 
 const experimentTableConfig: TableConfig[] = [
+    {
+        key: 'project_name',
+        label: '所属项目',
+        children: (data: any) => {
+            return (
+                <div className="flex flex-col gap-2">
+                    <span>{data.project_name}</span>
+                </div>
+            );
+        },
+    },
+    {
+        key: 'group_name',
+        label: '所属分组',
+        children: (data: any) => {
+            return (
+                <div className="flex flex-col gap-2">
+                    <span>{data.group_name}</span>
+                </div>
+            );
+        },
+    },
     {
         key: 'experiment_name',
         label: '实验名称',
@@ -100,16 +149,22 @@ const experimentTableConfig: TableConfig[] = [
         key: 'engine_id',
         label: '使用引擎',
         children: (data: any) => {
+            const engines = data.engines as Engine[];
+
             return (
-                <div className="flex flex-col gap-2 justify-center">
-                    <Image
-                        className="rounded"
-                        src={data.engine_image}
-                        alt={data.engine_name}
-                        width={48}
-                        height={48}
-                    />
-                    <div className="text-gray-700">{data.engine_name}</div>
+                <div className="flex flex-col gap-2">
+                    {engines.map((engine) => (
+                        <div key={engine.engine_id} className="flex gap-1 items-center">
+                            <Image
+                                src={engine.engine_image}
+                                alt={engine.engine_name}
+                                width={24}
+                                height={24}
+                                className="rounded-full"
+                            />
+                            <span>{engine.engine_name}</span>
+                        </div>
+                    ))}
                 </div>
             );
         },
@@ -125,24 +180,24 @@ const experimentTableConfig: TableConfig[] = [
             );
         },
     },
-    {
-        key: 'pic_mode',
-        label: '开启图片',
-        children: (data: any) => {
-            let text = Boolean(data.pic_mode) ? '开启' : '关闭';
-            let type = Boolean(data.pic_mode) ? 'success' : 'warn';
-            return <State type={type}>{text}</State>;
-        },
-    },
-    {
-        key: 'available',
-        label: '状态',
-        children: (data: any) => {
-            let text = Boolean(data.available) ? '可用' : '暂停';
-            let type = Boolean(data.available) ? 'success' : 'warn';
-            return <State type={type}>{text}</State>;
-        },
-    },
+    // {
+    //     key: 'pic_mode',
+    //     label: '开启图片',
+    //     children: (data: any) => {
+    //         let text = Boolean(data.pic_mode) ? '开启' : '关闭';
+    //         let type = Boolean(data.pic_mode) ? 'success' : 'warn';
+    //         return <State type={type}>{text}</State>;
+    //     },
+    // },
+    // {
+    //     key: 'available',
+    //     label: '状态',
+    //     children: (data: any) => {
+    //         let text = Boolean(data.available) ? '可用' : '暂停';
+    //         let type = Boolean(data.available) ? 'success' : 'warn';
+    //         return <State type={type}>{text}</State>;
+    //     },
+    // },
     {
         key: 'create_time',
         label: '创建时间',

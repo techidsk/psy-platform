@@ -7,7 +7,6 @@ import { toast } from '@/hooks/use-toast';
 import { ImageResponse } from '@/types/experiment';
 import { getUrl } from '@/lib/url';
 import { useExperimentState } from '@/state/_experiment_atoms';
-import { logger } from '@/lib/logger';
 
 interface ExperimentEditorProps {
     nanoId: string;
@@ -233,7 +232,7 @@ export function ExperimentEditor({
                 // value={text} onChange={handleChange}
                 onKeyDown={handleKeyDown}
                 readOnly={loading}
-                placeholder="请在文本框内输入，“今天天气真不错”，并按下回车。"
+                placeholder=""
             />
             <button className="btn btn-primary" onClick={submit}>
                 提交

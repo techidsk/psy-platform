@@ -17,6 +17,7 @@ import Image from 'next/image';
 import { Modal } from '../ui/modal';
 import { ExperimentStepForm } from './experiment-step-form';
 import { logger } from '@/lib/logger';
+import { setEngine } from 'crypto';
 
 interface ExperimentCreateFormProps extends React.HTMLAttributes<HTMLDivElement> {
     experiment: experiment | null;
@@ -49,7 +50,6 @@ export function ExperimentCreateForm({
         resolver: zodResolver(exprimentSchema),
     });
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [engineId, setEngineId] = useState<number>(0);
     const [dispatch, setDispatch] = useState<string>('CREATE');
     const [experimentSteps, setExperimentSteps] = useState<any[]>([]);
 
@@ -58,7 +58,7 @@ export function ExperimentCreateForm({
     const [openStepForm, setOpenStepForm] = useState<boolean>(false);
 
     const [tab, setTab] = useState('PROPERTY');
-
+    const [engineIds, setEngineIds] = useState<number[]>([]);
     const router = useRouter();
 
     /**
@@ -82,6 +82,7 @@ export function ExperimentCreateForm({
                     ...data,
                     nano_id: nano_id,
                     steps: [...experimentSteps],
+                    engine_ids: engineIds,
                 }),
             });
             setIsLoading(false);
@@ -110,6 +111,7 @@ export function ExperimentCreateForm({
                     ...data,
                     nano_id: nano_id,
                     steps: [...experimentSteps],
+                    engine_ids: engineIds,
                 }),
             });
             setIsLoading(false);
@@ -131,9 +133,13 @@ export function ExperimentCreateForm({
         }
     }
 
-    const selectEngine = (id: number) => {
-        setValue('engine_id', id);
-        setEngineId(id);
+    const selectEngine = (engineId: number) => {
+        const prevEngineIds = engineIds;
+        const newEngineIds = prevEngineIds.includes(engineId)
+            ? prevEngineIds.filter((id) => id !== engineId)
+            : [...prevEngineIds, engineId];
+
+        setEngineIds(newEngineIds);
     };
 
     const addSteps = (e: any) => {
@@ -160,11 +166,7 @@ export function ExperimentCreateForm({
             setValue('intro', experiment.intro || '');
             setValue('countdown', experiment.countdown || 20);
             setValue('pic_mode', Boolean(experiment.pic_mode));
-
-            if (experiment.engine_id) {
-                setValue('engine_id', experiment.engine_id);
-                setEngineId(experiment.engine_id);
-            }
+            setEngineIds(experiment.engine_ids as number[]);
             setExperimentSteps(steps as experiment_steps[]);
         }
     }
@@ -272,8 +274,8 @@ export function ExperimentCreateForm({
                                     data-name="countdown"
                                     placeholder="请输入实验持续时间（单位：分钟）"
                                     type="number"
-                                    min={5}
-                                    max={60}
+                                    min={1}
+                                    max={120}
                                     disabled={isLoading || !edit}
                                     className="input input-bordered w-full"
                                     {...register('countdown', { valueAsNumber: true })}
@@ -309,7 +311,8 @@ export function ExperimentCreateForm({
                                         return (
                                             <div
                                                 key={engine.id}
-                                                className="flex flex-col items-center gap-2"
+                                                className="flex flex-col items-center justify-center gap-2 cursor-pointer"
+                                                onClick={() => selectEngine(engine.id)}
                                             >
                                                 <Image
                                                     className="rounded"
@@ -318,16 +321,18 @@ export function ExperimentCreateForm({
                                                     width={96}
                                                     height={96}
                                                 />
-                                                <div className="flex gap-2">
+                                                <div className="flex items-center ">
                                                     <input
-                                                        type="radio"
-                                                        className="radio"
-                                                        defaultValue={engine.engine_name}
-                                                        checked={engine.id === engineId}
+                                                        type="checkbox"
+                                                        className="toggle toggle-sm"
                                                         disabled={isLoading || !edit}
-                                                        onChange={() => selectEngine(engine.id)}
+                                                        checked={engineIds.includes(engine.id)}
+                                                        // onChange={() => selectEngine(engine.id)}
                                                     />
-                                                    <label htmlFor={engine.engine_name}>
+                                                    <label
+                                                        className="cursor-pointer"
+                                                        htmlFor={engine.engine_name}
+                                                    >
                                                         {engine.engine_name}
                                                     </label>
                                                 </div>

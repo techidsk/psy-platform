@@ -83,15 +83,15 @@ export function ExperimentDetailButton({ experiment }: ExperimentDetailProps) {
         selectedEngine && (
             <>
                 <div className="flex gap-2">
+                    <button className="btn btn-ghost btn-sm" onClick={showDetail}>
+                        查看详情
+                    </button>
                     <button
                         className="btn btn-outline btn-primary btn-sm"
                         onClick={() => setOpenDelete(true)}
                     >
                         <Icons.delete />
                         删除
-                    </button>
-                    <button className="btn btn-ghost btn-sm" onClick={showDetail}>
-                        查看详情
                     </button>
                 </div>
 

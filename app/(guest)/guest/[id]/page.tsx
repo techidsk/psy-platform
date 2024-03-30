@@ -64,11 +64,13 @@ export default async function VerifyPage({ params: { id } }: { params: { id: str
         return notFound();
     }
 
+    // 随机选择对应的实验
     const experimentId = experimentIds[Math.floor(Math.random() * experimentIds.length)];
     const experiment = await getExperiment(experimentId);
     // 未绑定引擎
-    if (experiment?.engine_id == null || experiment.engine_id == undefined) {
-        logger.error("Experiment doesn't bind engine");
+    const engineIds = experiment?.engine_ids as number[];
+    if (engineIds.length === 0) {
+        logger.error(`[实验${experimentId}] 未绑定生成引擎`);
         return notFound();
     }
 

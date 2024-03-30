@@ -37,6 +37,13 @@ export async function DELETE(request: Request, context: { params: any }) {
 
     // 2. 判断是否有相关实验分组
     try {
+        const groupExperiments = await db.project_group_experiments.findMany({
+            where: { experiment_id: parseInt(context.params.id) },
+        });
+        if (groupExperiments.length > 0) {
+            return NextResponse.json({ msg: '实验已被分配到分组中,无法删除' }, { status: 500 });
+        }
+
         await db.experiment.update({
             where: { id: parseInt(context.params.id) },
             data: {

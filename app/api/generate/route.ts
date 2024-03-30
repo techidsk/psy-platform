@@ -80,16 +80,23 @@ export async function POST(request: Request) {
 
     const experiment = await db.experiment.findFirst({
         where: { id: parseInt(userExperiment.experiment_id) },
-        select: { engine_id: true, pic_mode: true },
+        select: { engine_id: true, pic_mode: true, engine_ids: true },
     });
-    if (!experiment || !experiment.engine_id) {
+    if (!experiment) {
         console.error('未找到对应experiment数据');
         return;
     }
+    const engineIds = experiment.engine_ids as number[];
+    if (engineIds.length === 0) {
+        logger.error(`[实验${userExperiment.experiment_id}] 未找到对应的 engine数据`);
+        return;
+    }
 
-    // 获取生成信息F
+    const engineId = engineIds[Math.floor(Math.random() * engineIds.length)];
+
+    // 获取生成信息
     const engine = await db.engine.findFirst({
-        where: { id: experiment.engine_id },
+        where: { id: engineId },
     });
 
     if (!engine) {

@@ -4,8 +4,11 @@ export const exprimentSchema = z.object({
     experiment_name: z.string().min(1, '实验名称不能为空').max(100),
     description: z.string().optional().or(z.literal('')),
     intro: z.string().optional().or(z.literal('')),
-    engine_id: z.number().optional(),
-    countdown: z.number().min(5).max(60).optional(),
+    countdown: z
+        .number()
+        .min(1, '写作时间不得少于1分钟')
+        .max(120, '写作时间不得超过120分钟')
+        .optional(),
     pic_mode: z.boolean().optional(),
 });
 
