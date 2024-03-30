@@ -35,7 +35,7 @@ export async function POST(request: Request) {
         },
     });
     logger.info(
-        `更新[用户${userExperiment.user_id}] 项目分组[${userExperiment.project_group_id}]完成实验数量`
+        `更新[用户${userExperiment.user_id}] 项目分组[${userExperiment.project_group_id}]完成写作数量`
     );
     await db.user_group.update({
         where: {
@@ -51,5 +51,5 @@ export async function POST(request: Request) {
         },
     });
 
-    return NextResponse.json({ msg: '已完成实验' });
+    return NextResponse.json({ msg: '已完成写作' });
 }

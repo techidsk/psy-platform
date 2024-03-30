@@ -10,6 +10,9 @@ import { ProjectTableEditButtons } from '@/components/project/project-table-edit
 import { CreateProjectButton } from '@/components/project/project-create-button';
 import { TableSearch } from '@/components/table/table-search';
 import { Prisma } from '@prisma/client';
+import { Icons } from '@/components/icons';
+import { ProjectInviteCodeButton } from '@/components/project/project-invite-code-buttons';
+import GuestModeChecker from '@/components/platform/guest-mode-checker';
 
 type ProjectState = 'AVAILABLE' | 'DRAFT' | 'ACHIVED';
 type ProjectTableProps = {
@@ -112,7 +115,25 @@ const projectTableConfig: TableConfig[] = [
         key: 'project_description',
         label: '项目描述',
         children: (data: any) => {
-            return <span>{data.project_description}</span>;
+            return <article className="text-wrap">{data.project_description}</article>;
+        },
+    },
+    {
+        key: 'private',
+        label: '游客模式',
+        children: (data: any) => {
+            return <GuestModeChecker data={data} />;
+        },
+    },
+    {
+        key: 'invite_code',
+        label: '邀请码',
+        children: (data: any) => {
+            let url = `/register?invite_code=${data.invite_code}`;
+            if (data.private) {
+                url = `/guest/${data.invite_code}`;
+            }
+            return <ProjectInviteCodeButton data={data} url={url} />;
         },
     },
     {

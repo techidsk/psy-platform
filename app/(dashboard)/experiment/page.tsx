@@ -30,6 +30,7 @@ async function getExperiments(
         FROM experiment e 
         LEFT JOIN engine en ON en.id = e.engine_id
         WHERE e.creator = ${currentUser.id}
+        and e.available = 1
         ${
             experiment_name
                 ? Prisma.sql`AND e.experiment_name LIKE '%${Prisma.raw(experiment_name)}%'`

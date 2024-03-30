@@ -42,10 +42,10 @@ model experiment {
   description     String?   @db.Text
   nano_id         String?   @unique(map: "psy_experiment_nano_id_uindex") @db.VarChar(16)
   engine_id       Int?
-  setting         Json?
   intro           String?   @db.Text
   countdown       Int?      @default(1200)
   pic_mode        Int?      @default(1) @db.TinyInt
+  engine_ids      Json?
 
   @@index([engine_id], map: "idx_engine_id")
 }
@@ -89,6 +89,7 @@ model user {
   gender          Int?      @db.TinyInt
   ages            Int?
   wechat_id       String?   @db.VarChar(50)
+  invite_code     String?   @db.VarChar(21)
 
   @@index([email], map: "idx_email")
   @@index([username], map: "idx_username")
@@ -159,11 +160,11 @@ model projects {
   id                  Int       @id @default(autoincrement())
   project_name        String?   @db.VarChar(50)
   project_description String?   @db.VarChar(500)
-  engines             Json?
   state               String?   @db.VarChar(50)
-  settings            Json?
+  invite_code         String?   @db.VarChar(32)
   start_time          DateTime? @db.Date
   end_time            DateTime? @db.Date
+  private             Int?      @default(1) @db.TinyInt
 }
 
 model project_group_experiments {

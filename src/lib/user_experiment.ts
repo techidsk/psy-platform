@@ -183,8 +183,8 @@ export async function getUserGroupExperiments(
     guestUserNanoId: string = ''
 ): Promise<projectGroupResult> {
     let userId: number;
+    let guestUser;
     if (guest) {
-        let guestUser;
         if (guestUserNanoId === '') {
             throw new Error('未指定游客ID');
         }
@@ -208,10 +208,40 @@ export async function getUserGroupExperiments(
             throw new Error('用户未登陆: user_experiment.ts');
         }
         userId = parseInt(user?.id);
+
+        guestUser = await db.user.findFirst({
+            where: { id: userId },
+        });
     }
 
-    // TODO 需要支持同时激活多个项目
-    const currentProject = await findAvailableProject();
+    const inviteCode = guestUser?.invite_code || '';
+    if (inviteCode.length !== 21) {
+        throw new Error(`非法的邀请码: ${inviteCode}`);
+    }
+    const currentProject = await db.projects.findFirst({
+        where: {
+            invite_code: inviteCode,
+        },
+    });
+    if (!currentProject) {
+        throw new Error(`未找到对应的项目: ${inviteCode}`);
+    }
+    if (currentProject.state !== 'AVAILABLE') {
+        throw new Error(
+            `项目已经关闭: [Project: ${currentProject.id} | ${currentProject.project_name}]`
+        );
+    }
+    if (currentProject.start_time && currentProject.start_time > new Date()) {
+        throw new Error(
+            `项目还未开始: [Project: ${currentProject.id} | ${currentProject.project_name}]`
+        );
+    }
+    if (currentProject.end_time && currentProject.end_time < new Date()) {
+        throw new Error(
+            `项目已经结束: [Project: ${currentProject.id} | ${currentProject.project_name}]`
+        );
+    }
+
     logger.info(`当前激活的项目: [${currentProject.project_name}]@<${currentProject?.id}>`);
     const response = await findProjectGroup(userId, currentProject?.id, guest);
     response['user_id'] = userId;

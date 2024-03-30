@@ -45,7 +45,7 @@ export async function GET(request: Request, context: { params: any }) {
             return NextResponse.json({ msg: '引擎不存在' }, { status: 404 });
         }
         const templateJson = engine?.template;
-        const templateJsonString = JSON.stringify(templateJson);
+        const templateJsonString = JSON.stringify(templateJson) || '';
         const template = JSON.parse(templateJsonString);
 
         engine = {

@@ -56,7 +56,7 @@ export function ExperimentFinishButton({
     return (
         <>
             <button className="btn btn-ghost btn-outline" disabled={disabled} onClick={finish}>
-                完成实验
+                完成写作
             </button>
         </>
     );

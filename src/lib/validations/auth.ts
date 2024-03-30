@@ -7,6 +7,7 @@ export const registerSchema = z
     .object({
         username: z.string().min(2, '用户名长度必须大于两位').max(100),
         password: z.string().min(8, { message: '密码长度必须大于8位' }),
+        invite_code: z.string().length(21, '邀请码长度必须为21位'),
         qualtrics: z.string().optional(),
     })
     // .refine((data): boolean => /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).+/.test(data.password), {

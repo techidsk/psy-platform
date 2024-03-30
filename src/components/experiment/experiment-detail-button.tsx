@@ -9,6 +9,8 @@ import { Modal } from '../ui/modal';
 import { dateFormat } from '@/lib/date';
 import { getUrl } from '@/lib/url';
 import { useRouter } from 'next/navigation';
+import { Icons } from '../icons';
+import { ExperimentDeleteModal } from './experiment-delete-modal';
 
 interface ExperimentDetailProps extends React.HTMLAttributes<HTMLButtonElement> {
     experiment: Experiment;
@@ -19,7 +21,7 @@ interface ExperimentSteps extends experiment_steps {
 }
 
 export function ExperimentDetailButton({ experiment }: ExperimentDetailProps) {
-    const [open, setOpen] = useState(false);
+    const [openDelete, setOpenDelete] = useState(false);
     const [steps, setSteps] = useState<ExperimentSteps[]>([]);
 
     const router = useRouter();
@@ -27,12 +29,16 @@ export function ExperimentDetailButton({ experiment }: ExperimentDetailProps) {
     const selectedEngine = usePreExperimentState((state) => state.engine);
 
     function showDetail() {
-        // setOpen(true);
         router.push(`/experiment/${experiment.nano_id}`);
     }
 
-    function handleToggle() {
-        setOpen(!open);
+    function handleDeleteToggle() {
+        setOpenDelete(!openDelete);
+    }
+
+    function closeDeleteModal() {
+        setOpenDelete(false);
+        router.refresh();
     }
 
     /**
@@ -51,7 +57,11 @@ export function ExperimentDetailButton({ experiment }: ExperimentDetailProps) {
             .then((res) => res.json())
             .then((data) => {
                 const templateJson = data?.content;
-                const templateJsonString = JSON.stringify(templateJson);
+                const templateJsonString = JSON.stringify(templateJson) || '';
+                if (!templateJsonString) {
+                    return;
+                }
+                console.log(templateJsonString);
                 const content = JSON.parse(templateJsonString);
                 setSteps({
                     ...data,
@@ -64,63 +74,40 @@ export function ExperimentDetailButton({ experiment }: ExperimentDetailProps) {
     }
 
     useEffect(() => {
-        if (open) {
+        if (openDelete) {
             findSteps();
         }
-    }, [open]);
+    }, [openDelete]);
 
     return (
         selectedEngine && (
-            <div className="flex gap-4">
-                <button className="btn btn-ghost" onClick={showDetail}>
-                    查看详情
-                </button>
+            <>
+                <div className="flex gap-2">
+                    <button
+                        className="btn btn-outline btn-primary btn-sm"
+                        onClick={() => setOpenDelete(true)}
+                    >
+                        <Icons.delete />
+                        删除
+                    </button>
+                    <button className="btn btn-ghost btn-sm" onClick={showDetail}>
+                        查看详情
+                    </button>
+                </div>
 
                 <Modal
                     className="flex flex-col gap-4"
-                    open={open}
-                    onClose={handleToggle}
-                    disableClickOutside={!open}
+                    open={openDelete}
+                    onClose={handleDeleteToggle}
+                    disableClickOutside={!openDelete}
                 >
-                    <h3 className="font-bold text-lg">实验详情</h3>
-                    <div className="flex flex-col gap-2">
-                        <span className="text-gray-700">实验名称</span>
-                        <span className="text-sm">{experiment.experiment_name}</span>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <span className="text-gray-700">实验说明</span>
-                        <span className="text-sm">{experiment.description}</span>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <span className="text-gray-700">创建时间</span>
-                        <span className="text-sm">
-                            {experiment.create_time ? dateFormat(experiment.create_time) : null}
-                        </span>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <span className="text-gray-700">实验流程</span>
-                        <table className="table table-xs">
-                            <thead>
-                                <tr>
-                                    <th>顺序</th>
-                                    <th>步骤类型</th>
-                                    <th>标题</th>
-                                    {/* <th>内容</th> */}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {steps.map((step, index) => (
-                                    <tr key={index}>
-                                        <td>{step.order}</td>
-                                        <td>{step.type}</td>
-                                        <td>{step.title}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                    <h1 className="text-xl">删除项目</h1>
+                    <ExperimentDeleteModal
+                        closeModal={closeDeleteModal}
+                        experimentId={experiment.id}
+                    />
                 </Modal>
-            </div>
+            </>
         )
     );
 }

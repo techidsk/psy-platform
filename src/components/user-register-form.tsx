@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -20,12 +20,15 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
         register,
         handleSubmit,
         formState: { errors },
-        trigger,
+        setValue,
     } = useForm<FormData>({
         resolver: zodResolver(registerSchema),
     });
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const search = useSearchParams();
+
+    console.log();
     const router = useRouter();
 
     /**
@@ -63,6 +66,13 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
             duration: 3000,
         });
     }
+
+    useEffect(() => {
+        const code = search?.get('invite_code');
+        if (code) {
+            setValue('invite_code', code);
+        }
+    }, []);
 
     return (
         <div className={cn('grid gap-6', className)} {...props}>
@@ -124,21 +134,26 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
                             <p className="px-1 text-xs text-red-600">{errors[''].message}</p>
                         )} */}
                     </div>
-                    {/* <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="password">
-                            Qualtrics账号
+                    <div className="grid gap-1">
+                        <label className="sr-only" htmlFor="invite_code">
+                            邀请码
                         </label>
                         <input
-                            data-name="qualtrics"
-                            placeholder="请输入Qualtrics账号"
+                            data-name="invite_code"
+                            placeholder="请输入实验邀请码"
                             type="text"
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading}
                             className="input input-bordered w-full"
-                            {...register('qualtrics')}
+                            {...register('invite_code')}
                         />
-                    </div> */}
+                        {errors?.invite_code && (
+                            <p className="px-1 text-xs text-red-600">
+                                {errors.invite_code.message}
+                            </p>
+                        )}
+                    </div>
                     <button
                         className="btn btn-outline btn-primary"
                         disabled={isLoading}

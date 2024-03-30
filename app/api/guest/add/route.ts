@@ -21,7 +21,7 @@ export async function POST(request: Request) {
             logger.info(`获取临时用户 ${guestUser.id}`);
             return NextResponse.json({ msg: '添加成功', data: guestUser?.id });
         }
-
+        // 临时被试注册
         const user = await db.user.create({
             data: {
                 nano_id: data.nano_id,

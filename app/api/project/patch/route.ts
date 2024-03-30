@@ -20,9 +20,10 @@ export async function PATCH(request: Request) {
 
     const data = await request.json();
     try {
+        const { id, ...updateData } = data;
         await db.projects.update({
-            where: { id: data.id },
-            data: data,
+            where: { id: id },
+            data: updateData,
         });
         // TODO 添加项目分组关联的实验
         // await db.project_group_experiments.update

@@ -47,7 +47,7 @@ export function ProjectGroupDetailButton({ experiment }: ProjectGroupDetailProps
             .then((res) => res.json())
             .then((data) => {
                 const templateJson = data?.content;
-                const templateJsonString = JSON.stringify(templateJson);
+                const templateJsonString = JSON.stringify(templateJson) || '';
                 const content = JSON.parse(templateJsonString);
                 setSteps({
                     ...data,

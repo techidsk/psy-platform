@@ -39,19 +39,6 @@ export async function POST(request: Request) {
         if (user) {
             return NextResponse.json({ msg: '用户名已存在' }, { status: 409 });
         }
-        // 获取用户分组
-        // const userGroup = await db.$queryRaw<UserGroup[]>`
-        //     SELECT g.id, count(u.id) as group_user_num
-        //     from user_group g
-        //     LEFT JOIN user u ON u.user_group_id = g.id
-        //     WHERE g.state = 1
-        //     group by g.id
-        //     ORDER BY group_user_num ASC
-        // `;
-        // if (userGroup.length === 0) {
-        //     return NextResponse.json({ msg: '用户组不存在' }, { status: 400 });
-        // }
-        // console.log(userGroup);
 
         // 默认头像
         // 此处代码保留。如果希望配置统一的默认头像，则将下方 isUseStandardAvatar参数改为true
@@ -83,6 +70,7 @@ export async function POST(request: Request) {
 
         const nanoId = nanoid(16);
         const { salt, hashedPassword }: HashResult = await hash(data.password);
+        // 被试注册
         await db.user.create({
             data: {
                 ...data,
