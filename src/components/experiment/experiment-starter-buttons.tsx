@@ -87,7 +87,7 @@ export function ExperimentStarterButtons({
         <>
             <div className="flex flex-col gap-4">
                 <button className="btn btn-primary" onClick={startExperiment}>
-                    开始测验
+                    开始写作
                 </button>
             </div>
             {open && (

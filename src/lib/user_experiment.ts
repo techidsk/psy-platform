@@ -180,8 +180,13 @@ async function findProjectGroup(
  */
 export async function getUserGroupExperiments(
     guest: boolean = false,
-    guestUserNanoId: string = ''
+    guestUserNanoId: string = '',
+    inviteCode: string = ''
 ): Promise<projectGroupResult> {
+    if (inviteCode !== '' && inviteCode.length !== 21) {
+        throw new Error(`非法的邀请码: ${inviteCode}`);
+    }
+
     let userId: number;
     let guestUser;
     if (guest) {
@@ -197,6 +202,7 @@ export async function getUserGroupExperiments(
                     nano_id: guestUserNanoId,
                     user_role: 'GUEST',
                     username: guestUserNanoId,
+                    invite_code: inviteCode,
                 },
             });
             logger.warn('未找到对应的游客用户');
@@ -205,7 +211,8 @@ export async function getUserGroupExperiments(
     } else {
         const user = await getCurrentUser();
         if (!user) {
-            throw new Error('用户未登陆: user_experiment.ts');
+            logger.error('用户未登陆');
+            throw new Error('用户未登陆');
         }
         userId = parseInt(user?.id);
 
@@ -214,32 +221,34 @@ export async function getUserGroupExperiments(
         });
     }
 
-    const inviteCode = guestUser?.invite_code || '';
-    if (inviteCode.length !== 21) {
-        throw new Error(`非法的邀请码: ${inviteCode}`);
-    }
+    const projectInviteCode = inviteCode || guestUser?.invite_code;
+
     const currentProject = await db.projects.findFirst({
         where: {
-            invite_code: inviteCode,
+            invite_code: projectInviteCode,
         },
     });
     if (!currentProject) {
-        throw new Error(`未找到对应的项目: ${inviteCode}`);
+        logger.error(`未找到项目: [${projectInviteCode}]`);
+        throw new Error(`邀请码未找到相关项目，请联系管理员`);
     }
     if (currentProject.state !== 'AVAILABLE') {
-        throw new Error(
+        logger.error(
             `项目已经关闭: [Project: ${currentProject.id} | ${currentProject.project_name}]`
         );
+        throw new Error(`本项目未开启实验或者已经完成实验`);
     }
     if (currentProject.start_time && currentProject.start_time > new Date()) {
-        throw new Error(
+        logger.error(
             `项目还未开始: [Project: ${currentProject.id} | ${currentProject.project_name}]`
         );
+        throw new Error(`项目还未开始，请在项目开始时间后再进行实验: ${currentProject.start_time}`);
     }
     if (currentProject.end_time && currentProject.end_time < new Date()) {
-        throw new Error(
+        logger.error(
             `项目已经结束: [Project: ${currentProject.id} | ${currentProject.project_name}]`
         );
+        throw new Error(`项目已经结束, 请联系管理员`);
     }
 
     logger.info(`当前激活的项目: [${currentProject.project_name}]@<${currentProject?.id}>`);
@@ -260,6 +269,9 @@ export async function findLastExperiment(userId: string, projectGroupId: number)
             user_id: parseInt(userId),
             project_group_id: projectGroupId,
             experiment_id: {
+                not: null,
+            },
+            finish_time: {
                 not: null,
             },
         },

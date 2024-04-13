@@ -27,6 +27,7 @@ export async function POST(request: Request) {
                 nano_id: data.nano_id,
                 user_role: 'GUEST',
                 username: data.nano_id,
+                invite_code: data.invite_code,
             },
         });
         logger.info(`创建临时用户 ${user.id}`);

@@ -23,7 +23,7 @@ export default async function Closed() {
                         <div className="hero-content text-center">
                             <div className="max-w-md">
                                 <CenteredHero title={'已完成'} content={content}>
-                                    <DashboardReturnButtons />
+                                    {/* <DashboardReturnButtons /> */}
                                 </CenteredHero>
                             </div>
                         </div>

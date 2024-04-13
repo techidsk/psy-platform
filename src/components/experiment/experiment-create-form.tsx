@@ -134,6 +134,9 @@ export function ExperimentCreateForm({
     }
 
     const selectEngine = (engineId: number) => {
+        if (isLoading || !edit) {
+            return;
+        }
         const prevEngineIds = engineIds;
         const newEngineIds = prevEngineIds.includes(engineId)
             ? prevEngineIds.filter((id) => id !== engineId)
@@ -152,6 +155,11 @@ export function ExperimentCreateForm({
         e.preventDefault();
         setStep(step);
         setOpenStepForm(true);
+    };
+
+    const removeSteps = (e: any, step: experiment_steps) => {
+        e.preventDefault();
+        setExperimentSteps((prev) => prev.filter((s) => s.id !== step.id));
     };
 
     const previewSteps = (e: any) => {
@@ -327,6 +335,7 @@ export function ExperimentCreateForm({
                                                         className="toggle toggle-sm"
                                                         disabled={isLoading || !edit}
                                                         checked={engineIds.includes(engine.id)}
+                                                        onChange={() => void 0}
                                                         // onChange={() => selectEngine(engine.id)}
                                                     />
                                                     <label
@@ -368,6 +377,7 @@ export function ExperimentCreateForm({
                                                 isLoading={isLoading}
                                                 edit={Boolean(edit)}
                                                 editSteps={editSteps}
+                                                removeSteps={removeSteps}
                                                 previewSteps={previewSteps}
                                             />
                                         }
@@ -406,15 +416,28 @@ export function ExperimentCreateForm({
         </div>
     );
 }
+
+interface StepVoProps extends experiment_steps {
+    random_id?: string;
+}
+
 interface StepItemProps {
-    experimentSteps: experiment_steps[] | null;
+    experimentSteps: StepVoProps[] | null;
     isLoading: boolean;
     edit: boolean;
     editSteps: Function;
+    removeSteps: Function;
     previewSteps: Function;
 }
 
-function StepItem({ experimentSteps, isLoading, edit, editSteps, previewSteps }: StepItemProps) {
+function StepItem({
+    experimentSteps,
+    isLoading,
+    edit,
+    editSteps,
+    removeSteps,
+    previewSteps,
+}: StepItemProps) {
     return (
         <>
             {experimentSteps && experimentSteps.length > 0 ? (
@@ -424,20 +447,27 @@ function StepItem({ experimentSteps, isLoading, edit, editSteps, previewSteps }:
                         ?.map((step) => {
                             console.log(step);
                             return (
-                                <li className="step flex gap-2" key={`${step.id}-${step.pre}`}>
+                                <li className="step flex gap-2" key={`${step.random_id}`}>
                                     <div className="flex gap-2 items-center justify-between w-full">
                                         <div className="flex gap-2 items-center">
                                             <div>{step.step_name}</div>
                                             {step.type && <StepType type={step.type} />}
                                         </div>
                                         {!(isLoading || !edit) ? (
-                                            <div>
+                                            <div className="flex gap-2">
                                                 <button
                                                     className="btn btn-sm btn-ghost"
                                                     onClick={(e) => editSteps(e, step)}
                                                 >
                                                     <Icons.edit size={16} />
                                                     编辑
+                                                </button>
+                                                <button
+                                                    className="btn btn-sm btn-ghost"
+                                                    onClick={(e) => editSteps(e, step)}
+                                                >
+                                                    <Icons.delete size={16} />
+                                                    移除
                                                 </button>
                                             </div>
                                         ) : (
@@ -517,6 +547,12 @@ const StepType = ({ type }: { type: number }) => {
             return <span className="badge badge-outline">左侧图片</span>;
         case 3:
             return <span className="badge badge-outline">右侧图片</span>;
+        case 4:
+            return <span className="badge badge-outline">写作实验</span>;
+        case 5:
+            return <span className="badge badge-outline">跳转服务</span>;
+        case 6:
+            return <span className="badge badge-outline">表单</span>;
         default:
             return <span className="badge badge-outline">仅文字</span>;
     }

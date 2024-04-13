@@ -1,7 +1,5 @@
-import { DashboardHeader } from '@/components/dashboard-header';
 import { ExperimentEditor } from '@/components/experiment/experiment-editor';
 import { ImageList } from '@/components/experiment/image-list';
-import { ImageListServer } from '@/components/experiment/image-list-server';
 import { ExperimentFinishButton } from '@/components/experiment/experiment-finish-button';
 import { CountDown } from '@/components/countdown';
 import { getCurrentUser } from '@/lib/session';
@@ -39,28 +37,20 @@ export default async function MainInput({
     const countDownTime = await getCountDownTime(parseInt(userExperiment?.experiment_id));
 
     return (
-        <div className="bg-white mb-8">
-            <div className="container mx-auto flex flex-col gap-4">
-                <DashboardHeader heading="实验说明" text="请在下方的文本框内输入您的想法和感受。">
-                    <div className="flex gap-4 items-center">
-                        <CountDown
-                            start={startTime}
-                            limit={countDownTime}
-                            nanoId={userExperimentId}
-                        />
-                        <ExperimentFinishButton nanoId={userExperimentId} experimentList={list} />
-                    </div>
-                </DashboardHeader>
-                <ImageListServer>
-                    <ImageList experimentList={list} displayNum={displayNum} />
-                </ImageListServer>
-                <div className="flex flex-col gap-4 w-full">
-                    <ExperimentEditor
-                        nanoId={userExperimentId}
-                        trail={false}
-                        experimentList={list}
-                        displayNum={displayNum}
-                    />
+        <div className="bg-white container max-w-[1024px] mx-auto h-[100vh] py-4 flex flex-col gap-4 justify-between">
+            <div className="flex justify-between items-center gap-4 flex-1">
+                <ImageList experimentList={list} displayNum={displayNum} />
+            </div>
+            <div className="flex-col-center gap-2">
+                <ExperimentEditor
+                    nanoId={userExperimentId}
+                    trail={false}
+                    experimentList={list}
+                    displayNum={displayNum}
+                />
+                <div className="flex gap-8 items-center justify-end">
+                    <CountDown start={startTime} limit={countDownTime} nanoId={userExperimentId} />
+                    <ExperimentFinishButton nanoId={userExperimentId} experimentList={list} />
                 </div>
             </div>
         </div>

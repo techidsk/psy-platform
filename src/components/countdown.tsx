@@ -113,7 +113,7 @@ export function CountDown({ start, limit, nanoId, guest = false, mini = true }: 
     const minutes = formatTime(Math.floor((timeLeft % 3600) / 60));
     const seconds = formatTime(Math.round(timeLeft) % 60); // 取余数，保证数字始终是两位数，例如：59秒转换为“59timeLeft % 60;
     // 格式化时间显示，保证数字始终是两位数
-    console.log(hours, minutes, seconds);
+    // console.log(hours, minutes, seconds);
 
     return mini ? (
         <span className="countdown font-mono text-2xl">

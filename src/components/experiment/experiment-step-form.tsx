@@ -12,6 +12,7 @@ import type { experiment_steps } from '@prisma/client';
 import { uploadPhotoWithFile } from '@/lib/api/post';
 import TiptapEditor from '../editor/tiptap-editor';
 import { getUrl } from '@/lib/url';
+import { nanoid } from 'nanoid';
 
 interface ExperimentStepFormProps extends React.HTMLAttributes<HTMLDivElement> {
     step?: experiment_steps | null;
@@ -45,18 +46,12 @@ export function ExperimentStepForm({
 
     const [stepContent, setStepContent] = useState<string>('');
 
-    const [stepType, setStepType] = useState<number>(0);
-    const [orderType, setOrderType] = useState<number>(1);
+    const [stepType, setStepType] = useState<number>(1);
     const [init, setInit] = useState(false);
 
     const updateStepType = (stepType: number) => {
         setStepType(stepType);
         setValue('type', stepType);
-    };
-
-    const updateOrderType = (orderType: number) => {
-        setOrderType(orderType);
-        setValue('pre', Boolean(orderType));
     };
 
     const updateStepContent = (value: string) => {
@@ -72,8 +67,13 @@ export function ExperimentStepForm({
             const { isFetchSuccess, result } = await uploadPhotoWithFile(data?.step_image[0]);
             data.step_image = isFetchSuccess ? result : '';
         }
-        setExperimentSteps([...(experimentSteps || []), data]);
-        console.log('Submit', data);
+        setExperimentSteps([
+            ...(experimentSteps || []),
+            {
+                ...data,
+                random_id: nanoid(),
+            },
+        ]);
         setIsUploading(false);
         closeModal();
     };
@@ -100,20 +100,15 @@ export function ExperimentStepForm({
             setValue('type', step?.type || 1);
             setStepType(step?.type || 1);
 
-            setValue('pre', Boolean(step?.pre) || true);
-            setOrderType(Number(step?.pre || true));
             const content = step.content as any;
             setStepContent(content?.content || '');
             setValue('step_image', content?.image || '');
         } else {
             reset();
             //
-            setStepType(0);
-            setValue('type', 0);
+            setStepType(1);
+            setValue('type', 1);
             // 步骤位置选项
-            setOrderType(1);
-            setValue('pre', true);
-            // 步骤内容
             const defaultStepContent = '';
             setStepContent(defaultStepContent);
             setValue('step_content', defaultStepContent);
@@ -133,27 +128,6 @@ export function ExperimentStepForm({
             {init && (
                 <form onSubmit={handleSubmit(addExperimentStep)}>
                     <div className="grid gap-2">
-                        <div className="grid gap-1">
-                            <label className="sr-only" htmlFor="step_type">
-                                实验顺序
-                            </label>
-                            <div className="flex gap-2">
-                                {orderTypes.map((type) => {
-                                    return (
-                                        <div key={type.id} className="flex items-center gap-2">
-                                            <input
-                                                type="radio"
-                                                className="radio"
-                                                defaultValue={type.id}
-                                                checked={Boolean(type.id) === Boolean(orderType)}
-                                                onChange={() => updateOrderType(type.id)}
-                                            />
-                                            <label htmlFor={type.name}>{type.name}</label>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
                         <div className="grid gap-1">
                             <label className="sr-only" htmlFor="step_type">
                                 步骤样式
@@ -230,6 +204,22 @@ export function ExperimentStepForm({
                                 </p>
                             )}
                         </div>
+                        {stepType === 5 && (
+                            <div className="grid gap-1">
+                                <label className="sr-only" htmlFor="redirect">
+                                    跳转地址
+                                </label>
+                                <input
+                                    data-name="redirect"
+                                    placeholder="请输入跳转地址"
+                                    type="text"
+                                    autoCapitalize="none"
+                                    autoCorrect="off"
+                                    className="input input-bordered w-full"
+                                    {...register('redirect')}
+                                />
+                            </div>
+                        )}
                         {stepTypes.find((type) => type.id === stepType && type.image) && (
                             <div className="grid gap-1">
                                 <label className="sr-only" htmlFor="step_image">
@@ -265,33 +255,51 @@ export function ExperimentStepForm({
     );
 }
 
-const orderTypes = [
-    {
-        id: 1,
-        name: '实验前',
-        value: true,
-    },
-    {
-        id: 0,
-        name: '实验后',
-        value: false,
-    },
-];
+interface StepTypesProps {
+    id: number;
+    name: string;
+    image: boolean;
+    trail?: boolean;
+    redirect?: boolean;
+}
 
-const stepTypes = [
+const stepTypes: StepTypesProps[] = [
+    {
+        id: 4,
+        name: '写作实验',
+        trail: true,
+        image: false,
+    },
     {
         id: 1,
         name: '仅文字',
+        trail: false,
         image: false,
     },
     {
         id: 2,
         name: '左侧图片',
+        trail: false,
         image: true,
     },
     {
         id: 3,
         name: '右侧图片',
+        trail: false,
         image: true,
+    },
+    {
+        id: 5,
+        name: '跳转服务',
+        trail: false,
+        image: false,
+        redirect: true,
+    },
+    {
+        id: 6,
+        name: '表单',
+        trail: false,
+        image: false,
+        redirect: false,
     },
 ];

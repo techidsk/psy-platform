@@ -40,7 +40,6 @@ export function EngineTableEditButtons({
     }
 
     function close() {
-        console.log('close modal');
         setOpen(false);
         setIsLoading(false);
         router.refresh();

@@ -185,11 +185,11 @@ export function UserPrivacyForm({
                     {
                         <div className="flex gap-6 items-center">
                             <label className="text-gray-500 min-w-[144px]" htmlFor="ages">
-                                Qualtrics账号
+                                实验ID
                             </label>
                             <input
                                 data-name="qualtrics"
-                                placeholder="请输入Qualtrics账号"
+                                placeholder="请输入您被分配的实验ID, 如果未分配，请留空"
                                 type="text"
                                 autoCapitalize="none"
                                 autoCorrect="off"

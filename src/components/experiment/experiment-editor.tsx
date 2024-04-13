@@ -7,6 +7,7 @@ import { toast } from '@/hooks/use-toast';
 import { ImageResponse } from '@/types/experiment';
 import { getUrl } from '@/lib/url';
 import { useExperimentState } from '@/state/_experiment_atoms';
+import classNames from 'classnames';
 
 interface ExperimentEditorProps {
     nanoId: string;
@@ -228,15 +229,18 @@ export function ExperimentEditor({
         <>
             <textarea
                 ref={ref}
-                className={loading ? 'input-textarea read-only' : 'input-textarea'}
+                className={classNames('input-textarea text-2xl cursor-auto', {
+                    'read-only': loading,
+                })}
+                style={{ width: '67%', height: '9rem' }}
                 // value={text} onChange={handleChange}
                 onKeyDown={handleKeyDown}
                 readOnly={loading}
                 placeholder=""
             />
-            <button className="btn btn-primary" onClick={submit}>
+            {/* <button className="btn btn-primary" onClick={submit}>
                 提交
-            </button>
+            </button> */}
         </>
     );
 }

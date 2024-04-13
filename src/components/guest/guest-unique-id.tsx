@@ -3,7 +3,13 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import store from 'store2';
 
-export default function GuestUniqueKey({ userUniqueKey }: { userUniqueKey: string }) {
+export default function GuestUniqueKey({
+    userUniqueKey,
+    inviteCode,
+}: {
+    userUniqueKey: string;
+    inviteCode: string;
+}) {
     const [userKey, setUserKey] = useState<string | null>();
     const GUEST_UNIQUE_KEY = 'userUniqueKey';
 
@@ -40,6 +46,8 @@ export default function GuestUniqueKey({ userUniqueKey }: { userUniqueKey: strin
         setUserKey(key);
     };
 
+    const combineKey = `${userUniqueKey}${inviteCode}`;
+
     return (
         <div className="flex flex-col space-y-4 text-center">
             <h1 className="text-4xl font-semibold tracking-tight">欢迎参加本次实验</h1>
@@ -53,7 +61,7 @@ export default function GuestUniqueKey({ userUniqueKey }: { userUniqueKey: strin
 
                     <button
                         className="btn btn-primary"
-                        onClick={() => router.push(`/guest/dashboard/${userKey}`)}
+                        onClick={() => router.push(`/guest/dashboard/${combineKey}`)}
                     >
                         开始
                     </button>

@@ -18,9 +18,10 @@ export const exprimentSettingSchema = z.object({
 
 export const exprimentStepSchema = z.object({
     step_name: z.string().min(1, '步骤名称不能为空').max(100),
-    title: z.string().min(1, '标题不能为空').max(100),
-    step_content: z.string().min(1, '步骤内容不能为空'),
+    title: z.string().optional(),
+    step_content: z.string().optional(),
     type: z.number().optional(),
     step_image: z.any().optional(),
     pre: z.boolean().optional(),
+    redirect: z.string().optional(),
 });
