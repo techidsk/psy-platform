@@ -14,7 +14,6 @@ export default async function GuestDashboard({ params: { id } }: GuestDashboardP
 
     const userNanoId = id.slice(0, 16);
     const inviteCode = id.slice(16, 37);
-
     // TODO 查看用户下次实验记录时间以及是否需要开始下次实验
     const { experiment_id: nextExperimentId, user_id: userId } = await getUserGroupExperiments(
         true,

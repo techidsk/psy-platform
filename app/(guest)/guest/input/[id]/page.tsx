@@ -17,6 +17,7 @@ export default async function GuestInput({
 }) {
     const userExperimentId = searchParams['e'];
     const guestNanoId = id;
+
     const userExperiment = await getExperiment(guestNanoId, userExperimentId);
 
     const list = await getExperimentInfos(userExperimentId);
@@ -35,34 +36,31 @@ export default async function GuestInput({
 
     const countDownTime = await getCountDownTime(parseInt(userExperiment?.experiment_id));
     return (
-        <div className="bg-white mb-8">
-            <div className="container mx-auto flex flex-col gap-4">
-                <DashboardHeader heading="实验说明" text="请在下方的文本框内输入您的想法和感受。">
-                    <div className="flex gap-4 items-center">
-                        <CountDown
-                            start={startTime}
-                            limit={countDownTime}
-                            nanoId={userExperimentId}
-                        />
-                        <ExperimentFinishButton
-                            nanoId={userExperimentId}
-                            guest={true}
-                            experimentList={list}
-                        />
-                    </div>
-                </DashboardHeader>
-                <ImageListServer>
-                    <ImageList experimentList={list} displayNum={displayNum} />
-                </ImageListServer>
-                <div className="flex flex-col gap-4 w-full">
-                    <ExperimentEditor
+        <div className="bg-white container max-w-[1024px] mx-auto h-[100vh] py-4 flex flex-col gap-4 justify-between">
+            <div className="flex justify-between items-center gap-4 flex-1">
+                <ImageList experimentList={list} displayNum={displayNum} />
+            </div>
+            <div className="flex-col-center gap-2">
+                <ExperimentEditor
+                    nanoId={userExperimentId}
+                    trail={false}
+                    experimentList={list}
+                    displayNum={displayNum}
+                    experimentNanoId={searchParams['e']}
+                    guest={true}
+                    guestNanoId={guestNanoId}
+                />
+                <div className="flex gap-8 items-center justify-end">
+                    <CountDown
+                        start={startTime}
+                        limit={countDownTime}
                         nanoId={userExperimentId}
-                        trail={false}
-                        experimentList={list}
-                        displayNum={displayNum}
-                        experimentNanoId={searchParams['e']}
                         guest={true}
-                        guestNanoId={guestNanoId}
+                    />
+                    <ExperimentFinishButton
+                        nanoId={userExperimentId}
+                        guest={true}
+                        experimentList={list}
                     />
                 </div>
             </div>

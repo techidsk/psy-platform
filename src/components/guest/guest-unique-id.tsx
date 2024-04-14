@@ -15,6 +15,19 @@ export default function GuestUniqueKey({
 
     const router = useRouter();
 
+    // 设置用户ID到状态和localStorage
+    const setAndStoreKey = (key: string) => {
+        const now = new Date();
+        const item = {
+            value: key,
+            expiry: now.getTime() + 86400000, // 设置24小时后过期
+        };
+        store.set(GUEST_UNIQUE_KEY, JSON.stringify(item));
+        setUserKey(key);
+    };
+
+    const combineKey = `${userKey}${inviteCode}`;
+
     useEffect(() => {
         // 尝试从 localStorage 获取用户ID
         const itemStr = store.get(GUEST_UNIQUE_KEY);
@@ -34,19 +47,6 @@ export default function GuestUniqueKey({
             setAndStoreKey(userUniqueKey);
         }
     }, []);
-
-    // 设置用户ID到状态和localStorage
-    const setAndStoreKey = (key: string) => {
-        const now = new Date();
-        const item = {
-            value: key,
-            expiry: now.getTime() + 86400000, // 设置24小时后过期
-        };
-        store.set(GUEST_UNIQUE_KEY, JSON.stringify(item));
-        setUserKey(key);
-    };
-
-    const combineKey = `${userUniqueKey}${inviteCode}`;
 
     return (
         <div className="flex flex-col space-y-4 text-center">

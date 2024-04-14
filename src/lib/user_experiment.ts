@@ -196,6 +196,7 @@ export async function getUserGroupExperiments(
         guestUser = await db.user.findFirst({
             where: { nano_id: guestUserNanoId },
         });
+        console.log('@src/lib/user_experiment.ts:189', guestUser);
         if (!guestUser) {
             guestUser = await db.user.create({
                 data: {

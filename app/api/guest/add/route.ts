@@ -22,6 +22,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ msg: '添加成功', data: guestUser?.id });
         }
         // 临时被试注册
+        console.log('@api/guest/add/route.ts', data);
         const user = await db.user.create({
             data: {
                 nano_id: data.nano_id,

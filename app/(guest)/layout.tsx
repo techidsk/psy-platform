@@ -5,7 +5,9 @@ interface GuestLayoutProps {
 export default function GuestLayout({ children }: GuestLayoutProps) {
     return (
         <div className="mx-auto flex flex-col space-y-4 items-center bg-white">
-            <div className="min-h-screen py-8">{children}</div>
+            <div className="container grid gap-12 px-8">
+                <main className="flex w-full flex-col overflow-hidden">{children}</main>
+            </div>
         </div>
     );
 }
