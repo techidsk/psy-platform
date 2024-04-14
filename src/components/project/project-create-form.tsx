@@ -213,17 +213,14 @@ export function ProjectCreateForm({
     useEffect(() => {
         if (add) {
             setDispatch('CREATE');
+            reset();
         } else {
             setDispatch('UPDATE');
         }
     }, [add]);
 
     useEffect(() => {
-        if (edit) {
-            reset();
-        } else {
-            initForm();
-        }
+        initForm();
     }, []);
 
     return (

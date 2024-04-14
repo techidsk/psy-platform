@@ -31,7 +31,7 @@ async function getExperiments(
     return experiments;
 }
 
-const itemName = 'project-group-add-experiment';
+const PROJECT_GROUP_ADD_EXPERIMENT_KEY = 'project-group-add-experiment';
 // const itemName = 'project-group-add-experiment';
 // 获取实验列表用于关联对应的项目
 export default async function ProjectAddExperiment({
@@ -55,7 +55,7 @@ export default async function ProjectAddExperiment({
                 <DashboardHeader heading="添加项目实验" text="选择项目关联实验">
                     <ExperimentTableConfirmButton
                         className="btn btn-primary btn-sm"
-                        itemName={itemName}
+                        itemName={PROJECT_GROUP_ADD_EXPERIMENT_KEY}
                         projectGroupId={searchParams.project_group_id}
                     />
                 </DashboardHeader>
@@ -73,8 +73,9 @@ const experimentTableConfig: TableConfig[] = [
     {
         key: 'checkbox',
         label: '',
+        checkbox_key: PROJECT_GROUP_ADD_EXPERIMENT_KEY,
         children: (data: any) => {
-            return <TableCheckbox data={data} itemName={itemName} />;
+            return <TableCheckbox data={data} itemName={PROJECT_GROUP_ADD_EXPERIMENT_KEY} />;
         },
     },
     {

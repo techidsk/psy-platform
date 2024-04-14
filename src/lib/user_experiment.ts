@@ -296,7 +296,9 @@ export async function findLastExperiment(userId: string, projectGroupId: number)
             id: projectGroupId,
         },
     });
-    const gap = projectGroup?.gap || 3; // 实验间隔默认3小时
+
+    const gap =
+        projectGroup?.gap !== null && projectGroup?.gap !== undefined ? projectGroup.gap : 3; // 实验间隔默认3小时
 
     const currentTimeStamp = new Date().getTime();
     logger.info(

@@ -15,6 +15,7 @@ import { experiment, project_group } from '@prisma/client';
 import { JsonValue } from '@prisma/client/runtime/library';
 import { useTableState } from '@/state/_table_atom';
 import { TableConfig } from '@/types/table';
+import { logger } from '@/lib/logger';
 
 interface ProjectGroupExperiment extends experiment {
     engine_name: string;
@@ -72,7 +73,7 @@ export function ProjectGroupCreateForm({
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...data,
-                    gap: data.gap || 3,
+                    gap: data.gap !== null && data.gap !== undefined ? data.gap : 3,
                 }),
             });
             const responseBody = await result.json();
@@ -203,24 +204,24 @@ export function ProjectGroupCreateForm({
         if (projectGroup) {
             setValue('group_name', projectGroup.group_name || '');
             setValue('description', projectGroup.description || '');
-            setValue('gap', projectGroup.gap || 3);
+            setValue(
+                'gap',
+                projectGroup.gap !== null && projectGroup.gap !== undefined ? projectGroup.gap : 3
+            );
         }
     }
 
     useEffect(() => {
         if (add) {
             setDispatch('CREATE');
+            reset();
         } else {
             setDispatch('UPDATE');
         }
     }, [add]);
 
     useEffect(() => {
-        if (edit) {
-            reset();
-        } else {
-            initForm();
-        }
+        initForm();
     }, []);
 
     return (
@@ -271,6 +272,7 @@ export function ProjectGroupCreateForm({
                         <input
                             data-name="gap"
                             placeholder="请输入项目实验间隔（单位：小时）"
+                            min={0}
                             disabled={isLoading || !edit}
                             className="input input-bordered w-full"
                             {...register('gap', { valueAsNumber: true })}
@@ -308,6 +310,7 @@ export function ProjectGroupCreateForm({
                                         {experiments.map((experiment, index) => (
                                             <li
                                                 key={`${experiment.experiment_index}-${experiment.id}`}
+                                                className="flex justify-start"
                                             >
                                                 {index > 0 && <hr />}
                                                 <div className="timeline-start">{index + 1}</div>

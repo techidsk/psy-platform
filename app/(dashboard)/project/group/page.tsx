@@ -19,7 +19,7 @@ type ProjectGroupTableProps = {
     experiments: JsonValue;
 };
 
-const itemName = 'project-group-ids';
+const PROJECT_GROUP_IDS_KEY = 'project-group-ids';
 async function getProjectGroups(
     searchParams: { [key: string]: string | undefined },
     page: number = 1,
@@ -77,8 +77,9 @@ const projectTableConfig: TableConfig[] = [
     {
         key: 'checkbox',
         label: '',
+        checkbox_key: PROJECT_GROUP_IDS_KEY,
         children: (data: any) => {
-            return <TableCheckbox data={data} itemName={itemName} />;
+            return <TableCheckbox data={data} itemName={PROJECT_GROUP_IDS_KEY} />;
         },
     },
     {

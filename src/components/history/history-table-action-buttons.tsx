@@ -12,7 +12,6 @@ const USER_EXPERIMENTS_HISTORY = 'user_experiments_history';
 export default function HistoryTableActionButtons({ datas }: ButtonProps) {
     const selectedIds = useTableState((state) => state.selectedIds);
     const itemIds = selectedIds[USER_EXPERIMENTS_HISTORY] || [];
-    console.log(datas);
     async function batchDownload() {
         if (itemIds.length === 0) {
             logger.warn('批量下载，未选中任何文件');
