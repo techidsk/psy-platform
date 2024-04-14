@@ -28,7 +28,7 @@ export async function Table({ datas, configs, children, searchNode }: TableProp)
         <>
             {searchNode && <div className="table-header p-2">{searchNode}</div>}
             <table className="table w-full">
-                <TableHeader configs={filterConfigs} />
+                <TableHeader configs={filterConfigs} datas={datas} />
                 {datas.length > 0 && (
                     <tbody>
                         {datas.map((data) => {

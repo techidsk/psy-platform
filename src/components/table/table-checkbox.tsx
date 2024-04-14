@@ -31,12 +31,15 @@ export default function TableCheckbox({ data, itemName }: TableCheckboxProps) {
     }, [selectedIds, itemName, data.id]);
 
     return (
-        <input
-            type="checkbox"
-            checked={checked}
-            className="checkbox"
-            onChange={() => {}}
-            onClick={(e) => onCheck(e, data)}
-        />
+        <div className="flex justify-center items-center">
+            <input
+                type="checkbox"
+                checked={checked}
+                className="checkbox"
+                onChange={(e) => {
+                    onCheck(e, data);
+                }}
+            />
+        </div>
     );
 }

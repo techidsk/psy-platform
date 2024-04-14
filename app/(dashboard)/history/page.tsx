@@ -14,6 +14,8 @@ import { Prisma } from '@prisma/client';
 import DownloadExperimentHistoryButton from '@/components/history/download-experiment-history-button';
 import CheckExperimentHistoryButton from '@/components/history/check-experiment-history-button';
 import { logger } from '@/lib/logger';
+import TableCheckbox from '@/components/table/table-checkbox';
+import HistoryTableActionButtons from '@/components/history/history-table-action-buttons';
 
 interface ExperimentProps {
     id: number;
@@ -105,7 +107,6 @@ export default async function ExperimentHistory({
     if (datas.length === currentPageSize) {
         end = currentPage + 1;
     }
-
     return (
         <div className="container mx-auto">
             <div className="flex flex-col gap-4">
@@ -115,7 +116,11 @@ export default async function ExperimentHistory({
                         configs={experimentTableConfig}
                         datas={datas}
                         searchNode={
-                            <TableSearch defaultParams={searchParams} searchDatas={searchDatas} />
+                            <TableSearch
+                                defaultParams={searchParams}
+                                searchDatas={searchDatas}
+                                actionNode={<HistoryTableActionButtons datas={datas} />}
+                            />
                         }
                     >
                         <Pagination current={currentPage} pageSize={currentPageSize} end={end} />
@@ -126,7 +131,17 @@ export default async function ExperimentHistory({
     );
 }
 
+const USER_EXPERIMENTS_HISTORY = 'user_experiments_history';
+
 const experimentTableConfig: TableConfig[] = [
+    {
+        key: 'checkbox',
+        label: '',
+        checkbox_key: USER_EXPERIMENTS_HISTORY,
+        children: (data: any) => {
+            return <TableCheckbox data={data} itemName={USER_EXPERIMENTS_HISTORY} />;
+        },
+    },
     {
         key: 'engine_id',
         label: '使用引擎',

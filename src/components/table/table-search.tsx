@@ -19,9 +19,11 @@ interface SearchProps {
 export function TableSearch({
     defaultParams,
     searchDatas,
+    actionNode,
 }: {
     defaultParams: { [key: string]: string };
     searchDatas: SearchProps[];
+    actionNode?: React.ReactNode;
 }) {
     const router = useRouter();
     const [searchParams, setSearchParams] = useState(defaultParams);
@@ -117,14 +119,17 @@ export function TableSearch({
                     <div key={field.name}>{renderField(field)}</div>
                 ))}
             </div>
-            <div className="flex justify-end gap-4">
-                <button className="btn btn-outline btn-sm" onClick={resetSearch}>
-                    重置搜索
-                </button>
-                <button className="btn btn-primary btn-sm" onClick={() => search(false)}>
-                    <Icons.search />
-                    搜索
-                </button>
+            <div className="flex justify-between">
+                <div>{actionNode}</div>
+                <div className="flex justify-end gap-4">
+                    <button className="btn btn-outline btn-sm" onClick={resetSearch}>
+                        重置搜索
+                    </button>
+                    <button className="btn btn-primary btn-sm" onClick={() => search(false)}>
+                        <Icons.search />
+                        搜索
+                    </button>
+                </div>
             </div>
         </div>
     );

@@ -1,7 +1,5 @@
 'use client';
 
-import { logger } from '@/lib/logger';
-
 interface ButtonProps {
     data: any;
 }
@@ -32,9 +30,6 @@ export default function DownloadExperimentHistoryButton({ data }: ButtonProps) {
             console.error('Download failed:', error);
         }
     }
-
-    logger.info(`download data : ${data}`);
-    logger.info(data);
 
     return (
         <div className="flex gap-2">

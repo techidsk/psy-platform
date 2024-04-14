@@ -33,7 +33,7 @@ export default function GuestResultPage({ params: { id } }: { params: { id: stri
                         <div className="text text-slate-500 dark:text-slate-400">
                             这是您本次实验的唯一ID{'  '}
                             <kbd className="kbd kbd-md">{userUniqueKey}</kbd>
-                            <button className="btn btn-ghost btn-sm" onClick={copy}>
+                            <button className="btn btn-ghost btn-sm ml-2" onClick={copy}>
                                 复制
                             </button>
                         </div>

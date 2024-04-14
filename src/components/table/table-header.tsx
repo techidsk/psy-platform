@@ -1,11 +1,13 @@
 import { TableConfig } from '@/types/table';
+import SelectAllCheckbox from './select-all-checkbox';
 
 interface TableHeaderProp {
     configs: TableConfig[];
     children?: React.ReactNode;
+    datas?: any[];
 }
 
-export function TableHeader({ configs, children }: TableHeaderProp) {
+export function TableHeader({ configs, children, datas }: TableHeaderProp) {
     return (
         <>
             <thead>
@@ -18,6 +20,17 @@ export function TableHeader({ configs, children }: TableHeaderProp) {
                                 </th>
                             );
                         }
+                        if (config.key === 'checkbox') {
+                            return (
+                                <th key={config.label} scope="col" className="relative px-6 py-3">
+                                    <SelectAllCheckbox
+                                        datas={datas}
+                                        item_key={config.checkbox_key}
+                                    />
+                                </th>
+                            );
+                        }
+
                         return (
                             <th
                                 key={config.label}

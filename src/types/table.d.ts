@@ -4,7 +4,8 @@ export type TableConfig = {
     key: string;
     label: string;
     className?: string;
-    children: Function;
+    children: (data: any) => JSX.Element;
     hidden?: boolean;
     auth?: UserRole[];
+    checkbox_key?: string;
 };
