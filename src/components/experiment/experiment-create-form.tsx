@@ -16,8 +16,6 @@ import type { experiment, experiment_steps, engine as experimentEngine } from '@
 import Image from 'next/image';
 import { Modal } from '../ui/modal';
 import { ExperimentStepForm } from './experiment-step-form';
-import { logger } from '@/lib/logger';
-import { setEngine } from 'crypto';
 
 interface ExperimentCreateFormProps extends React.HTMLAttributes<HTMLDivElement> {
     experiment: experiment | null;
@@ -182,6 +180,7 @@ export function ExperimentCreateForm({
     useEffect(() => {
         if (add) {
             setDispatch('CREATE');
+            reset();
         } else {
             setDispatch('UPDATE');
         }
@@ -192,11 +191,6 @@ export function ExperimentCreateForm({
         // 如果是编辑模式
         // 则需要保留原有数据，否则显示
         initForm();
-        if (edit) {
-            reset();
-        } else {
-            setDispatch('UPDATE');
-        }
     }, []);
 
     return (

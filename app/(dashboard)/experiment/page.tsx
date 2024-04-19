@@ -21,6 +21,8 @@ async function getExperiments(
     if (!currentUser?.id) {
         return [];
     }
+    const project_name = searchParams?.project_name || '';
+    const project_group_name = searchParams?.project_group_name || '';
     const experiment_name = searchParams?.experiment_name || '';
     const engine_name = searchParams?.engine_name || '';
 
@@ -39,6 +41,16 @@ async function getExperiments(
         WHERE 
             e.creator = ${currentUser.id}
             AND e.available = 1
+            ${
+                project_name
+                    ? Prisma.sql`AND p.project_name LIKE '%${Prisma.raw(project_name)}%'`
+                    : Prisma.empty
+            }
+            ${
+                project_group_name
+                    ? Prisma.sql`AND pg.group_name LIKE '%${Prisma.raw(project_group_name)}%'`
+                    : Prisma.empty
+            }
             ${
                 experiment_name
                     ? Prisma.sql`AND e.experiment_name LIKE '%${Prisma.raw(experiment_name)}%'`
@@ -180,15 +192,15 @@ const experimentTableConfig: TableConfig[] = [
             );
         },
     },
-    // {
-    //     key: 'pic_mode',
-    //     label: '开启图片',
-    //     children: (data: any) => {
-    //         let text = Boolean(data.pic_mode) ? '开启' : '关闭';
-    //         let type = Boolean(data.pic_mode) ? 'success' : 'warn';
-    //         return <State type={type}>{text}</State>;
-    //     },
-    // },
+    {
+        key: 'lock',
+        label: '锁定',
+        children: (data: any) => {
+            let text = Boolean(data.lock) ? '锁定' : '未锁定';
+            let type = Boolean(data.lock) ? 'warn' : 'success';
+            return <State type={type}>{text}</State>;
+        },
+    },
     // {
     //     key: 'available',
     //     label: '状态',
@@ -226,6 +238,8 @@ const experimentTableConfig: TableConfig[] = [
 ];
 
 const searchDatas = [
+    { name: 'project_name', type: 'input', placeholder: '请输入项目名称' },
+    { name: 'project_group_name', type: 'input', placeholder: '请输入项目分组名称' },
     { name: 'experiment_name', type: 'input', placeholder: '请输入实验名称' },
     { name: 'engine_name', type: 'input', placeholder: '请输入引擎名称' },
 ];

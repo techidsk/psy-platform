@@ -59,7 +59,11 @@ export default async function ExperimentDetail({ params: { id }, searchParams }:
     return (
         <div className="container lg:max-w-none bg-white">
             <SubpageHeader>
-                <ExperimentEditButton className="btn btn-primary btn-sm" edit={Boolean(edit)} />
+                <ExperimentEditButton
+                    className="btn btn-primary btn-sm"
+                    edit={Boolean(edit)}
+                    lock={experiment?.lock === 1}
+                />
             </SubpageHeader>
             <div className="flex flex-col gap-4">
                 <SubpageContentHeader heading={`${experiment?.id ? '编辑实验' : '创建新实验'}`} />

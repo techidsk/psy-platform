@@ -11,6 +11,7 @@ import { getUrl } from '@/lib/url';
 import { useRouter } from 'next/navigation';
 import { Icons } from '../icons';
 import { ExperimentDeleteModal } from './experiment-delete-modal';
+import { toast } from '@/hooks/use-toast';
 
 interface ExperimentDetailProps extends React.HTMLAttributes<HTMLButtonElement> {
     experiment: Experiment;
@@ -32,6 +33,19 @@ export function ExperimentDetailButton({ experiment }: ExperimentDetailProps) {
         router.push(`/experiment/${experiment.nano_id}`);
     }
 
+    function editExperiment() {
+        if (experiment.lock === 1) {
+            toast({
+                title: '无法编辑',
+                description: '当前实验已锁定，请解锁后再编辑',
+                variant: 'destructive',
+                duration: 3000,
+            });
+            return;
+        }
+        router.push(`/experiment/${experiment.nano_id}?edit=true`);
+    }
+
     function handleDeleteToggle() {
         setOpenDelete(!openDelete);
     }
@@ -39,6 +53,39 @@ export function ExperimentDetailButton({ experiment }: ExperimentDetailProps) {
     function closeDeleteModal() {
         setOpenDelete(false);
         router.refresh();
+    }
+
+    async function lockExperiment() {
+        await fetch(getUrl('/api/experiment/lock'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                id: experiment.id,
+                lock: experiment.lock === 1 ? 0 : 1,
+            }),
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                router.refresh();
+            });
+    }
+
+    async function copyExperiment() {
+        await fetch(getUrl('/api/experiment/copy'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                id: experiment.id,
+            }),
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                router.refresh();
+            });
     }
 
     /**
@@ -86,11 +133,23 @@ export function ExperimentDetailButton({ experiment }: ExperimentDetailProps) {
                     <button className="btn btn-ghost btn-sm" onClick={showDetail}>
                         查看详情
                     </button>
+                    <button className="btn btn-ghost btn-sm" onClick={editExperiment}>
+                        <Icons.edit size={16} />
+                        编辑
+                    </button>
+                    <button className="btn btn-ghost btn-sm" onClick={lockExperiment}>
+                        <Icons.lock size={16} />
+                        锁定
+                    </button>
+                    <button className="btn btn-ghost btn-sm" onClick={copyExperiment}>
+                        <Icons.copy size={16} />
+                        复制实验
+                    </button>
                     <button
-                        className="btn btn-outline btn-primary btn-sm"
+                        className="btn btn-outline btn-error btn-sm"
                         onClick={() => setOpenDelete(true)}
                     >
-                        <Icons.delete />
+                        <Icons.delete size={16} />
                         删除
                     </button>
                 </div>

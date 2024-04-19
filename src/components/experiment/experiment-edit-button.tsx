@@ -4,9 +4,11 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Icons } from '@/components/icons';
+import { toast } from '@/hooks/use-toast';
 
 interface ExperimentEditButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
     edit: boolean;
+    lock?: boolean;
 }
 
 /**
@@ -15,10 +17,24 @@ interface ExperimentEditButtonProps extends React.HTMLAttributes<HTMLButtonEleme
  * @param param0
  * @returns
  */
-export function ExperimentEditButton({ className, edit, ...props }: ExperimentEditButtonProps) {
+export function ExperimentEditButton({
+    className,
+    edit,
+    lock,
+    ...props
+}: ExperimentEditButtonProps) {
     const router = useRouter();
 
     function onClick() {
+        if (lock) {
+            toast({
+                title: '无法编辑',
+                description: '当前实验已锁定，请解锁后再编辑',
+                variant: 'destructive',
+                duration: 3000,
+            });
+            return;
+        }
         router.push(`${window.location.pathname}?edit=true`);
     }
 

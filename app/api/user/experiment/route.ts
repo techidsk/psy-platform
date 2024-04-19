@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/session';
 import { getId } from '@/lib/nano-id';
 import { getUserGroupExperiments } from '@/lib/user_experiment';
+import { logger } from '@/lib/logger';
 
 /**
  * /api/user/experiment
@@ -38,12 +39,50 @@ export async function POST(request: Request) {
 
     if (experiment) {
         // 创建用户实验 user_experiments
-        const engineIds = experiment?.engine_ids as number[];
-        let engineId = experiment?.engine_id;
+        // 平均分配
+        let randomEngineIds = await db.$queryRaw<any[]>`
+            WITH Experiment AS (
+                SELECT jt.engine_id
+                FROM experiment,
+                JSON_TABLE(
+                    engine_ids,
+                    '$[*]' COLUMNS(engine_id INT PATH '$')
+                ) AS jt
+                WHERE id = ${experiment.id}
+            ),
+            Counts AS (
+                SELECT engine_id, COUNT(*) AS num
+                FROM user_experiments
+                WHERE engine_id IN (SELECT engine_id FROM Experiment)
+                GROUP BY engine_id
+            ),
+            AllEngines AS (
+                SELECT engine_id
+                FROM Experiment
+            ),
+            Combined AS (
+                SELECT AllEngines.engine_id, IFNULL(Counts.num, 0) AS num
+                FROM AllEngines
+                LEFT JOIN Counts ON AllEngines.engine_id = Counts.engine_id
+            ),
+            MinNum AS (
+                SELECT MIN(num) AS min_num
+                FROM Combined
+            )
 
-        if (engineIds.length > 0) {
-            engineId = engineIds[Math.floor(Math.random() * engineIds.length)];
+            -- 选择engine_id基于num的最小值和相差值
+            SELECT engine_id
+            FROM Combined, MinNum
+            WHERE num <= min_num + 2
+            ORDER BY CASE WHEN num > min_num + 2 THEN num ELSE RAND() END
+            LIMIT 1;
+        `;
+        if (randomEngineIds.length === 0) {
+            logger.error('没有可用的engineId');
+            return;
         }
+
+        let engineId = randomEngineIds[0].engine_id;
 
         const userExperimentNanoId = getId();
         await db.user_experiments.create({

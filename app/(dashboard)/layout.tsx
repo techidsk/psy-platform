@@ -25,30 +25,24 @@ const sidebarNav: SidebarNavItem[] = [
         icon: 'dashboard',
     },
     {
-        title: '项目列表',
+        title: '1.项目列表',
         href: '/projects',
         icon: 'projects',
         auth: ['ADMIN', 'ASSISTANT'],
         category: '项目',
     },
     {
-        title: '项目分组列表',
+        title: '2.项目分组列表',
         href: '/project/groups',
         icon: 'projectGroups',
         auth: ['ADMIN', 'ASSISTANT'],
     },
     {
-        title: '实验管理',
+        title: '3.实验管理',
         href: '/experiment',
         icon: 'billing',
         auth: ['ADMIN', 'ASSISTANT'],
         category: '实验',
-    },
-    {
-        title: '引擎管理',
-        href: '/engine',
-        icon: 'engine',
-        auth: ['ADMIN', 'ASSISTANT'],
     },
     {
         title: '用户实验',
@@ -81,6 +75,12 @@ const sidebarNav: SidebarNavItem[] = [
         icon: 'wrench',
         auth: ['ADMIN', 'ASSISTANT'],
         category: '其他',
+    },
+    {
+        title: '引擎管理',
+        href: '/engine',
+        icon: 'engine',
+        auth: ['ADMIN', 'ASSISTANT'],
     },
 ];
 
