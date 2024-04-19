@@ -185,7 +185,8 @@ const experimentTableConfig: TableConfig[] = [
         label: '所属分组',
         auth: ['ADMIN', 'ASSISTANT'],
         children: (data: any) => {
-            const ratio = data.num / data.project_group_experiment_num || 0;
+            // TODO bigint
+            const ratio = 0;
             let progress_type = '';
             if (ratio < 0.3) {
                 progress_type = 'progress-error';

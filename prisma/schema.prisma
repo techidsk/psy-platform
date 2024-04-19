@@ -140,6 +140,8 @@ model experiment_steps {
   title         String?  @db.VarChar(50)
   content       Json?
   pre           Boolean? @default(true)
+  redirect      String?  @db.VarChar(100)
+  random_id     String?  @db.VarChar(32)
 
   @@unique([experiment_id, order], map: "idx_experiment_order_id")
   @@index([experiment_id], map: "idx_experiment_id")
@@ -161,7 +163,7 @@ model projects {
   project_name        String?   @db.VarChar(50)
   project_description String?   @db.VarChar(500)
   state               String?   @db.VarChar(50)
-  invite_code         String?   @db.VarChar(32)
+  invite_code         String?   @unique(map: "idx_invite_code") @db.VarChar(32)
   start_time          DateTime? @db.Date
   end_time            DateTime? @db.Date
   private             Int?      @default(1) @db.TinyInt
