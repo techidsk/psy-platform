@@ -232,7 +232,7 @@ export function ExperimentEditor({
                 className={classNames('input-textarea text-2xl cursor-auto', {
                     'read-only': loading,
                 })}
-                style={{ width: '67%', height: '9rem' }}
+                style={{ height: '9rem', width: '75%' }}
                 // value={text} onChange={handleChange}
                 onKeyDown={handleKeyDown}
                 readOnly={loading}

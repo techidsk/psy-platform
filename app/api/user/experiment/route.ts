@@ -34,14 +34,23 @@ export async function POST(request: Request) {
         },
     });
 
+    // TOOD engineid异常
+
     if (experiment) {
         // 创建用户实验 user_experiments
+        const engineIds = experiment?.engine_ids as number[];
+        let engineId = experiment?.engine_id;
+
+        if (engineIds.length > 0) {
+            engineId = engineIds[Math.floor(Math.random() * engineIds.length)];
+        }
+
         const userExperimentNanoId = getId();
         await db.user_experiments.create({
             data: {
                 nano_id: userExperimentNanoId,
                 type: 'EXPERIMENT',
-                engine_id: experiment?.engine_id,
+                engine_id: engineId,
                 user_id: userId,
                 experiment_id: `${experimentId}`,
                 project_group_id: projectGroupId,

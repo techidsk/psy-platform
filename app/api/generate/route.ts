@@ -10,6 +10,15 @@ require('dotenv').config();
 const endpoint = process.env.OPENAI_ENDPOINT || '';
 const azureApiKey = process.env.OPENAI_API_KEY || '';
 
+function getValueFromObj(key: number, map: object) {
+    for (const [k, v] of Object.entries(map)) {
+        if (parseInt(k) === key) {
+            return v;
+        }
+    }
+    return '';
+}
+
 /**
  * 使用OpenAI翻譯提示词
  *
@@ -41,58 +50,47 @@ export async function POST(request: Request) {
         : undefined;
 
     const json = await request.json();
+
     const isGuest: boolean = Boolean(json?.guest);
-    const promptNanoId = json?.id;
-    const experimentId = json?.experimentId;
-    const experimentNanoId = json?.experimentNanoId;
+    const promptNanoId: string = json?.id;
+    const experimentId: string = json?.experimentId;
+    const experimentNanoId: string = json?.experimentNanoId;
+
     if (!promptNanoId) {
-        console.error('未找到对应promptNanoId数据');
+        logger.error('未找到对应promptNanoId数据');
         return;
     }
+
     const data = await db.trail.findFirst({
         where: { nano_id: promptNanoId },
     });
+
     if (!data) {
-        console.error('未找到对应trail数据');
+        logger.error('未找到对应trail数据');
         return;
     }
+
     if (!data.prompt) {
-        console.error('未找到对应prompt数据');
+        logger.error('未找到对应prompt数据');
         return;
     }
-    let userExperiment = undefined;
+
     logger.info(`${isGuest ? 'Guest模式' : '普通用户模式'}`);
     logger.info(json);
-    if (!isGuest) {
-        userExperiment = await db.user_experiments.findFirst({
-            where: { nano_id: experimentId },
-        });
-    } else {
-        userExperiment = await db.user_experiments.findFirst({
-            where: { nano_id: experimentNanoId },
-        });
-    }
+    let userExperiment = await db.user_experiments.findFirst({
+        where: { nano_id: isGuest ? experimentNanoId : experimentId },
+    });
 
     if (!userExperiment || !userExperiment.experiment_id) {
-        console.error('未找到对应userExperiment数据');
+        logger.error('未找到对应userExperiment数据');
         return;
     }
 
-    const experiment = await db.experiment.findFirst({
-        where: { id: parseInt(userExperiment.experiment_id) },
-        select: { engine_id: true, pic_mode: true, engine_ids: true },
-    });
-    if (!experiment) {
-        console.error('未找到对应experiment数据');
+    const engineId = userExperiment.engine_id;
+    if (!engineId) {
+        logger.error('未找到对应engine_id数据');
         return;
     }
-    const engineIds = experiment.engine_ids as number[];
-    if (engineIds.length === 0) {
-        logger.error(`[实验${userExperiment.experiment_id}] 未找到对应的 engine数据`);
-        return;
-    }
-
-    const engineId = engineIds[Math.floor(Math.random() * engineIds.length)];
 
     // 获取生成信息
     const engine = await db.engine.findFirst({
@@ -100,28 +98,21 @@ export async function POST(request: Request) {
     });
 
     if (!engine) {
-        console.error('未找到对应engine数据');
+        logger.error('未找到对应engine数据');
         return;
     }
+
     if (!engine.engine_description) {
-        console.error('未找到对应engine_description数据');
+        logger.error('未找到对应engine_description数据');
         return;
     }
+
     const userPrompts = await db.trail.findMany({
         where: { user_id: data.user_id, user_experiment_id: data.user_experiment_id },
         select: { prompt: true, generate_prompt: true },
         orderBy: { create_time: 'desc' },
         take: 5,
     });
-
-    function getValueFromObj(key: number, map: object) {
-        for (const [k, v] of Object.entries(map)) {
-            if (parseInt(k) === key) {
-                return v;
-            }
-        }
-        return '';
-    }
 
     const generateData = {
         user_prompts: userPrompts,
@@ -137,6 +128,13 @@ export async function POST(request: Request) {
             ages: (user?.ages && getValueFromObj(user.ages, AGES_MAP)) || '',
         },
     };
+    const experiment = await db.experiment.findFirst({
+        where: { id: parseInt(userExperiment.experiment_id) },
+    });
+    if (!experiment) {
+        logger.error('未找到对应experiment数据');
+        return;
+    }
 
     // 是否开启生成图片模式
     const picMode = Boolean(experiment.pic_mode);

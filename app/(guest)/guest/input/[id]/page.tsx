@@ -1,7 +1,5 @@
-import { DashboardHeader } from '@/components/dashboard-header';
 import { ExperimentEditor } from '@/components/experiment/experiment-editor';
 import { ImageList } from '@/components/experiment/image-list';
-import { ImageListServer } from '@/components/experiment/image-list-server';
 import { ExperimentFinishButton } from '@/components/experiment/experiment-finish-button';
 import { CountDown } from '@/components/countdown';
 import { getCountDownTime, getExperiment, getExperimentInfos } from '@/lib/experiment';

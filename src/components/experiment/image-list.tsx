@@ -82,9 +82,15 @@ export function ImageList({ experimentList, displayNum = 1 }: ImageListProps) {
             </div>
             <div className="flex flex-wrap w-full justify-center items-center max-h-[100%] image-container">
                 {list.length === 0 && (
-                    <div className="flex-col-center rounded border-2 border-slate-300 w-full px-8 max-w-[768px]">
-                        <div className="image-holder w-full flex justify-center items-center">
-                            <div className="w-full h-full flex flex-col gap-8 justify-center items-center">
+                    <div className="flex-col-center rounded border-2 border-slate-300 w-full">
+                        <div
+                            className={classNames('flex-1', {
+                                'w-full h-full': useFullSize,
+                                'w-[calc(100vh-200px-8rem)] h-[calc(100vh-200px-8rem)]':
+                                    !useFullSize,
+                            })}
+                        >
+                            <div className="max-w-[1024px] max-h-[1024px] aspect-square flex-col-center gap-8">
                                 <Icons.folder className="mr-2 h-8 w-8" />
                                 <div className="text-gray-400">暂无历史内容</div>
                             </div>
@@ -98,8 +104,16 @@ export function ImageList({ experimentList, displayNum = 1 }: ImageListProps) {
                             className="flex-col-center rounded border border-slate-300 w-full"
                         >
                             {item.state === 'GENERATING' ? (
-                                <div className="image-holder bg-gray-50 w-full flex justify-center items-center">
-                                    <LoadingSpin displayNum={displayNum} />
+                                <div
+                                    className={classNames('flex-1 ', {
+                                        'w-full h-full': useFullSize,
+                                        'w-[calc(100vh-200px-8rem)] h-[calc(100vh-200px-8rem)]':
+                                            !useFullSize,
+                                    })}
+                                >
+                                    <div className="max-w-[1024px] max-h-[1024px] aspect-square flex-col-center gap-8">
+                                        <LoadingSpin displayNum={displayNum} />
+                                    </div>
                                 </div>
                             ) : (
                                 <div

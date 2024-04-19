@@ -77,6 +77,8 @@ async function getHistory(
         LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
     `;
 
+    console.log(experiments);
+
     let formatResult = experiments.map((experiment) => {
         return {
             ...experiment,
