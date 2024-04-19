@@ -417,12 +417,12 @@ export function ExperimentCreateForm({
     );
 }
 
-interface StepVoProps extends experiment_steps {
-    random_id?: string;
-}
+// interface StepVoProps extends experiment_steps {
+//     random_id?: string;
+// }
 
 interface StepItemProps {
-    experimentSteps: StepVoProps[] | null;
+    experimentSteps: experiment_steps[] | null;
     isLoading: boolean;
     edit: boolean;
     editSteps: Function;
