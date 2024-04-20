@@ -19,6 +19,7 @@ interface ExperimentStepFormProps extends React.HTMLAttributes<HTMLDivElement> {
     closeModal: Function;
     experimentSteps: any[];
     setExperimentSteps: Function;
+    dispatch: string;
 }
 
 type FormData = z.infer<typeof exprimentStepSchema>;
@@ -29,6 +30,7 @@ export function ExperimentStepForm({
     closeModal,
     experimentSteps,
     setExperimentSteps,
+    dispatch,
     ...props
 }: ExperimentStepFormProps) {
     const {
@@ -42,7 +44,7 @@ export function ExperimentStepForm({
     });
 
     const [isUploading, setIsUploading] = useState<boolean>(false);
-    const [dispatch, setDispatch] = useState<string>('CREATE');
+    // const [dispatch, setDispatch] = useState<string>('CREATE');
 
     const [stepContent, setStepContent] = useState<string>('');
 
@@ -67,13 +69,38 @@ export function ExperimentStepForm({
             const { isFetchSuccess, result } = await uploadPhotoWithFile(data?.step_image[0]);
             data.step_image = isFetchSuccess ? result : '';
         }
-        setExperimentSteps([
-            ...(experimentSteps || []),
-            {
-                ...data,
-                random_id: nanoid(),
-            },
-        ]);
+
+        const content = {
+            content: data.step_content,
+            image: data.step_image,
+            redirect_url: data.redirect_url,
+            countdown: data.countdown,
+            pic_mode: data.pic_mode,
+        };
+
+        if (dispatch === 'UPDATE') {
+            setExperimentSteps(
+                experimentSteps.map((item) => {
+                    if (item.random_id === step?.random_id) {
+                        return {
+                            ...item,
+                            ...data,
+                            content: content,
+                        };
+                    }
+                    return item;
+                })
+            );
+        } else if (dispatch === 'CREATE') {
+            setExperimentSteps([
+                ...(experimentSteps || []),
+                {
+                    ...data,
+                    // random_id: nanoid(),
+                    content: content,
+                },
+            ]);
+        }
         setIsUploading(false);
         closeModal();
     };
@@ -101,17 +128,22 @@ export function ExperimentStepForm({
             setStepType(step?.type || 1);
 
             const content = step.content as any;
+            console.log(experimentSteps);
+            console.log(step);
             setStepContent(content?.content || '');
             setValue('step_image', content?.image || '');
+            setValue('redirect_url', content?.redirect_url || undefined);
+            setValue('pic_mode', content?.pic_mode || true);
+            setValue('countdown', content?.countdown || 0);
         } else {
+            // 初始化
             reset();
-            //
             setStepType(1);
             setValue('type', 1);
-            // 步骤位置选项
             const defaultStepContent = '';
             setStepContent(defaultStepContent);
             setValue('step_content', defaultStepContent);
+            setValue('redirect_url', '');
         }
     }
 
@@ -119,8 +151,11 @@ export function ExperimentStepForm({
         setInit(false);
         initForm();
         setInit(true);
-        setDispatch('UPDATE');
     }, []);
+
+    // useEffect(() => {
+    //     console.log(stepErrors);
+    // }, [stepErrors]);
 
     return (
         <>
@@ -128,14 +163,17 @@ export function ExperimentStepForm({
             {init && (
                 <form onSubmit={handleSubmit(addExperimentStep)}>
                     <div className="grid gap-2">
-                        <div className="grid gap-1">
-                            <label className="sr-only" htmlFor="step_type">
+                        <div className="grid gap-1 mb-2">
+                            <label className="sr-only" htmlFor="type">
                                 步骤样式
                             </label>
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 flex-wrap">
                                 {stepTypes.map((type) => {
                                     return (
-                                        <div key={type.id} className="flex items-center gap-2">
+                                        <div
+                                            key={`${type.id}_${type.name}`}
+                                            className="flex items-center gap-2"
+                                        >
                                             <input
                                                 type="radio"
                                                 className="radio"
@@ -148,6 +186,11 @@ export function ExperimentStepForm({
                                     );
                                 })}
                             </div>
+                            {stepErrors?.type && (
+                                <p className="px-1 text-xs text-red-600">
+                                    {stepErrors.type.message}
+                                </p>
+                            )}
                         </div>
                         <div className="grid gap-1">
                             <label className="sr-only" htmlFor="step_name">
@@ -155,7 +198,7 @@ export function ExperimentStepForm({
                             </label>
                             <input
                                 data-name="step_name"
-                                placeholder="请输入步骤名称"
+                                placeholder="请输入步骤名称（被试可见，实验进度标题）"
                                 type="text"
                                 autoCapitalize="none"
                                 autoCorrect="off"
@@ -168,57 +211,113 @@ export function ExperimentStepForm({
                                 </p>
                             )}
                         </div>
-                        <div className="grid gap-1">
-                            <label className="sr-only" htmlFor="title">
-                                标题
-                            </label>
-                            <input
-                                data-name="title"
-                                placeholder="请输入步骤标题"
-                                type="text"
-                                autoCapitalize="none"
-                                autoCorrect="off"
-                                className="input input-bordered w-full"
-                                {...register('title')}
-                            />
-                            {stepErrors?.title && (
-                                <p className="px-1 text-xs text-red-600">
-                                    {stepErrors.title.message}
-                                </p>
-                            )}
-                        </div>
-                        <div className="grid gap-1">
-                            <label className="sr-only" htmlFor="step_content">
-                                内容
-                            </label>
-                            <div className="grid gap-1 border-[1px] border-solid border-neutral-200 rounded-md">
-                                <TiptapEditor
-                                    placeholder="请输入显示内容"
-                                    content={stepContent}
-                                    onChange={(value) => updateStepContent(value)}
-                                />
-                            </div>
-                            {stepErrors?.step_content && (
-                                <p className="px-1 text-xs text-red-600">
-                                    {stepErrors.step_content.message}
-                                </p>
-                            )}
-                        </div>
-                        {stepType === 5 && (
+                        {stepTypes.find((type) => type.id === stepType && type.title) && (
                             <div className="grid gap-1">
-                                <label className="sr-only" htmlFor="redirect">
-                                    跳转地址
+                                <label className="sr-only" htmlFor="title">
+                                    标题
                                 </label>
                                 <input
-                                    data-name="redirect"
-                                    placeholder="请输入跳转地址"
+                                    data-name="title"
+                                    placeholder="请输入步骤标题（被试可见，单页标题）"
                                     type="text"
                                     autoCapitalize="none"
                                     autoCorrect="off"
                                     className="input input-bordered w-full"
-                                    {...register('redirect')}
+                                    {...register('title')}
                                 />
+                                {stepErrors?.title && (
+                                    <p className="px-1 text-xs text-red-600">
+                                        {stepErrors.title.message}
+                                    </p>
+                                )}
                             </div>
+                        )}
+                        {stepTypes.find((type) => type.id === stepType && type.content) && (
+                            <div className="grid gap-1">
+                                <label className="sr-only" htmlFor="step_content">
+                                    内容
+                                </label>
+                                <div className="grid gap-1 border-[1px] border-solid border-neutral-200 rounded-md">
+                                    <TiptapEditor
+                                        placeholder="请输入显示内容（被试可见，详细内容，支持Markdown格式）"
+                                        content={stepContent}
+                                        onChange={(value) => updateStepContent(value)}
+                                    />
+                                </div>
+                                {stepErrors?.step_content && (
+                                    <p className="px-1 text-xs text-red-600">
+                                        {stepErrors.step_content.message}
+                                    </p>
+                                )}
+                            </div>
+                        )}
+                        {stepTypes.find((type) => type.id === stepType && type.redirect) && (
+                            <>
+                                <div className="grid gap-1">
+                                    <label className="sr-only" htmlFor="redirect_url">
+                                        跳转地址
+                                    </label>
+                                    <input
+                                        data-name="redirect_url"
+                                        placeholder="请输入跳转地址"
+                                        type="text"
+                                        autoCapitalize="none"
+                                        autoCorrect="off"
+                                        className="input input-bordered w-full"
+                                        {...register('redirect_url')}
+                                    />
+                                </div>
+                                {stepErrors?.redirect_url && (
+                                    <p className="px-1 text-xs text-red-600">
+                                        {stepErrors.redirect_url.message}
+                                    </p>
+                                )}
+                            </>
+                        )}
+                        {stepTypes.find((type) => type.id === stepType && type.countdown) && (
+                            <>
+                                <div className="grid gap-1">
+                                    <label className="sr-only" htmlFor="countdown">
+                                        实验时间
+                                    </label>
+                                    <input
+                                        data-name="countdown"
+                                        placeholder="请输入实验时间（分钟），如不需要实验时间，请填写0"
+                                        type="number"
+                                        autoCapitalize="none"
+                                        min={0}
+                                        max={120}
+                                        autoCorrect="off"
+                                        className="input input-bordered w-full"
+                                        {...register('countdown', { valueAsNumber: true })}
+                                    />
+                                </div>
+                                {stepErrors?.countdown && (
+                                    <p className="px-1 text-xs text-red-600">
+                                        {stepErrors.countdown.message}
+                                    </p>
+                                )}
+                            </>
+                        )}
+                        {stepTypes.find((type) => type.id === stepType && type.pic_mode) && (
+                            <>
+                                <div className="flex gap-1">
+                                    <label className="" htmlFor="pic_mode">
+                                        开启图片
+                                    </label>
+                                    <input
+                                        type="checkbox"
+                                        className="toggle"
+                                        defaultChecked={true}
+                                        {...register('pic_mode')}
+                                    />
+                                </div>
+                                {stepErrors?.pic_mode && (
+                                    <p className="px-1 text-xs text-red-600">
+                                        {stepErrors.pic_mode.message}
+                                    </p>
+                                )}
+                            </>
                         )}
                         {stepTypes.find((type) => type.id === stepType && type.image) && (
                             <div className="grid gap-1">
@@ -235,16 +334,22 @@ export function ExperimentStepForm({
                             </div>
                         )}
                         <div className="flex flex-row-reverse gap-2">
-                            <button className="btn btn-outline btn-primary" type="submit">
+                            <button className="btn btn-primary btn-sm" type="submit">
                                 {isUploading ? (
                                     <>
                                         <Icons.spinner className="animate-spin" />
                                         上传图片中...
                                     </>
                                 ) : dispatch === 'UPDATE' ? (
-                                    <>保存</>
+                                    <>
+                                        <Icons.save />
+                                        保存
+                                    </>
                                 ) : (
-                                    <>添加</>
+                                    <>
+                                        <Icons.add />
+                                        添加
+                                    </>
                                 )}
                             </button>
                         </div>
@@ -258,48 +363,55 @@ export function ExperimentStepForm({
 interface StepTypesProps {
     id: number;
     name: string;
-    image: boolean;
+    title: boolean;
+    content: boolean;
+    image?: boolean;
     trail?: boolean;
     redirect?: boolean;
+    countdown?: boolean;
+    pic_mode?: boolean;
 }
 
 const stepTypes: StepTypesProps[] = [
     {
         id: 4,
         name: '写作实验',
+        title: false,
+        content: false,
         trail: true,
-        image: false,
+        countdown: true,
+        pic_mode: true,
     },
     {
         id: 1,
         name: '仅文字',
-        trail: false,
-        image: false,
+        title: true,
+        content: true,
     },
-    {
-        id: 2,
-        name: '左侧图片',
-        trail: false,
-        image: true,
-    },
-    {
-        id: 3,
-        name: '右侧图片',
-        trail: false,
-        image: true,
-    },
+    // {
+    //     id: 2,
+    //     name: '左侧图片',
+    //     trail: false,
+    //     image: true,
+    // },
+    // {
+    //     id: 3,
+    //     name: '右侧图片',
+    //     trail: false,
+    //     image: true,
+    // },
     {
         id: 5,
-        name: '跳转服务',
-        trail: false,
-        image: false,
+        name: '结束页面',
+        title: true,
+        content: true,
         redirect: true,
     },
-    {
-        id: 6,
-        name: '表单',
-        trail: false,
-        image: false,
-        redirect: false,
-    },
+    // {
+    //     id: 6,
+    //     name: '表单',
+    //     trail: false,
+    //     image: false,
+    //     redirect: false,
+    // },
 ];

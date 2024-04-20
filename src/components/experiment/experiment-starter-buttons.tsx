@@ -15,6 +15,7 @@ interface Buttons extends React.HTMLAttributes<HTMLDivElement> {
     userId?: number;
     guest?: boolean;
     guestUserNanoId?: string;
+    action: Function; // 点击完成后的操作
 }
 
 export function ExperimentStarterButtons({

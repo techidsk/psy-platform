@@ -1,6 +1,7 @@
 import { getCurrentUser } from '@/lib/session';
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getId } from '@/lib/nano-id';
 
 /**
  * /api/experiment/add
@@ -41,6 +42,7 @@ export async function POST(request: Request) {
                     content: step.step_content,
                     image: step.step_image || '',
                 },
+                random_id: getId(),
             })),
         });
     }

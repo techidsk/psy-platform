@@ -25,20 +25,20 @@ const sidebarNav: SidebarNavItem[] = [
         icon: 'dashboard',
     },
     {
-        title: '1.项目列表',
+        title: '项目列表',
         href: '/projects',
         icon: 'projects',
         auth: ['ADMIN', 'ASSISTANT'],
         category: '项目',
     },
     {
-        title: '2.项目分组列表',
+        title: '项目分组列表',
         href: '/project/groups',
         icon: 'projectGroups',
         auth: ['ADMIN', 'ASSISTANT'],
     },
     {
-        title: '3.实验管理',
+        title: '实验管理',
         href: '/experiment',
         icon: 'billing',
         auth: ['ADMIN', 'ASSISTANT'],

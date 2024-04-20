@@ -27,8 +27,12 @@ export function ProjectGroupTableEditButtons({
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [openDelete, setOpenDelete] = useState(false);
 
-    async function editProject() {
+    async function showProject() {
         router.push(`/project/group/${groupId}`);
+    }
+
+    async function editProject() {
+        router.push(`/project/group/${groupId}?edit=true`);
     }
 
     function deleteUser() {
@@ -49,6 +53,19 @@ export function ProjectGroupTableEditButtons({
 
     return (
         <>
+            {/* <button
+                className={cn(
+                    {
+                        'cursor-not-allowed opacity-60': isLoading,
+                    },
+                    'btn btn-ghost btn-sm',
+                    className
+                )}
+                onClick={showProject}
+            >
+                <Icons.list className="h-4 w-4" />
+                查看详情
+            </button> */}
             <button
                 className={cn(
                     {
@@ -59,8 +76,8 @@ export function ProjectGroupTableEditButtons({
                 )}
                 onClick={editProject}
             >
-                <Icons.list className="h-4 w-4" />
-                查看详情
+                <Icons.edit className="h-4 w-4" />
+                编辑
             </button>
             <button
                 className={cn(

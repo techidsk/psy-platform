@@ -77,8 +77,6 @@ async function getHistory(
         LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
     `;
 
-    console.log(experiments);
-
     let formatResult = experiments.map((experiment) => {
         return {
             ...experiment,
@@ -142,6 +140,17 @@ const experimentTableConfig: TableConfig[] = [
         checkbox_key: USER_EXPERIMENTS_HISTORY,
         children: (data: any) => {
             return <TableCheckbox data={data} itemName={USER_EXPERIMENTS_HISTORY} />;
+        },
+    },
+    {
+        key: 'experiment_name',
+        label: '所属实验',
+        children: (data: any) => {
+            return (
+                <div className="flex flex-col gap-2">
+                    <span>{data.experiment_name}</span>
+                </div>
+            );
         },
     },
     {
@@ -216,17 +225,6 @@ const experimentTableConfig: TableConfig[] = [
         },
     },
     {
-        key: 'experiment_name',
-        label: '所属实验',
-        children: (data: any) => {
-            return (
-                <div className="flex flex-col gap-2">
-                    <span>{data.experiment_name}</span>
-                </div>
-            );
-        },
-    },
-    {
         key: 'start_time',
         label: '创建时间',
         children: (data: any) => {
@@ -240,7 +238,7 @@ const experimentTableConfig: TableConfig[] = [
     },
     {
         key: 'finish_time',
-        label: '试验时间',
+        label: '完成时间',
         children: (data: any) => {
             let d = Math.floor((data.finish_timestamp - data.start_timestamp) / 1000);
             return (
@@ -250,24 +248,24 @@ const experimentTableConfig: TableConfig[] = [
             );
         },
     },
-    {
-        key: 'type',
-        label: '状态',
-        children: (data: any) => {
-            let obj =
-                data.type === 'TRAIL'
-                    ? {
-                          text: '预实验',
-                          type: 'pending',
-                      }
-                    : {
-                          text: '正式实验',
-                          type: 'success',
-                      };
+    // {
+    //     key: 'type',
+    //     label: '状态',
+    //     children: (data: any) => {
+    //         let obj =
+    //             data.type === 'TRAIL'
+    //                 ? {
+    //                       text: '预实验',
+    //                       type: 'pending',
+    //                   }
+    //                 : {
+    //                       text: '正式实验',
+    //                       type: 'success',
+    //                   };
 
-            return <State type={obj.type}>{obj.text}</State>;
-        },
-    },
+    //         return <State type={obj.type}>{obj.text}</State>;
+    //     },
+    // },
     {
         key: 'id',
         label: '操作',

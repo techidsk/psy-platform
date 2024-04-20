@@ -44,11 +44,16 @@ export async function DELETE(request: Request, context: { params: any }) {
             return NextResponse.json({ msg: '实验已被分配到分组中,无法删除' }, { status: 500 });
         }
 
+        const experimentId = parseInt(context.params.id);
         await db.experiment.update({
-            where: { id: parseInt(context.params.id) },
+            where: { id: experimentId },
             data: {
                 available: 0,
             },
+        });
+
+        await db.experiment_steps.deleteMany({
+            where: { experiment_id: experimentId },
         });
 
         return NextResponse.json({ msg: '已删除实验' });

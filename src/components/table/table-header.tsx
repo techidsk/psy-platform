@@ -23,10 +23,12 @@ export function TableHeader({ configs, children, datas }: TableHeaderProp) {
                         if (config.key === 'checkbox') {
                             return (
                                 <th key={config.label} scope="col" className="relative px-6 py-3">
-                                    <SelectAllCheckbox
-                                        datas={datas}
-                                        item_key={config.checkbox_key}
-                                    />
+                                    <div className="flex-col-center">
+                                        <SelectAllCheckbox
+                                            datas={datas}
+                                            item_key={config.checkbox_key}
+                                        />
+                                    </div>
                                 </th>
                             );
                         }

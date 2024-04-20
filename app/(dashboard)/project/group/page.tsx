@@ -10,12 +10,13 @@ import { JsonValue } from '@prisma/client/runtime/library';
 import SubpageHeader from '@/components/subpage-header';
 import TableCheckbox from '@/components/table/table-checkbox';
 import { ProjectBindGroupButton } from '@/components/project/project-bind-group-button';
+import { CLOSING } from 'ws';
 
 type ProjectGroupTableProps = {
     id: string;
     group_name: string;
     description: string;
-    status: boolean;
+    state: string;
     experiments: JsonValue;
 };
 
@@ -100,19 +101,12 @@ const projectTableConfig: TableConfig[] = [
         key: 'state',
         label: '状态',
         children: (data: ProjectGroupTableProps) => {
-            let obj = data.status
-                ? {
-                      text: '可用',
-                      state: 'AVAILABLE',
-                  }
-                : {
-                      text: '未分配',
-                      state: 'UNASSIGNED',
-                  };
+            const text = data.state === 'AVAILABLE' ? '可用' : '未分配';
+            const state = data.state === 'AVAILABLE' ? 'success' : 'warn';
 
             return (
                 <div className="flex flex-col gap-2 items-start">
-                    <State type={obj.state}>{obj.text}</State>
+                    <State type={state}>{text}</State>
                 </div>
             );
         },

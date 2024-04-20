@@ -130,9 +130,9 @@ export function ExperimentDetailButton({ experiment }: ExperimentDetailProps) {
         selectedEngine && (
             <>
                 <div className="flex gap-2">
-                    <button className="btn btn-ghost btn-sm" onClick={showDetail}>
+                    {/* <button className="btn btn-ghost btn-sm" onClick={showDetail}>
                         查看详情
-                    </button>
+                    </button> */}
                     <button className="btn btn-ghost btn-sm" onClick={editExperiment}>
                         <Icons.edit size={16} />
                         编辑

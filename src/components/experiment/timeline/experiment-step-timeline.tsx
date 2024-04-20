@@ -7,6 +7,7 @@ import { RightImageHero } from '../modules/right-image-hero';
 import { CenteredHero } from '../modules/centerd-hero';
 import { useState } from 'react';
 import { ExperimentStarterButtons } from '../experiment-starter-buttons';
+import { ResultPage } from '../modules/result-page';
 
 interface ExperimentTimelineProps {
     experiment: experiment;
@@ -140,7 +141,7 @@ function Template({
     const hasNext = currentIndex < stepsNum - 1;
     const isLast = currentIndex === stepsNum - 1;
 
-    function ButtonGroup() {
+    function ButtonGroup({ type }: { type?: number }) {
         return (
             <div className="flex w-full justify-between">
                 <div>
@@ -152,19 +153,21 @@ function Template({
                 </div>
                 <div>
                     {hasNext && (
-                        <button className="btn btn-primary" onClick={() => nextStep()}>
-                            确认
-                        </button>
-                    )}
-                    {isLast && (
                         <>
-                            <ExperimentStarterButtons
-                                experimentId={experimentNanoId}
-                                showUserPrivacy={showUserPrivacy}
-                                userId={userId}
-                                guest={guest}
-                                guestUserNanoId={guestUserNanoId}
-                            />
+                            {type === 4 ? (
+                                <ExperimentStarterButtons
+                                    experimentId={experimentNanoId}
+                                    showUserPrivacy={showUserPrivacy}
+                                    userId={userId}
+                                    guest={guest}
+                                    guestUserNanoId={guestUserNanoId}
+                                    action={nextStep}
+                                />
+                            ) : (
+                                <button className="btn btn-primary" onClick={() => nextStep()}>
+                                    下一步
+                                </button>
+                            )}
                         </>
                     )}
                 </div>
@@ -173,22 +176,48 @@ function Template({
     }
 
     switch (type) {
-        case 2:
+        // TODO 添加不同流程的操作
+
+        case 1: // 文字
+            return (
+                <CenteredHero title={title} content={content?.content} size="lg">
+                    <ButtonGroup type={type} />
+                </CenteredHero>
+            );
+        case 2: // 左侧图片
             return (
                 <LeftImageHero title={title} content={content?.content} size="lg">
-                    <ButtonGroup />
+                    <ButtonGroup type={type} />
                 </LeftImageHero>
             );
-        case 3:
+        case 3: // 右侧图片
             return (
                 <RightImageHero title={title} content={content?.content} size="lg">
-                    <ButtonGroup />
+                    <ButtonGroup type={type} />
                 </RightImageHero>
+            );
+        case 4: // 写作实验
+            return (
+                <ResultPage title={title} content={content?.content} userId={userId} size="lg">
+                    <ButtonGroup type={type} />
+                </ResultPage>
+            );
+        case 5: // 跳转服务
+            return (
+                <ResultPage title={title} content={content?.content} userId={userId} size="lg">
+                    <ButtonGroup type={type} />
+                </ResultPage>
+            );
+        case 6: // 表单页面
+            return (
+                <ResultPage title={title} content={content?.content} userId={userId} size="lg">
+                    <ButtonGroup type={type} />
+                </ResultPage>
             );
         default:
             return (
                 <CenteredHero title={title} content={content?.content} size="lg">
-                    <ButtonGroup />
+                    <ButtonGroup type={0} />
                 </CenteredHero>
             );
     }

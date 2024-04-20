@@ -306,83 +306,83 @@ export function ProjectGroupCreateForm({
                             </div>
                             <div className="flex gap-4 flex-wrap">
                                 {experiments && experiments.length > 0 ? (
-                                    <ul className="timeline timeline-vertical timeline-start">
-                                        {experiments.map((experiment, index) => (
-                                            <li
-                                                key={`${experiment.experiment_index}-${experiment.id}`}
-                                                className="flex justify-start"
-                                            >
-                                                {index > 0 && <hr />}
-                                                <div className="timeline-start">{index + 1}</div>
-                                                <div className="timeline-middle">
-                                                    <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 20 20"
-                                                        fill="currentColor"
-                                                        className="w-5 h-5"
+                                    <div className="w-full">
+                                        <table className="table">
+                                            {/* head */}
+                                            <thead>
+                                                <tr>
+                                                    <th></th>
+                                                    <th>实验名称</th>
+                                                    <th>顺序调整</th>
+                                                    <th>操作</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {experiments.map((experiment, index) => (
+                                                    <tr
+                                                        key={`${experiment.experiment_index}-${experiment.id}`}
                                                     >
-                                                        <path
-                                                            fillRule="evenodd"
-                                                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-                                                            clipRule="evenodd"
-                                                        />
-                                                    </svg>
-                                                </div>
-                                                <div className="timeline-end timeline-box">
-                                                    <div className="flex gap-2">
-                                                        {experiment.experiment_name}
-                                                        <button
-                                                            className="btn btn-xs btn-ghost"
-                                                            onClick={(e) => {
-                                                                adjustExperimentOrder(
-                                                                    e,
-                                                                    experiment.project_group_unique_id,
-                                                                    'up'
-                                                                );
-                                                            }}
-                                                        >
-                                                            <Icons.up />
-                                                        </button>
-                                                        <button
-                                                            className="btn btn-xs btn-ghost"
-                                                            onClick={(e) => {
-                                                                adjustExperimentOrder(
-                                                                    e,
-                                                                    experiment.project_group_unique_id,
-                                                                    'down'
-                                                                );
-                                                            }}
-                                                        >
-                                                            <Icons.down />
-                                                        </button>
-                                                        <button
-                                                            className="btn btn-xs btn-primary"
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                router.push(
-                                                                    `/experiment/${experiment.nano_id}`
-                                                                );
-                                                            }}
-                                                        >
-                                                            查看
-                                                        </button>
-                                                        <button
-                                                            className="btn btn-xs btn-outline btn-error"
-                                                            onClick={(e) =>
-                                                                removeGroupFromProject(
-                                                                    e,
-                                                                    experiment.project_group_unique_id
-                                                                )
-                                                            }
-                                                        >
-                                                            移除
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                {index < experiments.length - 1 && <hr />}
-                                            </li>
-                                        ))}
-                                    </ul>
+                                                        <th>{index + 1}</th>
+                                                        <td>{experiment.experiment_name}</td>
+                                                        <td>
+                                                            <div className="flex gap-2">
+                                                                <button
+                                                                    className="btn btn-sm btn-ghost"
+                                                                    onClick={(e) => {
+                                                                        adjustExperimentOrder(
+                                                                            e,
+                                                                            experiment.project_group_unique_id,
+                                                                            'up'
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    <Icons.up />
+                                                                </button>
+                                                                <button
+                                                                    className="btn btn-sm btn-ghost"
+                                                                    onClick={(e) => {
+                                                                        adjustExperimentOrder(
+                                                                            e,
+                                                                            experiment.project_group_unique_id,
+                                                                            'down'
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    <Icons.down />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div className="flex gap-2">
+                                                                <button
+                                                                    className="btn btn-sm"
+                                                                    onClick={(e) => {
+                                                                        e.preventDefault();
+                                                                        router.push(
+                                                                            `/experiment/${experiment.nano_id}`
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    查看详情
+                                                                </button>
+                                                                <button
+                                                                    className="btn btn-sm btn-outline btn-error"
+                                                                    onClick={(e) =>
+                                                                        removeGroupFromProject(
+                                                                            e,
+                                                                            experiment.project_group_unique_id
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    移除实验
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 ) : (
                                     <span className="badge">暂无实验</span>
                                 )}

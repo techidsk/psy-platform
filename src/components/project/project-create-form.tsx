@@ -357,28 +357,52 @@ export function ProjectCreateForm({
                         </div>
                         <div className="flex gap-4 flex-wrap">
                             {projectGroups && projectGroups.length > 0 ? (
-                                projectGroups?.map((group, i) => (
-                                    <div className="stats shadow" key={i}>
-                                        <div className="p-4 px-6 rounded-xs flex flex-col gap-2">
-                                            <div className="stat-title">{group.group_name}</div>
-                                            <div className="stat-desc">{group.description}</div>
-                                            <div className="flex justify-end mt-2 gap-2">
-                                                <button
-                                                    className="btn btn-xs"
-                                                    onClick={(e) => showProjectGroup(e, group.id)}
-                                                >
-                                                    <Icons.link size={16} />
-                                                </button>
-                                                <button
-                                                    className="btn btn-xs"
-                                                    onClick={(e) => removeGroupFromProject(e, i)}
-                                                >
-                                                    <Icons.delete size={16} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))
+                                <div className="w-full">
+                                    <table className="table">
+                                        {/* head */}
+                                        <thead>
+                                            <tr>
+                                                <th></th>
+                                                <th>分组名称</th>
+                                                <th>分组描述</th>
+                                                <th>实验间隔（小时）</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {projectGroups?.map((group, i) => (
+                                                <tr key={i}>
+                                                    <th>{i + 1}</th>
+                                                    <td>{group.group_name}</td>
+                                                    <td>{group.description}</td>
+                                                    <td>{group.gap}</td>
+                                                    <td>
+                                                        <div className="flex justify-start gap-2">
+                                                            <button
+                                                                className="btn btn-sm"
+                                                                onClick={(e) =>
+                                                                    showProjectGroup(e, group.id)
+                                                                }
+                                                            >
+                                                                <Icons.link size={16} />
+                                                                查看分组
+                                                            </button>
+                                                            <button
+                                                                className="btn btn-sm btn-outline btn-error"
+                                                                onClick={(e) =>
+                                                                    removeGroupFromProject(e, i)
+                                                                }
+                                                            >
+                                                                <Icons.delete size={16} />
+                                                                移除分组
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             ) : (
                                 <span className="badge">暂无分组</span>
                             )}

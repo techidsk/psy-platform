@@ -142,7 +142,6 @@ model experiment_steps {
   title         String?  @db.VarChar(50)
   content       Json?
   pre           Boolean? @default(true)
-  redirect      String?  @db.VarChar(100)
   random_id     String?  @db.VarChar(32)
 
   @@unique([experiment_id, order], map: "idx_experiment_order_id")

@@ -41,6 +41,7 @@ export function ProjectBindGroupButton({ className, ...props }: ButtonProps) {
                 duration: 3000,
             });
             router.push('/projects');
+            router.refresh();
         } else {
             const responseBody = await result.json();
             toast({
@@ -55,7 +56,7 @@ export function ProjectBindGroupButton({ className, ...props }: ButtonProps) {
     return (
         <>
             <button onClick={onClick} className={cn(className)} {...props}>
-                确认
+                确认分配
             </button>
         </>
     );

@@ -46,6 +46,7 @@ export async function POST(request: Request) {
                 content: step.step_content,
                 image: step.step_image || '',
             },
+            random_id: getId(),
         })),
     });
 

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 import { useTableState } from '@/state/_table_atom';
+import { toast } from '@/hooks/use-toast';
 
 interface ExperimentTableConfirmButtonProps extends React.HTMLAttributes<HTMLButtonElement> {
     itemName: string;
@@ -29,8 +30,16 @@ export function ExperimentTableConfirmButton({
     /**
      * 确认项目关联实验
      */
-    async function onClick() {
-        console.log(selectedIds[itemName]);
+    async function addExperimentToGroup() {
+        if (selectedIds[itemName] === undefined || !selectedIds[itemName].length) {
+            toast({
+                title: '关联失败',
+                description: '请选择实验，已关联到所选项目分组',
+                variant: 'destructive',
+                duration: 3000,
+            });
+            return;
+        }
         setIsLoading(true);
         await fetch('/api/project/group/experiment/bind', {
             method: 'POST',
@@ -55,7 +64,7 @@ export function ExperimentTableConfirmButton({
                 重置选择
             </button>
             <button
-                onClick={onClick}
+                onClick={addExperimentToGroup}
                 className={cn(
                     {
                         'cursor-not-allowed opacity-60': isLoading,
@@ -70,7 +79,7 @@ export function ExperimentTableConfirmButton({
                 ) : (
                     <Icons.add className="h-4 w-4" />
                 )}
-                添加实验
+                确认关联
             </button>
         </div>
     );

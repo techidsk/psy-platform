@@ -42,10 +42,9 @@ export default function Pagination({ current, pageSize = 10, end = 1 }: Paginati
                 <select
                     className="select select-bordered w-full max-w-xs"
                     onChange={(e) => handlePageSizeChange(e)}
+                    value={pageSize}
                 >
-                    <option selected value={10}>
-                        10/页
-                    </option>
+                    <option value={10}>10/页</option>
                     <option value={25}>25/页</option>
                     <option value={50}>50/页</option>
                 </select>

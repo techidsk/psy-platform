@@ -34,6 +34,9 @@ export async function PATCH(request: Request) {
             title: string;
             step_content: string;
             step_image?: string;
+            redirect_url?: string;
+            countdown?: number;
+            pic_mode?: boolean;
             type: number;
             pre: boolean;
         }[] = data.steps;
@@ -60,13 +63,16 @@ export async function PATCH(request: Request) {
             content: {
                 image: item.step_image,
                 content: item.step_content,
+                redirect_url: item.redirect_url,
+                countdown: item.countdown,
+                pic_mode: item.pic_mode,
             },
             order: index + 1,
         }));
 
         for (const step of newSteps) {
-            logger.info(`handle step: ${JSON.stringify(step)} | ${step?.id || -1}`);
-            const { step_content, step_image, ...rest } = step;
+            // logger.info(`handle step: ${JSON.stringify(step)} | ${step?.id || -1}`);
+            const { step_content, step_image, countdown, pic_mode, redirect_url, ...rest } = step;
 
             await db.experiment_steps.upsert({
                 where: {

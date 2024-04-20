@@ -49,6 +49,7 @@ export function ExperimentCreateForm({
     });
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [dispatch, setDispatch] = useState<string>('CREATE');
+    const [stepDispatch, setStepDispatch] = useState<string>('CREATE');
     const [experimentSteps, setExperimentSteps] = useState<any[]>([]);
 
     const [step, setStep] = useState<experiment_steps | null>();
@@ -92,13 +93,6 @@ export function ExperimentCreateForm({
                     duration: 5000,
                 });
             }
-            router.push('/experiment');
-            router.refresh();
-            return toast({
-                title: '更新成功',
-                description: '已成功创建新实验',
-                duration: 3000,
-            });
         } else {
             const createResult = await fetch(getUrl('/api/experiment/add'), {
                 method: 'POST',
@@ -121,14 +115,15 @@ export function ExperimentCreateForm({
                     duration: 5000,
                 });
             }
-            router.push('/experiment');
-            router.refresh();
-            return toast({
-                title: '创建成功',
-                description: '已成功创建新实验',
-                duration: 3000,
-            });
         }
+        // router.push('/experiment');
+        router.refresh();
+
+        return toast({
+            title: dispatch === 'UPDATE' ? '更新成功' : '创建成功',
+            description: '已成功完成操作',
+            duration: 3000,
+        });
     }
 
     const selectEngine = (engineId: number) => {
@@ -146,12 +141,14 @@ export function ExperimentCreateForm({
     const addSteps = (e: any) => {
         e.preventDefault();
         setStep(null);
+        setStepDispatch('CREATE');
         setOpenStepForm(true);
     };
 
     const editSteps = (e: any, step: experiment_steps) => {
         e.preventDefault();
         setStep(step);
+        setStepDispatch('UPDATE');
         setOpenStepForm(true);
     };
 
@@ -170,8 +167,6 @@ export function ExperimentCreateForm({
             setValue('experiment_name', experiment.experiment_name || '');
             setValue('description', experiment.description || '');
             setValue('intro', experiment.intro || '');
-            setValue('countdown', experiment.countdown || 20);
-            setValue('pic_mode', Boolean(experiment.pic_mode));
             setEngineIds(experiment.engine_ids as number[]);
             setExperimentSteps(steps as experiment_steps[]);
         }
@@ -268,42 +263,6 @@ export function ExperimentCreateForm({
                                     {...register('intro')}
                                 />
                             </div>
-                            <div className="grid gap-1">
-                                <label className="sr-only" htmlFor="intro">
-                                    实验时间
-                                </label>
-                                <input
-                                    data-name="countdown"
-                                    placeholder="请输入实验持续时间（单位：分钟）"
-                                    type="number"
-                                    min={1}
-                                    max={120}
-                                    disabled={isLoading || !edit}
-                                    className="input input-bordered w-full"
-                                    {...register('countdown', { valueAsNumber: true })}
-                                />
-                                {errors?.countdown && (
-                                    <p className="px-1 text-xs text-red-600">
-                                        {errors.countdown.message}
-                                    </p>
-                                )}
-                            </div>
-                            <div className="grid gap-1">
-                                <label className="text-lg" htmlFor="pic_mode">
-                                    开启生成图片
-                                </label>
-                                <input
-                                    type="checkbox"
-                                    className="toggle"
-                                    disabled={isLoading || !edit}
-                                    {...register('pic_mode')}
-                                />
-                                {errors?.pic_mode && (
-                                    <p className="px-1 text-xs text-red-600">
-                                        {errors.pic_mode.message}
-                                    </p>
-                                )}
-                            </div>
                             <div className="grid gap-2">
                                 <label className="text-lg" htmlFor="engine_id">
                                     选择引擎
@@ -364,18 +323,30 @@ export function ExperimentCreateForm({
                                     )}
                                 </div>
                                 <div className="flex gap-4">
-                                    <ul className="steps steps-vertical w-full">
-                                        {
-                                            <StepItem
-                                                experimentSteps={experimentSteps}
-                                                isLoading={isLoading}
-                                                edit={Boolean(edit)}
-                                                editSteps={editSteps}
-                                                removeSteps={removeSteps}
-                                                previewSteps={previewSteps}
-                                            />
-                                        }
-                                    </ul>
+                                    <div className="w-full">
+                                        <table className="table">
+                                            {/* head */}
+                                            <thead>
+                                                <tr>
+                                                    <th></th>
+                                                    <th>类型</th>
+                                                    <th>步骤标题</th>
+                                                    <th>步骤详情</th>
+                                                    <th>操作</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <StepItem
+                                                    experimentSteps={experimentSteps}
+                                                    isLoading={isLoading}
+                                                    edit={Boolean(edit)}
+                                                    editSteps={editSteps}
+                                                    removeSteps={removeSteps}
+                                                    previewSteps={previewSteps}
+                                                />
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </>
@@ -386,7 +357,7 @@ export function ExperimentCreateForm({
                                 {isLoading && (
                                     <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
                                 )}
-                                完成
+                                {dispatch === 'UPDATE' ? '更新' : '创建'}
                             </button>
                         </div>
                     )}
@@ -404,6 +375,7 @@ export function ExperimentCreateForm({
                         closeModal={() => setOpenStepForm(false)}
                         experimentSteps={experimentSteps}
                         setExperimentSteps={setExperimentSteps}
+                        dispatch={stepDispatch}
                     />
                 </Modal>
             )}
@@ -437,19 +409,27 @@ function StepItem({
         <>
             {experimentSteps && experimentSteps.length > 0 ? (
                 <>
-                    {experimentSteps
-                        .filter((step) => step.pre)
-                        ?.map((step) => {
-                            console.log(step);
-                            return (
-                                <li className="step flex gap-2" key={`${step.random_id}`}>
-                                    <div className="flex gap-2 items-center justify-between w-full">
-                                        <div className="flex gap-2 items-center">
-                                            <div>{step.step_name}</div>
-                                            {step.type && <StepType type={step.type} />}
+                    {experimentSteps?.map((step, index) => {
+                        return (
+                            <tr key={`${step.type}_${step.step_name}`}>
+                                <th>{index + 1}</th>
+                                <td>
+                                    {step.type && (
+                                        <div className="w-20 text-left">
+                                            <StepType type={step.type} />
                                         </div>
+                                    )}
+                                </td>
+                                <td>{step.step_name}</td>
+                                <td>
+                                    {step.type && (
+                                        <StepContent type={step.type} content={step.content} />
+                                    )}
+                                </td>
+                                <td>
+                                    <div className="flex gap-2 items-center justify-between w-full">
                                         {!(isLoading || !edit) ? (
-                                            <div className="flex gap-2">
+                                            <div className="flex gap-1">
                                                 <button
                                                     className="btn btn-sm btn-ghost"
                                                     onClick={(e) => editSteps(e, step)}
@@ -459,7 +439,7 @@ function StepItem({
                                                 </button>
                                                 <button
                                                     className="btn btn-sm btn-ghost"
-                                                    onClick={(e) => editSteps(e, step)}
+                                                    onClick={(e) => removeSteps(e, step)}
                                                 >
                                                     <Icons.delete size={16} />
                                                     移除
@@ -481,51 +461,10 @@ function StepItem({
                                             </div>
                                         )}
                                     </div>
-                                </li>
-                            );
-                        })}
-                    <li>
-                        <div className="flex gap-2 items-center">
-                            <div className="flex gap-2 items-center">
-                                <div>正式实验</div>
-                            </div>{' '}
-                        </div>
-                    </li>
-                    {experimentSteps
-                        .filter((step) => !step.pre)
-                        ?.map((step, index) => {
-                            return (
-                                <li className="step flex gap-2" key={step.id}>
-                                    <div className="flex gap-2 items-center justify-between w-full">
-                                        <div className="flex gap-2 items-center">
-                                            <div>{step.step_name}</div>
-                                            {step.type && <StepType type={step.type} />}
-                                        </div>
-                                        {!(isLoading || !edit) ? (
-                                            <div>
-                                                <button
-                                                    className="btn btn-sm btn-ghost"
-                                                    onClick={(e) => editSteps(e, step)}
-                                                >
-                                                    <Icons.edit size={16} />
-                                                    编辑
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <div>
-                                                {/* <button
-                                                    className="btn btn-sm btn-ghost"
-                                                    onClick={(e) => previewSteps(e)}
-                                                >
-                                                    <Icons.preview size={16} />
-                                                    查看
-                                                </button> */}
-                                            </div>
-                                        )}
-                                    </div>
-                                </li>
-                            );
-                        })}
+                                </td>
+                            </tr>
+                        );
+                    })}
                 </>
             ) : (
                 <div>当前暂无步骤，请手动添加</div>
@@ -546,6 +485,32 @@ const StepType = ({ type }: { type: number }) => {
             return <span className="badge badge-outline">写作实验</span>;
         case 5:
             return <span className="badge badge-outline">跳转服务</span>;
+        case 6:
+            return <span className="badge badge-outline">表单</span>;
+        default:
+            return <span className="badge badge-outline">仅文字</span>;
+    }
+};
+
+const StepContent = ({ type, content }: { type?: number; content: any }) => {
+    switch (type) {
+        case 1:
+            return <></>;
+        case 2:
+            return <></>;
+        case 3:
+            return <></>;
+        case 4:
+            return (
+                <div className="flex flex-col gap-2">
+                    <div>
+                        实验时长：{content.countdown > 0 ? `${content.countdown}分钟` : '不限时'}
+                    </div>
+                    <div>开启图片：{content.pic_mode ? '开启' : '无图'}</div>
+                </div>
+            );
+        case 5:
+            return <div>跳转地址：{content?.redirect_url ? '已配置' : '未配置'}</div>;
         case 6:
             return <span className="badge badge-outline">表单</span>;
         default:

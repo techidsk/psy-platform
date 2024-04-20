@@ -22,9 +22,14 @@ async function getExperiments(
         return [];
     }
 
+    const projectGroupId = searchParams.project_group_id;
     const experiments = await db.$queryRaw<ExperimentTableProps[]>`
-        SELECT * from experiment
+        SELECT * from experiment e
         WHERE creator = ${parseInt(currentUser?.id)}
+        AND available = 1
+        AND e.id NOT IN (
+            SELECT experiment_id FROM project_group_experiments GROUP BY experiment_id
+        )
         LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
     `;
 
@@ -90,6 +95,15 @@ const experimentTableConfig: TableConfig[] = [
         },
     },
     {
+        key: 'lock',
+        label: '锁定',
+        children: (data: any) => {
+            let text = Boolean(data.lock) ? '锁定' : '未锁定';
+            let type = Boolean(data.lock) ? 'warn' : 'success';
+            return <State type={type}>{text}</State>;
+        },
+    },
+    {
         key: 'create_time',
         label: '创建时间',
         children: (data: any) => {
@@ -100,14 +114,14 @@ const experimentTableConfig: TableConfig[] = [
             );
         },
     },
-    {
-        key: 'available',
-        label: '状态',
-        children: (data: any) => {
-            let text = Boolean(data.available) ? '可用' : '暂停';
-            return <State type="success">{text}</State>;
-        },
-    },
+    // {
+    //     key: 'available',
+    //     label: '状态',
+    //     children: (data: any) => {
+    //         let text = Boolean(data.available) ? '可用' : '暂停';
+    //         return <State type="success">{text}</State>;
+    //     },
+    // },
     {
         key: 'id',
         label: '操作',

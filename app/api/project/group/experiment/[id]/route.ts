@@ -19,8 +19,9 @@ export async function DELETE(request: Request, context: { params: any }) {
         return NextResponse.json({ msg: '没有权限' }, { status: 403 });
     }
     try {
+        const experimentId = parseInt(context.params.id);
         await db.project_group_experiments.delete({
-            where: { id: parseInt(context.params.id) },
+            where: { id: experimentId },
         });
 
         return NextResponse.json({ msg: '已删除分组' });

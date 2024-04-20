@@ -23,5 +23,12 @@ export const exprimentStepSchema = z.object({
     type: z.number().optional(),
     step_image: z.any().optional(),
     pre: z.boolean().optional(),
-    redirect: z.string().optional(),
+    redirect_url: z
+        .string()
+        .url('请输入合法的URL地址，必须以http开头')
+        .or(z.literal(''))
+        .nullable()
+        .optional(),
+    countdown: z.number().max(120, '写作时间不得超过120分钟').optional(),
+    pic_mode: z.boolean().optional(),
 });

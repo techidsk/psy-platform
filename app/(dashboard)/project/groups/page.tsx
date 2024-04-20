@@ -10,6 +10,7 @@ import { TableSearch } from '@/components/table/table-search';
 import { Prisma } from '@prisma/client';
 import { CreateProjectGroupButton } from '@/components/project/group/project-group-create-button';
 import { ProjectGroupTableEditButtons } from '@/components/project/group/project-group-table-edit-buttons';
+import { error } from 'console';
 
 type ProjectGroupState = 'AVAILABLE' | 'UNASSIGNED' | 'DISABLED';
 
@@ -21,6 +22,7 @@ type ProjectGroupTableProps = {
     experiments: JsonValue;
     project_name: string;
     user_num: number;
+    experiment_num: number;
 };
 
 async function getProjectGroups(
@@ -42,10 +44,13 @@ async function getProjectGroups(
 
     // 判断当前用户角色
     const projectGroups = await db.$queryRaw<ProjectGroupTableProps[]>`
-        SELECT g.*, p.project_name, COUNT(ug.user_id) AS user_num
+        SELECT g.*, p.project_name,
+        COUNT(DISTINCT ug.user_id) AS user_num, 
+        COUNT(DISTINCT ge.id) AS experiment_num
         FROM project_group g
         LEFT JOIN projects p ON g.project_id = p.id 
         LEFT JOIN user_group ug ON ug.project_group_id = g.id AND ug.project_id = p.id
+        LEFT JOIN project_group_experiments ge ON ge.project_group_id = g.id
         WHERE 1 = 1
         ${
             group_name
@@ -58,7 +63,7 @@ async function getProjectGroups(
                 : Prisma.empty
         }
         ${state ? Prisma.sql`AND g.state LIKE '%${Prisma.raw(state)}%'` : Prisma.empty}
-        GROUP BY g.id
+        GROUP BY g.id, p.project_name
         LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
     `;
 
@@ -105,7 +110,7 @@ const projectTableConfig: TableConfig[] = [
         label: '所属项目',
         children: (data: any) => {
             return data.project_name ? (
-                <div className="badge"> {data.project_name}</div>
+                <div className=""> {data.project_name}</div>
             ) : (
                 <div className="badge badge-error badge-outline">暂未分配</div>
             );
@@ -156,6 +161,13 @@ const projectTableConfig: TableConfig[] = [
         key: 'state',
         label: '状态',
         children: (data: ProjectGroupTableProps) => {
+            if (data.experiment_num == 0) {
+                return (
+                    <div className="flex flex-col gap-2 items-start">
+                        <State type={'error'}>暂无实验</State>
+                    </div>
+                );
+            }
             const projectState: Record<ProjectGroupState, { text: string; state: string }> = {
                 AVAILABLE: {
                     text: '可用',
