@@ -12,9 +12,17 @@ interface CountDownProp {
     nanoId: string;
     guest?: boolean;
     mini?: boolean;
+    nextStepIndex: number;
 }
 
-export function CountDown({ start, limit, nanoId, guest = false, mini = true }: CountDownProp) {
+export function CountDown({
+    start,
+    limit,
+    nanoId,
+    nextStepIndex,
+    guest = false,
+    mini = true,
+}: CountDownProp) {
     const router = useRouter();
     usePageLeave();
     const calculateTimeLeft = () => {
@@ -31,7 +39,7 @@ export function CountDown({ start, limit, nanoId, guest = false, mini = true }: 
         await fetch(getUrl('/api/experiment/finish'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: nanoId }),
+            body: JSON.stringify({ id: nanoId, part: nextStepIndex - 1 }),
         });
         const resultUrl = guest ? `/guest/result/${nanoId}` : `/result/${nanoId}`;
         redirect && router.push(resultUrl);

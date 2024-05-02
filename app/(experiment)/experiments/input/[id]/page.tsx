@@ -6,18 +6,29 @@ import { getCurrentUser } from '@/lib/session';
 import { getAccessKey } from '@/lib/platform';
 import { getCountDownTime, getExperiment, getExperimentInfos } from '@/lib/experiment';
 import { logger } from '@/lib/logger';
+import { headers } from 'next/headers';
 
 export default async function MainInput({
     params: { id: userExperimentId },
+    searchParams,
 }: {
     params: { id: string };
+    searchParams: { [key: string]: string };
 }) {
+    const headersList = headers();
     // 获取用户实验prompt信息
     const user = await getCurrentUser();
     if (!user) {
         logger.error('当前用户未登录');
         return;
     }
+    const experimentPart = searchParams['p'] as any as number;
+    const callbackPath = searchParams['callback'];
+    const nextStepIndex = searchParams['next'] as any as number;
+    const callbackUrl = callbackPath + '?step_idx=' + nextStepIndex;
+    const encodedCallbackUrl = encodeURIComponent(callbackUrl);
+    logger.info(`callbackUrl: ${callbackUrl}`);
+
     const userExperiment = await getExperiment(user?.id, userExperimentId);
 
     const list = await getExperimentInfos(userExperimentId);
@@ -47,10 +58,21 @@ export default async function MainInput({
                     trail={false}
                     experimentList={list}
                     displayNum={displayNum}
+                    part={experimentPart || 0}
                 />
                 <div className="flex gap-8 items-center justify-end">
-                    <CountDown start={startTime} limit={countDownTime} nanoId={userExperimentId} />
-                    <ExperimentFinishButton nanoId={userExperimentId} experimentList={list} />
+                    <CountDown
+                        start={startTime}
+                        limit={countDownTime}
+                        nanoId={userExperimentId}
+                        nextStepIndex={nextStepIndex}
+                    />
+                    <ExperimentFinishButton
+                        nanoId={userExperimentId}
+                        experimentList={list}
+                        callbackUrl={encodedCallbackUrl}
+                        nextStepIndex={nextStepIndex}
+                    />
                 </div>
             </div>
         </div>

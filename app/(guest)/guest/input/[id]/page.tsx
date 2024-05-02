@@ -5,6 +5,7 @@ import { CountDown } from '@/components/countdown';
 import { getCountDownTime, getExperiment, getExperimentInfos } from '@/lib/experiment';
 import { getAccessKey } from '@/lib/platform';
 import { logger } from '@/lib/logger';
+import { headers } from 'next/headers';
 
 export default async function GuestInput({
     params: { id },
@@ -14,6 +15,14 @@ export default async function GuestInput({
     searchParams: { [key: string]: string };
 }) {
     const userExperimentId = searchParams['e'];
+    const experimentPart = searchParams['p'] as any as number;
+
+    const callbackPath = searchParams['callback'];
+    const nextStepIndex = searchParams['next'] as any as number;
+
+    const callbackUrl = callbackPath + '?step_idx=' + nextStepIndex;
+    const encodedCallbackUrl = encodeURIComponent(callbackUrl);
+    logger.info(`callbackUrl: ${callbackUrl}`);
     const guestNanoId = id;
 
     const userExperiment = await getExperiment(guestNanoId, userExperimentId);
@@ -47,6 +56,7 @@ export default async function GuestInput({
                     experimentNanoId={searchParams['e']}
                     guest={true}
                     guestNanoId={guestNanoId}
+                    part={experimentPart || 0}
                 />
                 <div className="flex gap-8 items-center justify-end">
                     <CountDown
@@ -54,11 +64,14 @@ export default async function GuestInput({
                         limit={countDownTime}
                         nanoId={userExperimentId}
                         guest={true}
+                        nextStepIndex={nextStepIndex}
                     />
                     <ExperimentFinishButton
                         nanoId={userExperimentId}
                         guest={true}
                         experimentList={list}
+                        callbackUrl={encodedCallbackUrl}
+                        nextStepIndex={nextStepIndex}
                     />
                 </div>
             </div>

@@ -26,7 +26,7 @@ async function getExperimentSteps(experimentId: number) {
         where: {
             experiment_id: experimentId,
         },
-        orderBy: [{ pre: 'desc' }, { order: 'asc' }],
+        orderBy: [{ order: 'asc' }],
     });
     return result;
 }
@@ -49,15 +49,20 @@ interface ExperimentTimelineProps {
     userId: number;
     guest?: boolean;
     guestUserNanoId?: string;
+    targetIndex?: number;
 }
 
 // 获取实验步骤
+// 一整个实验流程
 export default async function ExperimentTimeline({
     nextExperimentId,
     userId,
     guestUserNanoId,
+    targetIndex = 1,
     guest = false,
 }: ExperimentTimelineProps) {
+    logger.info(`[实验${nextExperimentId}] 用户${userId}进入实验流程[${targetIndex}]步`);
+
     // 绑定用户的性别和年龄和Qualtrics
     const user = await getUserPrivacy(userId);
     if (!user) {
@@ -77,18 +82,33 @@ export default async function ExperimentTimeline({
         logger.warn(`[实验${nextExperimentId}] 没有添加实验步骤`);
     }
 
+    const dbUser = await db.user.findUnique({
+        where: {
+            id: userId,
+        },
+        select: {
+            nano_id: true,
+        },
+    });
+
+    const userNanoId = dbUser?.nano_id;
+    if (!userNanoId) {
+        logger.error(`[实验${nextExperimentId}] 用户${userId}没有绑定nano_id`);
+        redirect('/guest');
+    }
+
     return (
-        <>
-            <div className="p-2">
-                <ExperimentStepTimeline
-                    experiment={experiment}
-                    experimentSteps={experimentSteps}
-                    showUserPrivacy={showUserPrivacy}
-                    userId={userId}
-                    guestUserNanoId={guestUserNanoId}
-                    guest={guest}
-                />
-            </div>
-        </>
+        <div className="p-2">
+            <ExperimentStepTimeline
+                experiment={experiment}
+                experimentSteps={experimentSteps}
+                showUserPrivacy={showUserPrivacy}
+                userId={userId}
+                guestUserNanoId={guestUserNanoId}
+                guest={guest}
+                userNanoId={userNanoId}
+                targetIndex={targetIndex}
+            />
+        </div>
     );
 }

@@ -29,6 +29,7 @@ export async function POST(request: Request) {
     const prompt = data['prompt'];
     const userId = data['user_id'];
     // 插入用户submit记录用以生成图片
+
     await db.trail.create({
         data: {
             user_experiment_id: experimentNanoId,
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
             prompt: prompt,
             state: 'GENERATING',
             nano_id: trailNanoId,
+            part: data['part'],
         },
     });
 

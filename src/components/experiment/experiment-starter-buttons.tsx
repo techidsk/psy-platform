@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getUrl } from '@/lib/url';
-import { redirect, useRouter } from 'next/navigation';
+import { redirect, usePathname, useRouter } from 'next/navigation';
 import store from 'store2';
 import { Modal } from '../ui/modal';
 import { UserPrivacyForm } from '../user/user-privacy-modal';
@@ -16,6 +16,8 @@ interface Buttons extends React.HTMLAttributes<HTMLDivElement> {
     guest?: boolean;
     guestUserNanoId?: string;
     action: Function; // 点击完成后的操作
+    part?: number;
+    nextStepIndex?: number;
 }
 
 export function ExperimentStarterButtons({
@@ -23,11 +25,15 @@ export function ExperimentStarterButtons({
     showUserPrivacy,
     userId,
     guestUserNanoId,
+    part,
+    nextStepIndex,
     guest = false,
 }: Buttons) {
     const [open, setOpen] = useState(false);
 
     const router = useRouter();
+    const pathname = encodeURIComponent(usePathname() as string);
+
     const GUEST_UNIQUE_KEY = 'userUniqueKey';
     let userUniqueKey = '';
     if (guest) {
@@ -63,9 +69,25 @@ export function ExperimentStarterButtons({
             const userExperimentNanoId = responseBody.data.userExperimentNanoId;
             logger.info(`guest: ${guest}`);
             if (guest) {
-                router.push(`/guest/input/${userUniqueKey}?e=${userExperimentNanoId}`);
+                if (part) {
+                    router.push(
+                        `/guest/input/${userUniqueKey}?e=${userExperimentNanoId}&p=${part}&callback=${pathname}&next=${nextStepIndex}`
+                    );
+                } else {
+                    router.push(
+                        `/guest/input/${userUniqueKey}?e=${userExperimentNanoId}&callback=${pathname}&next=${nextStepIndex}`
+                    );
+                }
             } else {
-                router.push(`/experiments/input/${userExperimentNanoId}`);
+                if (part) {
+                    router.push(
+                        `/experiments/input/${userExperimentNanoId}?p=${part}&callback=${pathname}&next=${nextStepIndex}`
+                    );
+                } else {
+                    router.push(
+                        `/experiments/input/${userExperimentNanoId}&callback=${pathname}&next=${nextStepIndex}`
+                    );
+                }
             }
             userExperimentNanoId && store('experimentId', userExperimentNanoId);
         }

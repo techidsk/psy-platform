@@ -181,17 +181,6 @@ const experimentTableConfig: TableConfig[] = [
             );
         },
     },
-    // {
-    //     key: 'countdown',
-    //     label: '实验时间',
-    //     children: (data: any) => {
-    //         return (
-    //             <div className="flex flex-col gap-2">
-    //                 <div>{data.countdown}分钟</div>
-    //             </div>
-    //         );
-    //     },
-    // },
     {
         key: 'lock',
         label: '锁定',

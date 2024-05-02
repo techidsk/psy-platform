@@ -89,7 +89,7 @@ async function findProjectGroup(
         }
 
         logger.info(
-            `<用户${userId}> 已经分配了项目[${userGroup.project_id}] 下的项目分组[${userGroup.project_group_id}]`
+            `<用户${userId}> 已经分配了项目[${userGroup.project_id}] 下的项目分组[${userProjectGroupId}]`
         );
 
         // 查看项目分组对应的所有实验
@@ -98,8 +98,14 @@ async function findProjectGroup(
             `<用户${userId}>需要完成以下实验 ${experimentList.map((item) => item.experiment_id)} `
         );
 
-        // 获取对应的实验列表以及实验顺序
-        const experimentTimes = userGroup.project_experiment_times || 0;
+        const experimentTimes = await db.user_experiments.count({
+            where: {
+                user_id: userId,
+                project_group_id: userProjectGroupId,
+                state: 'FINISHED',
+            },
+        });
+
         logger.info(`<用户${userId}> 已完成 ${experimentTimes} 次实验`);
         // 游客用户只有一次实验
         if (guest) {

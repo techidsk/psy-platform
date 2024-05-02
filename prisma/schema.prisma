@@ -43,8 +43,6 @@ model experiment {
   nano_id         String?   @unique(map: "psy_experiment_nano_id_uindex") @db.VarChar(16)
   engine_id       Int?
   intro           String?   @db.Text
-  countdown       Int?      @default(1200)
-  pic_mode        Int?      @default(1) @db.TinyInt
   engine_ids      Json?
   lock            Int?      @default(0) @db.TinyInt
 
@@ -63,6 +61,7 @@ model trail {
   image_url          String?   @db.VarChar(200)
   update_time        DateTime? @db.DateTime(0)
   nano_id            String?   @unique(map: "psy_trail_nano_id_uindex") @db.VarChar(16)
+  part               Int?
 
   @@index([user_experiment_id], map: "idx_exp_nano_id")
   @@index([state], map: "idx_state")
@@ -108,10 +107,13 @@ model user_experiments {
   project_group_id Int?
   start_time       DateTime? @default(now()) @db.DateTime(0)
   finish_time      DateTime? @db.DateTime(0)
+  state            String?   @default("IN_EXPERIMENT") @db.VarChar(16)
+  part             Int?      @default(1)
 
   @@index([user_id], map: "idx_user_id")
   @@index([project_group_id], map: "idx_project_group_id")
   @@index([experiment_id], map: "idx_experiment_id")
+  @@index([state], map: "idx_state")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -134,15 +136,15 @@ model user_group {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model experiment_steps {
-  id            Int      @id @default(autoincrement())
+  id            Int     @id @default(autoincrement())
   experiment_id Int?
-  step_name     String?  @db.VarChar(50)
+  step_name     String? @db.VarChar(50)
   order         Int?
   type          Int?
-  title         String?  @db.VarChar(50)
+  title         String? @db.VarChar(50)
   content       Json?
-  pre           Boolean? @default(true)
-  random_id     String?  @db.VarChar(32)
+  random_id     String? @db.VarChar(32)
+  nano_id       String? @unique(map: "idx_nano_id") @db.VarChar(32)
 
   @@unique([experiment_id, order], map: "idx_experiment_order_id")
   @@index([experiment_id], map: "idx_experiment_id")

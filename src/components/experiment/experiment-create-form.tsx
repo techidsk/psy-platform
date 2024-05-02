@@ -14,8 +14,7 @@ import { getUrl } from '@/lib/url';
 
 import type { experiment, experiment_steps, engine as experimentEngine } from '@prisma/client';
 import Image from 'next/image';
-import { Modal } from '../ui/modal';
-import { ExperimentStepForm } from './experiment-step-form';
+import { ExperimentStepTab } from './experiment-step-tab';
 
 interface ExperimentCreateFormProps extends React.HTMLAttributes<HTMLDivElement> {
     experiment: experiment | null;
@@ -49,12 +48,7 @@ export function ExperimentCreateForm({
     });
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [dispatch, setDispatch] = useState<string>('CREATE');
-    const [stepDispatch, setStepDispatch] = useState<string>('CREATE');
     const [experimentSteps, setExperimentSteps] = useState<any[]>([]);
-
-    const [step, setStep] = useState<experiment_steps | null>();
-
-    const [openStepForm, setOpenStepForm] = useState<boolean>(false);
 
     const [tab, setTab] = useState('PROPERTY');
     const [engineIds, setEngineIds] = useState<number[]>([]);
@@ -80,7 +74,6 @@ export function ExperimentCreateForm({
                 body: JSON.stringify({
                     ...data,
                     nano_id: nano_id,
-                    steps: [...experimentSteps],
                     engine_ids: engineIds,
                 }),
             });
@@ -102,10 +95,10 @@ export function ExperimentCreateForm({
                 body: JSON.stringify({
                     ...data,
                     nano_id: nano_id,
-                    steps: [...experimentSteps],
                     engine_ids: engineIds,
                 }),
             });
+
             setIsLoading(false);
             if (!createResult?.ok) {
                 return toast({
@@ -116,7 +109,6 @@ export function ExperimentCreateForm({
                 });
             }
         }
-        // router.push('/experiment');
         router.refresh();
 
         return toast({
@@ -136,29 +128,6 @@ export function ExperimentCreateForm({
             : [...prevEngineIds, engineId];
 
         setEngineIds(newEngineIds);
-    };
-
-    const addSteps = (e: any) => {
-        e.preventDefault();
-        setStep(null);
-        setStepDispatch('CREATE');
-        setOpenStepForm(true);
-    };
-
-    const editSteps = (e: any, step: experiment_steps) => {
-        e.preventDefault();
-        setStep(step);
-        setStepDispatch('UPDATE');
-        setOpenStepForm(true);
-    };
-
-    const removeSteps = (e: any, step: experiment_steps) => {
-        e.preventDefault();
-        setExperimentSteps((prev) => prev.filter((s) => s.id !== step.id));
-    };
-
-    const previewSteps = (e: any) => {
-        e.preventDefault();
     };
 
     function initForm() {
@@ -186,29 +155,32 @@ export function ExperimentCreateForm({
         // 如果是编辑模式
         // 则需要保留原有数据，否则显示
         initForm();
+        console.log('initForm', '@experiment_create-fomr.tsx');
     }, []);
 
     return (
         <div className={cn('grid gap-6', className)} {...props}>
-            <div role="tablist" className="tabs tabs-boxed">
-                <a
-                    role="tab"
-                    className={`tab ${tab === 'PROPERTY' ? 'tab-active' : ''}`}
-                    onClick={() => setTab('PROPERTY')}
-                >
-                    实验属性
-                </a>
-                <a
-                    role="tab"
-                    className={`tab ${tab === 'TIMELINE' ? 'tab-active' : ''}`}
-                    onClick={() => setTab('TIMELINE')}
-                >
-                    实验流程
-                </a>
-            </div>
-            <form onSubmit={handleSubmit(onSubmit)}>
-                <div className="grid gap-2">
-                    {tab === 'PROPERTY' && (
+            {experiment?.id && (
+                <div role="tablist" className="tabs tabs-boxed">
+                    <a
+                        role="tab"
+                        className={`tab ${tab === 'PROPERTY' ? 'tab-active' : ''}`}
+                        onClick={() => setTab('PROPERTY')}
+                    >
+                        实验属性
+                    </a>
+                    <a
+                        role="tab"
+                        className={`tab ${tab === 'TIMELINE' ? 'tab-active' : ''}`}
+                        onClick={() => setTab('TIMELINE')}
+                    >
+                        实验流程
+                    </a>
+                </div>
+            )}
+            {tab === 'PROPERTY' && (
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    <div className="grid gap-2">
                         <>
                             <div className="grid gap-1">
                                 <label className="sr-only" htmlFor="experiment_name">
@@ -303,217 +275,27 @@ export function ExperimentCreateForm({
                                     })}
                                 </div>
                             </div>
-                        </>
-                    )}
-                    {tab === 'TIMELINE' && (
-                        <>
-                            <div className="grid gap-2">
-                                <div className="flex gap-4 items-center justify-between">
-                                    <label className="text-lg" htmlFor="engine_id">
-                                        实验步骤
-                                    </label>
-                                    {!(isLoading || !edit) && (
-                                        <button
-                                            className="btn btn-sm btn-outline"
-                                            onClick={(e) => addSteps(e)}
-                                        >
-                                            <Icons.add size={16} />
-                                            新增
-                                        </button>
-                                    )}
+                            {edit && (
+                                <div className="flex justify-end">
+                                    <button
+                                        className="btn btn-primary"
+                                        disabled={isLoading}
+                                        type="submit"
+                                    >
+                                        {isLoading && (
+                                            <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                                        )}
+                                        {dispatch === 'UPDATE' ? '更新' : '创建'}
+                                    </button>
                                 </div>
-                                <div className="flex gap-4">
-                                    <div className="w-full">
-                                        <table className="table">
-                                            {/* head */}
-                                            <thead>
-                                                <tr>
-                                                    <th></th>
-                                                    <th>类型</th>
-                                                    <th>步骤标题</th>
-                                                    <th>步骤详情</th>
-                                                    <th>操作</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <StepItem
-                                                    experimentSteps={experimentSteps}
-                                                    isLoading={isLoading}
-                                                    edit={Boolean(edit)}
-                                                    editSteps={editSteps}
-                                                    removeSteps={removeSteps}
-                                                    previewSteps={previewSteps}
-                                                />
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
+                            )}
                         </>
-                    )}
-                    {edit && (
-                        <div className="flex justify-end">
-                            <button className="btn btn-primary" disabled={isLoading} type="submit">
-                                {isLoading && (
-                                    <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                                )}
-                                {dispatch === 'UPDATE' ? '更新' : '创建'}
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </form>
-            {openStepForm && (
-                <Modal
-                    className="flex flex-col gap-4"
-                    open={openStepForm}
-                    onClose={() => setOpenStepForm(false)}
-                    disableClickOutside={!open}
-                >
-                    <ExperimentStepForm
-                        step={step}
-                        closeModal={() => setOpenStepForm(false)}
-                        experimentSteps={experimentSteps}
-                        setExperimentSteps={setExperimentSteps}
-                        dispatch={stepDispatch}
-                    />
-                </Modal>
+                    </div>
+                </form>
+            )}
+            {tab === 'TIMELINE' && experiment?.id && (
+                <ExperimentStepTab experimentId={experiment?.id} />
             )}
         </div>
     );
 }
-
-// TODO random id bug
-// interface StepVoProps extends experiment_steps {
-//     random_id?: string;
-// }
-
-interface StepItemProps {
-    experimentSteps: experiment_steps[] | null;
-    isLoading: boolean;
-    edit: boolean;
-    editSteps: Function;
-    removeSteps: Function;
-    previewSteps: Function;
-}
-
-function StepItem({
-    experimentSteps,
-    isLoading,
-    edit,
-    editSteps,
-    removeSteps,
-    previewSteps,
-}: StepItemProps) {
-    return (
-        <>
-            {experimentSteps && experimentSteps.length > 0 ? (
-                <>
-                    {experimentSteps?.map((step, index) => {
-                        return (
-                            <tr key={`${step.type}_${step.step_name}`}>
-                                <th>{index + 1}</th>
-                                <td>
-                                    {step.type && (
-                                        <div className="w-20 text-left">
-                                            <StepType type={step.type} />
-                                        </div>
-                                    )}
-                                </td>
-                                <td>{step.step_name}</td>
-                                <td>
-                                    {step.type && (
-                                        <StepContent type={step.type} content={step.content} />
-                                    )}
-                                </td>
-                                <td>
-                                    <div className="flex gap-2 items-center justify-between w-full">
-                                        {!(isLoading || !edit) ? (
-                                            <div className="flex gap-1">
-                                                <button
-                                                    className="btn btn-sm btn-ghost"
-                                                    onClick={(e) => editSteps(e, step)}
-                                                >
-                                                    <Icons.edit size={16} />
-                                                    编辑
-                                                </button>
-                                                <button
-                                                    className="btn btn-sm btn-ghost"
-                                                    onClick={(e) => removeSteps(e, step)}
-                                                >
-                                                    <Icons.delete size={16} />
-                                                    移除
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <div>
-                                                {/* <button
-                                                className="btn btn-sm btn-ghost"
-                                                onClick={(e) =>
-                                                    previewSteps(e)
-                                                }
-                                            >
-                                                <Icons.preview
-                                                    size={16}
-                                                />
-                                                查看
-                                            </button> */}
-                                            </div>
-                                        )}
-                                    </div>
-                                </td>
-                            </tr>
-                        );
-                    })}
-                </>
-            ) : (
-                <div>当前暂无步骤，请手动添加</div>
-            )}
-        </>
-    );
-}
-
-const StepType = ({ type }: { type: number }) => {
-    switch (type) {
-        case 1:
-            return <span className="badge badge-outline">仅文字</span>;
-        case 2:
-            return <span className="badge badge-outline">左侧图片</span>;
-        case 3:
-            return <span className="badge badge-outline">右侧图片</span>;
-        case 4:
-            return <span className="badge badge-outline">写作实验</span>;
-        case 5:
-            return <span className="badge badge-outline">跳转服务</span>;
-        case 6:
-            return <span className="badge badge-outline">表单</span>;
-        default:
-            return <span className="badge badge-outline">仅文字</span>;
-    }
-};
-
-const StepContent = ({ type, content }: { type?: number; content: any }) => {
-    switch (type) {
-        case 1:
-            return <></>;
-        case 2:
-            return <></>;
-        case 3:
-            return <></>;
-        case 4:
-            return (
-                <div className="flex flex-col gap-2">
-                    <div>
-                        实验时长：{content.countdown > 0 ? `${content.countdown}分钟` : '不限时'}
-                    </div>
-                    <div>开启图片：{content.pic_mode ? '开启' : '无图'}</div>
-                </div>
-            );
-        case 5:
-            return <div>跳转地址：{content?.redirect_url ? '已配置' : '未配置'}</div>;
-        case 6:
-            return <span className="badge badge-outline">表单</span>;
-        default:
-            return <span className="badge badge-outline">仅文字</span>;
-    }
-};

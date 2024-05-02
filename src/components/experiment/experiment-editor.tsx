@@ -18,6 +18,7 @@ interface ExperimentEditorProps {
     experimentNanoId?: string;
     guest?: boolean;
     guestNanoId?: string;
+    part?: number;
 }
 
 type FetchData = {
@@ -30,7 +31,9 @@ type FetchData = {
     trail?: boolean;
     guestNanoId?: string;
     guest?: boolean;
+    part?: number;
 };
+``;
 
 const LOG_INTERVAL = 100; // 记录日志的时间间隔
 const UPLOAD_INTERVAL = 10000; // 上传日志的时间间隔
@@ -41,6 +44,7 @@ export function ExperimentEditor({
     trail = true,
     displayNum = 1,
     experimentNanoId = '',
+    part = 0,
     guest = false,
 }: ExperimentEditorProps) {
     const router = useRouter();
@@ -86,6 +90,7 @@ export function ExperimentEditor({
             trail: trail,
             guestNanoId: guestNanoId,
             guest: guest,
+            part: part,
         };
         // 判断是否是正式实验
         if (!trail && experimentId) {

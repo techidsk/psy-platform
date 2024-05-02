@@ -12,7 +12,7 @@ export default async function VerifyPage({ params: { id } }: { params: { id: str
     logger.debug(`[访客模式] 访问ID: ${id}`);
     const userUniqueKey = getId();
     return (
-        <div className="flex h-screen w-screen flex-col items-center justify-center bg-white">
+        <div className="flex h-screen w-full flex-col items-center justify-center bg-white">
             <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
                 <GuestUniqueKey
                     userUniqueKey={userUniqueKey}

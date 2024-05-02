@@ -12,7 +12,8 @@ import type { experiment_steps } from '@prisma/client';
 import { uploadPhotoWithFile } from '@/lib/api/post';
 import TiptapEditor from '../editor/tiptap-editor';
 import { getUrl } from '@/lib/url';
-import { nanoid } from 'nanoid';
+import { useRouter } from 'next/navigation';
+import { toast } from '@/hooks/use-toast';
 
 interface ExperimentStepFormProps extends React.HTMLAttributes<HTMLDivElement> {
     step?: experiment_steps | null;
@@ -20,6 +21,8 @@ interface ExperimentStepFormProps extends React.HTMLAttributes<HTMLDivElement> {
     experimentSteps: any[];
     setExperimentSteps: Function;
     dispatch: string;
+    experimentId: number;
+    refreshList: Function;
 }
 
 type FormData = z.infer<typeof exprimentStepSchema>;
@@ -28,9 +31,11 @@ export function ExperimentStepForm({
     className,
     step,
     closeModal,
+    experimentId,
     experimentSteps,
     setExperimentSteps,
     dispatch,
+    refreshList,
     ...props
 }: ExperimentStepFormProps) {
     const {
@@ -50,6 +55,7 @@ export function ExperimentStepForm({
 
     const [stepType, setStepType] = useState<number>(1);
     const [init, setInit] = useState(false);
+    const router = useRouter();
 
     const updateStepType = (stepType: number) => {
         setStepType(stepType);
@@ -63,13 +69,10 @@ export function ExperimentStepForm({
 
     // 添加实验步骤
     const addExperimentStep = async (data: FormData) => {
-        if (data?.step_image) {
-            setIsUploading(true);
-
-            const { isFetchSuccess, result } = await uploadPhotoWithFile(data?.step_image[0]);
-            data.step_image = isFetchSuccess ? result : '';
+        // 根据 dispatch 进行划分
+        if (dispatch === 'UPDATE') {
+            return updateExperimentStep(data);
         }
-
         const content = {
             content: data.step_content,
             image: data.step_image,
@@ -77,32 +80,70 @@ export function ExperimentStepForm({
             countdown: data.countdown,
             pic_mode: data.pic_mode,
         };
-
-        if (dispatch === 'UPDATE') {
-            setExperimentSteps(
-                experimentSteps.map((item) => {
-                    if (item.random_id === step?.random_id) {
-                        return {
-                            ...item,
-                            ...data,
-                            content: content,
-                        };
-                    }
-                    return item;
-                })
-            );
-        } else if (dispatch === 'CREATE') {
-            setExperimentSteps([
-                ...(experimentSteps || []),
-                {
-                    ...data,
-                    // random_id: nanoid(),
-                    content: content,
-                },
-            ]);
+        const createResult = await fetch(getUrl('/api/experiment/steps/add'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                step: { ...data, ...content },
+                experiment_id: experimentId,
+            }),
+        });
+        if (!createResult?.ok) {
+            return toast({
+                title: '创建失败',
+                description: '请查看系统消息',
+                variant: 'destructive',
+                duration: 5000,
+            });
         }
-        setIsUploading(false);
+        router.refresh();
+        refreshList();
         closeModal();
+
+        return toast({
+            title: '更新成功',
+            description: '已成功完成操作',
+            duration: 3000,
+        });
+    };
+
+    // 更新实验步骤
+    const updateExperimentStep = async (data: FormData) => {
+        const content = {
+            content: data.step_content,
+            image: data.step_image,
+            redirect_url: data.redirect_url,
+            countdown: data.countdown,
+            pic_mode: data.pic_mode,
+        };
+        const updateResult = await fetch(getUrl(`/api/experiment/steps/${step?.id}`), {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                step: { ...data, ...content },
+            }),
+        });
+        if (!updateResult?.ok) {
+            return toast({
+                title: '更新失败',
+                description: '请查看系统消息',
+                variant: 'destructive',
+                duration: 5000,
+            });
+        }
+        router.refresh();
+        refreshList();
+        closeModal();
+
+        return toast({
+            title: '更新成功',
+            description: '已成功完成操作',
+            duration: 3000,
+        });
     };
 
     const handleFileChange = async (event: any) => {

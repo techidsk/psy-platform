@@ -5,7 +5,7 @@ import { experiment, experiment_steps } from '@prisma/client';
 import { LeftImageHero } from '../modules/left-image-hero';
 import { RightImageHero } from '../modules/right-image-hero';
 import { CenteredHero } from '../modules/centerd-hero';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ExperimentStarterButtons } from '../experiment-starter-buttons';
 import { ResultPage } from '../modules/result-page';
 
@@ -16,6 +16,8 @@ interface ExperimentTimelineProps {
     userId: number;
     guestUserNanoId?: string;
     guest?: boolean;
+    userNanoId: string;
+    targetIndex: number;
 }
 
 export default function ExperimentStepTimeline({
@@ -25,8 +27,11 @@ export default function ExperimentStepTimeline({
     userId,
     guestUserNanoId,
     guest,
+    userNanoId,
+    targetIndex,
 }: ExperimentTimelineProps) {
-    const [currentIndex, setCurrentIndex] = useState(0);
+    const [currentIndex, setCurrentIndex] = useState(targetIndex || 0);
+    const [experimentIndex, setExperimentIndex] = useState(0);
     // 下一步
     const nextStep = () => {
         if (currentIndex < experimentSteps.length - 1) {
@@ -37,11 +42,31 @@ export default function ExperimentStepTimeline({
     // 上一步
     const prevStep = () => {
         if (currentIndex > 0) {
-            setCurrentIndex(currentIndex - 1);
+            let prevIndex = currentIndex - 1;
+            // 如果上一步不是实验
+            if (experimentSteps[prevIndex].type == 4) {
+                return;
+            }
+            setCurrentIndex(prevIndex);
         }
     };
 
     const stepsNum = experimentSteps.length;
+
+    useEffect(() => {
+        const currentStep = experimentSteps[currentIndex];
+        const currentStepId = currentStep.id;
+        const writingSteps = experimentSteps.filter((step) => step.type === 4);
+        const writingIndex = writingSteps.findIndex((step) => step.id === currentStepId);
+        if (writingIndex !== -1) {
+            setExperimentIndex(writingIndex + 1);
+        }
+    }, [currentIndex]);
+
+    let nextExperimentStep = null;
+    if (currentIndex + 1 <= experimentSteps.length) {
+        nextExperimentStep = experimentSteps[currentIndex + 1];
+    }
 
     return (
         <>
@@ -70,6 +95,9 @@ export default function ExperimentStepTimeline({
                 experimentNanoId={experiment.nano_id || ''}
                 guest={guest}
                 guestUserNanoId={guestUserNanoId}
+                userNanoId={userNanoId}
+                writingIndex={experimentIndex}
+                nextExperimentStep={nextExperimentStep}
             />
         </>
     );
@@ -119,6 +147,9 @@ interface TemplateProps {
     experimentNanoId: string;
     guest?: boolean;
     guestUserNanoId?: string;
+    userNanoId: string;
+    writingIndex: number;
+    nextExperimentStep: experiment_steps | null;
 }
 
 function Template({
@@ -132,8 +163,11 @@ function Template({
     experimentNanoId,
     guest,
     guestUserNanoId,
+    userNanoId,
+    writingIndex,
+    nextExperimentStep,
 }: TemplateProps) {
-    const title = step?.title || '默认实验';
+    const title = step?.title || '';
     const content = step?.content as any;
     const type = step?.type;
 
@@ -141,28 +175,38 @@ function Template({
     const hasNext = currentIndex < stepsNum - 1;
     const isLast = currentIndex === stepsNum - 1;
 
-    function ButtonGroup({ type }: { type?: number }) {
+    const nextStepIsWriting = nextExperimentStep?.type === 4;
+
+    function ButtonGroup({ type, part_index }: { type?: number; part_index?: number }) {
         return (
             <div className="flex w-full justify-between">
                 <div>
-                    {hasPrev && (
-                        <button className="btn btn-outline" onClick={() => prevStep()}>
-                            返回
-                        </button>
+                    {hasPrev && !isLast && (
+                        <>
+                            {
+                                <button className="btn btn-outline" onClick={() => prevStep()}>
+                                    返回
+                                </button>
+                            }
+                        </>
                     )}
                 </div>
                 <div>
                     {hasNext && (
                         <>
-                            {type === 4 ? (
-                                <ExperimentStarterButtons
-                                    experimentId={experimentNanoId}
-                                    showUserPrivacy={showUserPrivacy}
-                                    userId={userId}
-                                    guest={guest}
-                                    guestUserNanoId={guestUserNanoId}
-                                    action={nextStep}
-                                />
+                            {nextStepIsWriting ? (
+                                <>
+                                    <ExperimentStarterButtons
+                                        experimentId={experimentNanoId}
+                                        showUserPrivacy={showUserPrivacy}
+                                        userId={userId}
+                                        guest={guest}
+                                        guestUserNanoId={guestUserNanoId}
+                                        action={nextStep}
+                                        part={writingIndex}
+                                        nextStepIndex={currentIndex + 2}
+                                    />
+                                </>
                             ) : (
                                 <button className="btn btn-primary" onClick={() => nextStep()}>
                                     下一步
@@ -177,7 +221,6 @@ function Template({
 
     switch (type) {
         // TODO 添加不同流程的操作
-
         case 1: // 文字
             return (
                 <CenteredHero title={title} content={content?.content} size="lg">
@@ -197,23 +240,15 @@ function Template({
                 </RightImageHero>
             );
         case 4: // 写作实验
-            return (
-                <ResultPage title={title} content={content?.content} userId={userId} size="lg">
-                    <ButtonGroup type={type} />
-                </ResultPage>
-            );
+            return <>写作{`${writingIndex}`}</>;
         case 5: // 跳转服务
             return (
-                <ResultPage title={title} content={content?.content} userId={userId} size="lg">
+                <ResultPage title={title} content={content} userNanoId={userNanoId} size="lg">
                     <ButtonGroup type={type} />
                 </ResultPage>
             );
         case 6: // 表单页面
-            return (
-                <ResultPage title={title} content={content?.content} userId={userId} size="lg">
-                    <ButtonGroup type={type} />
-                </ResultPage>
-            );
+            return <>Form</>;
         default:
             return (
                 <CenteredHero title={title} content={content?.content} size="lg">

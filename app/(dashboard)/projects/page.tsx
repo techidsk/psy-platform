@@ -13,6 +13,7 @@ import { Prisma } from '@prisma/client';
 import { Icons } from '@/components/icons';
 import { ProjectInviteCodeButton } from '@/components/project/project-invite-code-buttons';
 import GuestModeChecker from '@/components/platform/guest-mode-checker';
+import { LoadingSpin } from '@/components/common/loading';
 
 type ProjectState = 'AVAILABLE' | 'DRAFT' | 'ACHIVED';
 type ProjectTableProps = {

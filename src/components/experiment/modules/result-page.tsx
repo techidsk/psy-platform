@@ -2,38 +2,26 @@ import { db } from '@/lib/db';
 import { RedirectToQualtrics } from './redirect-to-qualtrics';
 import StringHTML from './string-to-html';
 import { logger } from '@/lib/logger';
+import { ImageHistory } from './image-history';
 
 interface ComponentProps extends React.HTMLAttributes<HTMLDivElement> {
     title: string;
     content: any;
     buttonNum?: number;
-    userId: number;
     size?: 'sm' | 'md' | 'lg' | 'xl';
+    userNanoId: string;
 }
 
-export async function ResultPage({
+export function ResultPage({
     title,
     content,
-    userId,
+    userNanoId,
     buttonNum = 0,
     size = 'md',
     children,
 }: ComponentProps) {
     const qualtricsUrl = content?.redirect_url;
 
-    const user = await db.user.findUnique({
-        where: {
-            id: userId,
-        },
-        select: {
-            nano_id: true,
-        },
-    });
-
-    if (!user?.nano_id) {
-        logger.error('User nanoId is not found');
-        return null;
-    }
     // TODO 显示用户所有的出图结果
 
     return (
@@ -45,7 +33,8 @@ export async function ResultPage({
                     <div className={`flex ${buttonNum > 1 ? 'justify-between' : 'justify-center'}`}>
                         {children}
                     </div>
-                    <RedirectToQualtrics qualtricsUrl={qualtricsUrl} userUnqiueId={user?.nano_id} />
+                    {/* <ImageHistory /> */}
+                    <RedirectToQualtrics qualtricsUrl={qualtricsUrl} userUnqiueId={userNanoId} />
                 </div>
             </div>
         </div>

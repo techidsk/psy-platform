@@ -2,6 +2,7 @@ import { getCurrentUser } from '@/lib/session';
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getId } from '@/lib/nano-id';
+import { logger } from '@/lib/logger';
 
 /**
  * /api/experiment/add
@@ -11,40 +12,20 @@ export async function POST(request: Request) {
     const data = await request.json();
 
     const currentUser = await getCurrentUser();
+    if (!currentUser) {
+        return NextResponse.json({ msg: '请登录后，再添加实验', error: '未登录' }, { status: 401 });
+    }
 
-    if (currentUser) {
-        const steps: {
-            step_name: string;
-            title: string;
-            step_content: string;
-            step_image?: string;
-            type: number;
-        }[] = data.steps;
-
-        delete data.steps;
-        const experiment = await db.experiment.create({
+    try {
+        await db.experiment.create({
             data: {
                 ...data,
                 creator: parseInt(currentUser.id),
-                pic_mode: data.pic_mode ? 1 : 0,
             },
         });
-
-        // TODO 添加实验步骤
-        await db.experiment_steps.createMany({
-            data: steps.map((step, index) => ({
-                experiment_id: experiment.id,
-                step_name: step.step_name,
-                order: index + 1,
-                type: step.type,
-                title: step.title,
-                content: {
-                    content: step.step_content,
-                    image: step.step_image || '',
-                },
-                random_id: getId(),
-            })),
-        });
+        return NextResponse.json({ msg: '成功添加实验' });
+    } catch (error) {
+        logger.error('添加实验失败', error);
+        return NextResponse.json({ msg: '添加实验失败' }, { status: 500 });
     }
-    return NextResponse.json({ msg: 'success' });
 }

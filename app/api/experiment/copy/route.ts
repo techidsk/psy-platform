@@ -42,11 +42,9 @@ export async function POST(request: Request) {
             order: index + 1,
             type: step.type,
             title: step.title,
-            content: {
-                content: step.step_content,
-                image: step.step_image || '',
-            },
+            content: step.content,
             random_id: getId(),
+            nano_id: getId(),
         })),
     });
 

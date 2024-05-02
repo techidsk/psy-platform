@@ -7,10 +7,15 @@ interface GuestDashboardProps {
     params: {
         id: string; // 游客的nanoId 前16位是 游客的nanoId，后21位是游客的inviteCode
     };
+    searchParams: { [key: string]: string };
 }
 
-export default async function GuestDashboard({ params: { id } }: GuestDashboardProps) {
+export default async function GuestDashboard({
+    params: { id },
+    searchParams,
+}: GuestDashboardProps) {
     // 获取用户默认的实验
+    const currentIndex = searchParams['step_idx'] ? parseInt(searchParams['step_idx']) : 0;
 
     const userNanoId = id.slice(0, 16);
     const inviteCode = id.slice(16, 37);
@@ -40,6 +45,7 @@ export default async function GuestDashboard({ params: { id } }: GuestDashboardP
                         userId={userId}
                         guest={true}
                         guestUserNanoId={userNanoId}
+                        targetIndex={currentIndex}
                     />
                 </div>
             </div>

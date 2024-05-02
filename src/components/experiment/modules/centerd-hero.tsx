@@ -2,14 +2,14 @@ import StringHTML from './string-to-html';
 
 interface CenteredHeroProps extends React.HTMLAttributes<HTMLDivElement> {
     title: string;
-    content: string;
+    content?: string;
     buttonNum?: number;
     size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 export function CenteredHero({
     title,
-    content,
+    content = '',
     buttonNum = 0,
     size = 'md',
     children,

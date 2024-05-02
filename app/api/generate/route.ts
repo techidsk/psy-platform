@@ -137,14 +137,13 @@ export async function POST(request: Request) {
     }
 
     // 是否开启生成图片模式
-    const picMode = Boolean(experiment.pic_mode);
     let imageUrl = '';
     let prompt = '';
-    if (picMode) {
-        const response = await generate(generateData);
-        imageUrl = response?.image_url;
-        prompt = response?.chat_result;
-    }
+    // TODO 图片模式 pic_mode
+    const response = await generate(generateData);
+    logger.info(response);
+    imageUrl = response?.image_url;
+    prompt = response?.chat_result;
     if (imageUrl) {
         logger.info(`生成图片url: ${imageUrl}`);
         return NextResponse.json({ msg: '发布成功', url: imageUrl, prompt: prompt });
