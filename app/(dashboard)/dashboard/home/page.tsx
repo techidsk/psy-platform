@@ -10,9 +10,14 @@ import { logger } from '@/lib/logger';
 // 2. 如果有当前项目，但是没有分组，则查看是否有项目分组，如果没有则显示当前时间无可用分组
 // 3. 如果有项目分组，随机选择分组，并则查看是否有对应实验，如果没有则显示当前时间无可用实验
 // 4. 如果有对应实验，则返回实验内容
+interface DashboardProps {
+    searchParams: { [key: string]: string };
+}
 
-export default async function Dashboard() {
+export default async function Dashboard({ searchParams }: DashboardProps) {
     // 获取用户默认的实验
+    const userExperimentNanoId = searchParams['nano_id'] || '';
+
     const currentUser = await getCurrentUser();
     if (!currentUser?.id) {
         redirect('/login');
@@ -53,6 +58,7 @@ export default async function Dashboard() {
                             nextExperimentId={nextExperimentId}
                             userId={parseInt(currentUser.id)}
                             guest={false}
+                            userExperimentNanoId={userExperimentNanoId}
                         />
                     )}
                 </div>

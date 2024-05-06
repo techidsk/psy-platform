@@ -28,6 +28,11 @@ export async function ProjectInviteCodeButton({
     function copyInviteLink() {
         const navigateToUrl = `${window.location.origin}${url}`;
         navigator.clipboard.writeText(navigateToUrl);
+        toast({
+            title: '复制成功',
+            description: '已复制链接到剪切板',
+            duration: 5000,
+        });
     }
 
     async function updateInviteCode() {

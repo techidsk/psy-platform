@@ -8,65 +8,67 @@ import { CenteredHero } from '../modules/centerd-hero';
 import { useEffect, useState } from 'react';
 import { ExperimentStarterButtons } from '../experiment-starter-buttons';
 import { ResultPage } from '../modules/result-page';
+import { getUrl } from '@/lib/url';
 
 interface ExperimentTimelineProps {
     experiment: experiment;
     experimentSteps: experiment_steps[];
-    showUserPrivacy: boolean;
     userId: number;
     guestUserNanoId?: string;
     guest?: boolean;
     userNanoId: string;
-    targetIndex: number;
+    targetStepIndex: number; // 默认是 1
+    userExperimentNanoId: string;
 }
 
 export default function ExperimentStepTimeline({
     experiment,
     experimentSteps,
-    showUserPrivacy,
     userId,
     guestUserNanoId,
     guest,
     userNanoId,
-    targetIndex,
+    targetStepIndex,
+    userExperimentNanoId,
 }: ExperimentTimelineProps) {
-    const [currentIndex, setCurrentIndex] = useState(targetIndex || 0);
-    const [experimentIndex, setExperimentIndex] = useState(0);
+    const [currentIndex, setCurrentIndex] = useState(targetStepIndex || 1);
+    const [showUserPrivacy, setShowUserPrivacy] = useState(false);
+
+    async function fetchUserPrivacy() {
+        const result = await fetch(getUrl(`/api/user/privacy/${userId}`), {
+            method: 'GET',
+        });
+        const data = await result.json();
+
+        if (data.gender == null || data.ages == null) {
+            // 需要用户录入性别数据
+            setShowUserPrivacy(true);
+        }
+    }
+
     // 下一步
     const nextStep = () => {
-        if (currentIndex < experimentSteps.length - 1) {
+        if (currentIndex < experimentSteps.length) {
             setCurrentIndex(currentIndex + 1);
         }
     };
 
     // 上一步
     const prevStep = () => {
-        if (currentIndex > 0) {
+        if (currentIndex > 1) {
             let prevIndex = currentIndex - 1;
             // 如果上一步不是实验
-            if (experimentSteps[prevIndex].type == 4) {
+            if (experimentSteps[prevIndex - 1].type == 4) {
                 return;
             }
             setCurrentIndex(prevIndex);
         }
     };
 
-    const stepsNum = experimentSteps.length;
-
     useEffect(() => {
-        const currentStep = experimentSteps[currentIndex];
-        const currentStepId = currentStep.id;
-        const writingSteps = experimentSteps.filter((step) => step.type === 4);
-        const writingIndex = writingSteps.findIndex((step) => step.id === currentStepId);
-        if (writingIndex !== -1) {
-            setExperimentIndex(writingIndex + 1);
-        }
-    }, [currentIndex]);
-
-    let nextExperimentStep = null;
-    if (currentIndex + 1 <= experimentSteps.length) {
-        nextExperimentStep = experimentSteps[currentIndex + 1];
-    }
+        // 判断用户是否已经绑定了关键信息
+        fetchUserPrivacy();
+    }, []);
 
     return (
         <>
@@ -86,8 +88,6 @@ export default function ExperimentStepTimeline({
             </div>
             <Template
                 currentIndex={currentIndex}
-                stepsNum={stepsNum}
-                step={experimentSteps[currentIndex]}
                 nextStep={nextStep}
                 prevStep={prevStep}
                 showUserPrivacy={showUserPrivacy}
@@ -96,8 +96,8 @@ export default function ExperimentStepTimeline({
                 guest={guest}
                 guestUserNanoId={guestUserNanoId}
                 userNanoId={userNanoId}
-                writingIndex={experimentIndex}
-                nextExperimentStep={nextExperimentStep}
+                experimentSteps={experimentSteps}
+                userExperimentNanoId={userExperimentNanoId}
             />
         </>
     );
@@ -137,9 +137,7 @@ function Timelime({ step, currentIndex, index }: TimelineProps) {
 }
 
 interface TemplateProps {
-    currentIndex: number;
-    stepsNum: number;
-    step: experiment_steps;
+    currentIndex: number; // 从 1 开始
     nextStep: Function;
     prevStep: Function;
     showUserPrivacy: boolean;
@@ -148,14 +146,12 @@ interface TemplateProps {
     guest?: boolean;
     guestUserNanoId?: string;
     userNanoId: string;
-    writingIndex: number;
-    nextExperimentStep: experiment_steps | null;
+    experimentSteps: experiment_steps[]; // 总实验步数
+    userExperimentNanoId: string;
 }
 
 function Template({
     currentIndex,
-    stepsNum,
-    step,
     nextStep,
     prevStep,
     showUserPrivacy,
@@ -164,24 +160,35 @@ function Template({
     guest,
     guestUserNanoId,
     userNanoId,
-    writingIndex,
-    nextExperimentStep,
+    experimentSteps,
+    userExperimentNanoId,
 }: TemplateProps) {
-    const title = step?.title || '';
-    const content = step?.content as any;
-    const type = step?.type;
+    const totalStepNum = experimentSteps.length;
+    const currentStep = experimentSteps[currentIndex - 1];
 
-    const hasPrev = currentIndex > 0;
-    const hasNext = currentIndex < stepsNum - 1;
-    const isLast = currentIndex === stepsNum - 1;
+    const title = currentStep?.title || '';
+    const content = currentStep?.content as any;
+    const type = currentStep?.type;
 
-    const nextStepIsWriting = nextExperimentStep?.type === 4;
+    // 判断是否有返回和下一步
+    // 如果有上一步，而且上一步为实验，则没有返回上一步选项
+    // 如果下一步为写作实验，则没有下一步选项
+    // 如果是最后一步了，没有下一步选项
 
-    function ButtonGroup({ type, part_index }: { type?: number; part_index?: number }) {
+    // 是否有上一步和下一步
+    const hasPrev = currentIndex > 1;
+    const hasNext = currentIndex < totalStepNum;
+
+    const isLast = currentIndex === totalStepNum;
+
+    const isPrevStepWriting = experimentSteps[currentIndex - 2]?.type === 4;
+    const isNextStepWriting = experimentSteps[currentIndex]?.type === 4;
+
+    function ButtonGroup() {
         return (
             <div className="flex w-full justify-between">
                 <div>
-                    {hasPrev && !isLast && (
+                    {hasPrev && !isPrevStepWriting && !isLast && (
                         <>
                             {
                                 <button className="btn btn-outline" onClick={() => prevStep()}>
@@ -194,7 +201,7 @@ function Template({
                 <div>
                     {hasNext && (
                         <>
-                            {nextStepIsWriting ? (
+                            {isNextStepWriting ? (
                                 <>
                                     <ExperimentStarterButtons
                                         experimentId={experimentNanoId}
@@ -203,8 +210,9 @@ function Template({
                                         guest={guest}
                                         guestUserNanoId={guestUserNanoId}
                                         action={nextStep}
-                                        part={writingIndex}
+                                        currentStepIndex={currentIndex + 1}
                                         nextStepIndex={currentIndex + 2}
+                                        userExperimentNanoId={userExperimentNanoId}
                                     />
                                 </>
                             ) : (
@@ -224,27 +232,33 @@ function Template({
         case 1: // 文字
             return (
                 <CenteredHero title={title} content={content?.content} size="lg">
-                    <ButtonGroup type={type} />
+                    <ButtonGroup />
                 </CenteredHero>
             );
         case 2: // 左侧图片
             return (
                 <LeftImageHero title={title} content={content?.content} size="lg">
-                    <ButtonGroup type={type} />
+                    <ButtonGroup />
                 </LeftImageHero>
             );
         case 3: // 右侧图片
             return (
                 <RightImageHero title={title} content={content?.content} size="lg">
-                    <ButtonGroup type={type} />
+                    <ButtonGroup />
                 </RightImageHero>
             );
         case 4: // 写作实验
-            return <>写作{`${writingIndex}`}</>;
+            return <>写作</>;
         case 5: // 跳转服务
             return (
-                <ResultPage title={title} content={content} userNanoId={userNanoId} size="lg">
-                    <ButtonGroup type={type} />
+                <ResultPage
+                    title={title}
+                    content={content}
+                    userNanoId={userNanoId}
+                    userExperimentNanoId={userExperimentNanoId}
+                    size="lg"
+                >
+                    <ButtonGroup />
                 </ResultPage>
             );
         case 6: // 表单页面
@@ -252,7 +266,7 @@ function Template({
         default:
             return (
                 <CenteredHero title={title} content={content?.content} size="lg">
-                    <ButtonGroup type={0} />
+                    <ButtonGroup />
                 </CenteredHero>
             );
     }

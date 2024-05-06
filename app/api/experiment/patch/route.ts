@@ -29,7 +29,7 @@ export async function PATCH(request: Request) {
         const params = { ...data };
         delete params.steps;
 
-        const experiment = await db.experiment.update({
+        await db.experiment.update({
             where: { nano_id: data['nano_id'] },
             data: { ...params },
         });

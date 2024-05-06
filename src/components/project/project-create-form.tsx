@@ -19,6 +19,7 @@ import { JsonValue } from '@prisma/client/runtime/library';
 import { useTableState } from '@/state/_table_atom';
 import { useProjectState } from '@/state/_project_atoms';
 import { logger } from '@/lib/logger';
+
 interface ProjectFormProps extends React.HTMLAttributes<HTMLDivElement> {
     closeModal?: Function;
     edit?: boolean;
@@ -328,7 +329,7 @@ export function ProjectCreateForm({
                                     <summary className="m-1 btn btn-sm">选择结束日期</summary>
                                     <div className="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-[320px]">
                                         <DatePickerComponent
-                                            selected={startDate}
+                                            selected={endDate}
                                             setSelected={(day: Date | undefined) =>
                                                 pickEndDate(day)
                                             }

@@ -14,6 +14,9 @@ export async function POST(request: Request) {
     const data = await request.json();
     const guest = data['guest'] || false;
     const guestUserNanoId = data['guestUserNanoId'] || '';
+    const prevUserExperimentNanoId = data['prevUserExperimentNanoId'] || '';
+    const part: number = (data['part'] as any as number) || 0;
+
     const {
         project_group_id: projectGroupId,
         experiment_id: experimentId,
@@ -84,7 +87,28 @@ export async function POST(request: Request) {
 
         let engineId = randomEngineIds[0].engine_id;
 
-        const userExperimentNanoId = getId();
+        // TODO 优化 如果是相同实验，则使用一样的 nano_id
+        console.log('prevUserExperimentNanoId', prevUserExperimentNanoId);
+
+        const userExperimentNanoId =
+            prevUserExperimentNanoId === '' ? getId() : prevUserExperimentNanoId;
+
+        console.log('userExperimentNanoId', userExperimentNanoId);
+        const dbUserExperiment = await db.user_experiments.findFirst({
+            where: {
+                nano_id: userExperimentNanoId,
+                part: part,
+            },
+        });
+        if (dbUserExperiment) {
+            return NextResponse.json({
+                msg: '实验已存在',
+                data: {
+                    userExperimentNanoId: userExperimentNanoId,
+                },
+            });
+        }
+
         await db.user_experiments.create({
             data: {
                 nano_id: userExperimentNanoId,
@@ -93,6 +117,7 @@ export async function POST(request: Request) {
                 user_id: userId,
                 experiment_id: `${experimentId}`,
                 project_group_id: projectGroupId,
+                part: part,
             },
         });
         // 更新用户实验次数

@@ -8,7 +8,7 @@ interface ComponentProps extends React.HTMLAttributes<HTMLDivElement> {
 
 // 跳转到 Qualtrics 页面
 export function RedirectToQualtrics({ qualtricsUrl, userUnqiueId }: ComponentProps) {
-    logger.info(`qualtricsUrl: ${qualtricsUrl} userUnqiueId: ${userUnqiueId}`);
+    // logger.info(`qualtricsUrl: ${qualtricsUrl} userUnqiueId: ${userUnqiueId}`);
     // 验证 url 以及 unqiueId 是否合法
     if (!qualtricsUrl || !userUnqiueId) {
         logger.error('qualtricsUrl 或 userUnqiueId 为空');
@@ -19,7 +19,7 @@ export function RedirectToQualtrics({ qualtricsUrl, userUnqiueId }: ComponentPro
     const targetUrl = `${qualtricsUrl}?id=${userUnqiueId}`;
 
     return (
-        <div className="hero">
+        <div className="flex gap-4 justify-center">
             <Link href={targetUrl} target="_blank">
                 <button className="btn  btn-primary">继续实验</button>
             </Link>

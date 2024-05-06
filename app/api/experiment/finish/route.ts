@@ -20,18 +20,18 @@ export async function POST(request: Request) {
     }
 
     logger.info(`[实验${data.id}] 已经完成`);
-    const userExperiment = await db.user_experiments.update({
+
+    logger.info(`nano_id: ${data.id}, part: ${data.part}`);
+
+    const userExperiment = await db.user_experiments.updateMany({
         where: {
             nano_id: data.id,
+            part: data.part,
         },
         data: {
             finish_time: new Date(),
-            part: data.part,
         },
     });
-    logger.info(
-        `更新[用户${userExperiment.user_id}] 项目分组[${userExperiment.project_group_id}]完成写作数量`
-    );
 
     return NextResponse.json({ msg: '已完成写作' });
 }

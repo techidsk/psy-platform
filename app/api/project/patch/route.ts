@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/session';
+import { revalidatePath } from 'next/cache';
 
 /**
  * /api/project/patch
@@ -27,10 +28,10 @@ export async function PATCH(request: Request) {
         });
         // TODO 添加项目分组关联的实验
         // await db.project_group_experiments.update
-
-        return NextResponse.json({ msg: '添加成功' });
+        revalidatePath('/projects');
+        return NextResponse.json({ msg: '更新成功' });
     } catch (err) {
         console.error(err);
-        return NextResponse.json({ msg: '添加失败' }, { status: 500 });
+        return NextResponse.json({ msg: '更新失败' }, { status: 500 });
     }
 }

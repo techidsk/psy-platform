@@ -151,6 +151,22 @@ async function findProjectGroup(
                 throw new Error('暂未分配项目实验');
             }
 
+            const dbUserExperiment = await db.user_experiments.findFirst({
+                where: {
+                    user_id: userId,
+                    project_group_id: userProjectGroupId,
+                },
+            });
+            if (dbUserExperiment) {
+                logger.error(`<用户${userId}> 已经分配到项目分组[${userProjectGroupId}]`);
+                // 返回对应顺序的实验id
+                return {
+                    status: 'SUCCESS',
+                    experiment_id: experimentList[0].experiment_id,
+                    project_group_id: userProjectGroupId,
+                };
+            }
+
             // 插入用户到项目分组中
             await db.user_group.create({
                 data: {
@@ -202,7 +218,7 @@ export async function getUserGroupExperiments(
         guestUser = await db.user.findFirst({
             where: { nano_id: guestUserNanoId },
         });
-        console.log('@src/lib/user_experiment.ts:189', guestUser);
+        // console.log('@src/lib/user_experiment.ts:189', guestUser);
         if (!guestUser) {
             guestUser = await db.user.create({
                 data: {

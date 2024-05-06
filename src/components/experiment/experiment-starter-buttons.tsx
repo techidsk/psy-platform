@@ -10,14 +10,14 @@ import { logger } from '@/lib/logger';
 
 interface Buttons extends React.HTMLAttributes<HTMLDivElement> {
     experimentId?: string;
-    projectGroupId?: string;
     showUserPrivacy?: boolean;
     userId?: number;
     guest?: boolean;
     guestUserNanoId?: string;
     action: Function; // 点击完成后的操作
-    part?: number;
+    currentStepIndex?: number;
     nextStepIndex?: number;
+    userExperimentNanoId?: string;
 }
 
 export function ExperimentStarterButtons({
@@ -25,9 +25,10 @@ export function ExperimentStarterButtons({
     showUserPrivacy,
     userId,
     guestUserNanoId,
-    part,
+    currentStepIndex,
     nextStepIndex,
     guest = false,
+    userExperimentNanoId: prevUserExperimentNanoId,
 }: Buttons) {
     const [open, setOpen] = useState(false);
 
@@ -53,6 +54,7 @@ export function ExperimentStarterButtons({
         }
     }
 
+    // 如果已经创建过userExperiment的 nanoId 则继续使用
     async function startExperiment() {
         // 创建实验，然后跳转到对应的路径
         const result = await fetch(getUrl('/api/user/experiment'), {
@@ -62,6 +64,8 @@ export function ExperimentStarterButtons({
                 experimentId: experimentNanoId,
                 guest: guest,
                 guestUserNanoId: guestUserNanoId,
+                prevUserExperimentNanoId: prevUserExperimentNanoId,
+                part: currentStepIndex,
             }),
         });
         if (result.ok) {
@@ -69,9 +73,15 @@ export function ExperimentStarterButtons({
             const userExperimentNanoId = responseBody.data.userExperimentNanoId;
             logger.info(`guest: ${guest}`);
             if (guest) {
-                if (part) {
+                if (currentStepIndex) {
+                    // userUniqueKey 是 user 的nanoid
+                    // userExperimentNanoId 是 userExperiment 的nanoid
+                    // part 是实验的第几部分
+                    // pathname 是实验完成之后跳转的地址
+                    // nextStepIndex 是实验完成之后跳转步骤的索引
+
                     router.push(
-                        `/guest/input/${userUniqueKey}?e=${userExperimentNanoId}&p=${part}&callback=${pathname}&next=${nextStepIndex}`
+                        `/guest/input/${userUniqueKey}?e=${userExperimentNanoId}&p=${currentStepIndex}&callback=${pathname}&next=${nextStepIndex}`
                     );
                 } else {
                     router.push(
@@ -79,9 +89,9 @@ export function ExperimentStarterButtons({
                     );
                 }
             } else {
-                if (part) {
+                if (currentStepIndex) {
                     router.push(
-                        `/experiments/input/${userExperimentNanoId}?p=${part}&callback=${pathname}&next=${nextStepIndex}`
+                        `/experiments/input/${userExperimentNanoId}?p=${currentStepIndex}&callback=${pathname}&next=${nextStepIndex}`
                     );
                 } else {
                     router.push(

@@ -7,6 +7,7 @@ import { Icons } from '@/components/icons';
 import type { experiment, experiment_steps, engine as experimentEngine } from '@prisma/client';
 import { Modal } from '../ui/modal';
 import { ExperimentStepForm } from './experiment-step-form';
+import { getUrl } from '@/lib/url';
 
 interface ExperimentCreateFormProps extends React.HTMLAttributes<HTMLDivElement> {
     experiment?: experiment | null;
@@ -67,8 +68,20 @@ export function ExperimentStepTab({
         refreshStepList();
     }
 
-    function refreshStepList() {
-        fetchSteps();
+    async function adjustExperimentStep(id: number, order: string) {
+        await fetch(getUrl(`/api/experiment/steps/order`), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id,
+                order,
+            }),
+        });
+        await refreshStepList();
+    }
+
+    async function refreshStepList() {
+        await fetchSteps();
     }
 
     useEffect(() => {
@@ -100,6 +113,7 @@ export function ExperimentStepTab({
                                     <th>类型</th>
                                     <th>步骤标题</th>
                                     <th>步骤详情</th>
+                                    <th>顺序</th>
                                     <th>操作</th>
                                 </tr>
                             </thead>
@@ -108,6 +122,7 @@ export function ExperimentStepTab({
                                     experimentSteps={experimentSteps}
                                     editSteps={editSteps}
                                     removeSteps={removeSteps}
+                                    adjustExperimentStep={adjustExperimentStep}
                                 />
                             </tbody>
                         </table>
@@ -140,9 +155,15 @@ interface StepItemProps {
     experimentSteps?: experiment_steps[] | null;
     editSteps: Function;
     removeSteps: Function;
+    adjustExperimentStep: Function;
 }
 
-function StepItem({ experimentSteps, editSteps, removeSteps }: StepItemProps) {
+function StepItem({
+    experimentSteps,
+    editSteps,
+    removeSteps,
+    adjustExperimentStep,
+}: StepItemProps) {
     return (
         <>
             {experimentSteps && experimentSteps.length > 0 ? (
@@ -163,6 +184,22 @@ function StepItem({ experimentSteps, editSteps, removeSteps }: StepItemProps) {
                                     {step.type && (
                                         <StepContent type={step.type} content={step.content} />
                                     )}
+                                </td>
+                                <td>
+                                    <div className="flex gap-1 items-center">
+                                        <button
+                                            className="btn btn-sm btn-ghost"
+                                            onClick={() => adjustExperimentStep(step.id, 'up')}
+                                        >
+                                            <Icons.up />
+                                        </button>
+                                        <button
+                                            className="btn btn-sm btn-ghost"
+                                            onClick={() => adjustExperimentStep(step.id, 'down')}
+                                        >
+                                            <Icons.down />
+                                        </button>
+                                    </div>
                                 </td>
                                 <td>
                                     <StepAction

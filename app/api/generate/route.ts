@@ -121,7 +121,6 @@ export async function POST(request: Request) {
             gpt_prompt: engine.gpt_prompt,
             gpt_setting: engine.gpt_settings,
         },
-        workflow: engine.workflow,
         template: engine.template,
         user: {
             gender: (user?.gender && getValueFromObj(user.gender, GENDER_MAP)) || '',

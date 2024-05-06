@@ -29,7 +29,6 @@ model engine {
   gpt_prompt         String? @db.Text
   gpt_settings       Json?
   template           Json?
-  workflow           Json?
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
@@ -62,6 +61,7 @@ model trail {
   update_time        DateTime? @db.DateTime(0)
   nano_id            String?   @unique(map: "psy_trail_nano_id_uindex") @db.VarChar(16)
   part               Int?
+  experiment_id      Int?
 
   @@index([user_experiment_id], map: "idx_exp_nano_id")
   @@index([state], map: "idx_state")
@@ -100,7 +100,7 @@ model user {
 model user_experiments {
   id               Int       @id @unique(map: "user_experiments_id_uindex") @default(autoincrement())
   user_id          Int?
-  nano_id          String?   @unique(map: "user_experiments_nano_id_uindex") @db.VarChar(16)
+  nano_id          String?   @db.VarChar(16)
   experiment_id    String?   @db.VarChar(16)
   type             String?   @default("TRAIL") @db.VarChar(30)
   engine_id        Int?
@@ -110,6 +110,7 @@ model user_experiments {
   state            String?   @default("IN_EXPERIMENT") @db.VarChar(16)
   part             Int?      @default(1)
 
+  @@unique([nano_id, part], map: "user_experiments_nano_id_part_uindex")
   @@index([user_id], map: "idx_user_id")
   @@index([project_group_id], map: "idx_project_group_id")
   @@index([experiment_id], map: "idx_experiment_id")

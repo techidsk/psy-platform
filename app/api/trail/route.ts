@@ -37,7 +37,7 @@ export async function POST(request: Request) {
             prompt: prompt,
             state: 'GENERATING',
             nano_id: trailNanoId,
-            part: data['part'],
+            part: parseInt(data['part']),
         },
     });
 

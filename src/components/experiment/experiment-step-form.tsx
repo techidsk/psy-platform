@@ -432,13 +432,11 @@ const stepTypes: StepTypesProps[] = [
     // {
     //     id: 2,
     //     name: '左侧图片',
-    //     trail: false,
     //     image: true,
     // },
     // {
     //     id: 3,
     //     name: '右侧图片',
-    //     trail: false,
     //     image: true,
     // },
     {
@@ -451,7 +449,6 @@ const stepTypes: StepTypesProps[] = [
     // {
     //     id: 6,
     //     name: '表单',
-    //     trail: false,
     //     image: false,
     //     redirect: false,
     // },

@@ -15,7 +15,8 @@ export default async function GuestDashboard({
     searchParams,
 }: GuestDashboardProps) {
     // 获取用户默认的实验
-    const currentIndex = searchParams['step_idx'] ? parseInt(searchParams['step_idx']) : 0;
+    const currentIndex = searchParams['step_idx'] ? parseInt(searchParams['step_idx']) : 1;
+    const userExperimentNanoId = searchParams['nano_id'] || ''; // 本次实验的 nanoId， user_experiment表中
 
     const userNanoId = id.slice(0, 16);
     const inviteCode = id.slice(16, 37);
@@ -35,7 +36,7 @@ export default async function GuestDashboard({
         logger.error(`<临时用户${userNanoId}> 未找到合法userId`);
         redirect('/guest/closed');
     }
-
+    logger.info(`userExperimentNanoId: ${userExperimentNanoId}`);
     return (
         <>
             <div className="container mx-auto">
@@ -45,7 +46,8 @@ export default async function GuestDashboard({
                         userId={userId}
                         guest={true}
                         guestUserNanoId={userNanoId}
-                        targetIndex={currentIndex}
+                        stepIndex={currentIndex}
+                        userExperimentNanoId={userExperimentNanoId}
                     />
                 </div>
             </div>

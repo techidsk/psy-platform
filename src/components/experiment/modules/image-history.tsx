@@ -1,34 +1,56 @@
-import { db } from '@/lib/db';
-import { logger } from '@/lib/logger';
+'use client';
 
+import { getUrl } from '@/lib/url';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
 interface ComponentProps extends React.HTMLAttributes<HTMLDivElement> {
+    userExperimentNanoId: string;
+    userId: string;
     buttonNum?: number;
-    userId: number;
     size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
 // 图片生成历史记录
-export async function ImageHistory({ content, userId, size = 'md' }: ComponentProps) {
-    const user = await db.user.findUnique({
-        where: {
-            id: userId,
-        },
-        select: {
-            nano_id: true,
-        },
-    });
-
-    if (!user?.nano_id) {
-        logger.error('User nanoId is not found');
-        return null;
-    }
+export function ImageHistory({ userExperimentNanoId, userId, size = 'md' }: ComponentProps) {
     // TODO 显示用户所有的出图结果
+    const [images, setImages] = useState<any[]>([]);
+
+    // 获取实验中的所有图片
+    async function getImages() {
+        const result = await fetch(getUrl('/api/user/experiment/trail'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userExperimentNanoId: userExperimentNanoId,
+                userId: userId,
+            }),
+        });
+        if (result.ok) {
+            const responseBody = await result.json();
+            setImages(responseBody.data);
+        }
+    }
+
+    useEffect(() => {
+        getImages();
+    }, []);
 
     return (
-        <div className="hero">
-            <div className="hero-content text-center">
-                <div className={`max-w-${size}`}></div>
-            </div>
+        <div className="grid grid-cols-2 gap-4">
+            {images.map((image, index) => {
+                return (
+                    <div key={image.nano_id} className="flex-col-center">
+                        {image.image_url && (
+                            <Image src={image.image_url} alt="image" width={300} height={300} />
+                        )}
+                        <div>
+                            {index + 1}, {image.prompt}
+                        </div>
+                    </div>
+                );
+            })}
         </div>
     );
 }

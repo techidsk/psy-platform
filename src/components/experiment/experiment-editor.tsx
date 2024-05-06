@@ -12,9 +12,6 @@ import classNames from 'classnames';
 interface ExperimentEditorProps {
     nanoId: string;
     back?: string;
-    trail?: boolean;
-    experimentList?: ImageResponse[];
-    displayNum?: number;
     experimentNanoId?: string;
     guest?: boolean;
     guestNanoId?: string;
@@ -28,7 +25,6 @@ type FetchData = {
     experimentId?: string;
     promptNanoId?: string;
     projectGroupId?: string;
-    trail?: boolean;
     guestNanoId?: string;
     guest?: boolean;
     part?: number;
@@ -41,8 +37,6 @@ const UPLOAD_INTERVAL = 10000; // 上传日志的时间间隔
 export function ExperimentEditor({
     nanoId,
     guestNanoId,
-    trail = true,
-    displayNum = 1,
     experimentNanoId = '',
     part = 0,
     guest = false,
@@ -87,13 +81,12 @@ export function ExperimentEditor({
             prompt: value,
             nano_id: nanoId, // 本次实验id
             promptNanoId: promptNanoId,
-            trail: trail,
             guestNanoId: guestNanoId,
             guest: guest,
             part: part,
         };
         // 判断是否是正式实验
-        if (!trail && experimentId) {
+        if (experimentId) {
             data['experimentId'] = experimentId;
         }
         await fetch(getUrl('/api/trail'), {
@@ -201,13 +194,11 @@ export function ExperimentEditor({
     }
 
     useEffect(() => {
-        if (!trail) {
-            const tempExperimentId = store('experimentId');
-            if (!tempExperimentId) {
-                // router.push('/dashboard');
-            } else {
-                setExperimentId(tempExperimentId);
-            }
+        const tempExperimentId = store('experimentId');
+        if (!tempExperimentId) {
+            // router.push('/dashboard');
+        } else {
+            setExperimentId(tempExperimentId);
         }
     }, []);
 

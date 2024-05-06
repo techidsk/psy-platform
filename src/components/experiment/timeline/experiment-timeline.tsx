@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { logger } from '@/lib/logger';
 import { db } from '@/lib/db';
 import ExperimentStepTimeline from './experiment-step-timeline';
+import { toast } from '@/hooks/use-toast';
 
 // 获取用户在当前项目中的分组实验内容
 // 1. 如果用户从未登陆，则查看是否当前项目，否则显示当前时间尚未开放实验
@@ -9,6 +10,7 @@ import ExperimentStepTimeline from './experiment-step-timeline';
 // 3. 如果有项目分组，随机选择分组，并则查看是否有对应实验，如果没有则显示当前时间无可用实验
 // 4. 如果有对应实验，则返回实验内容
 
+// 获取实验内容
 async function getExperiment(experimentId: number) {
     const experiment = await db.experiment.findFirst({
         where: {
@@ -44,12 +46,25 @@ async function getUserPrivacy(userId: number) {
     return user;
 }
 
+async function getUserNanoId(userId: number) {
+    const user = await db.user.findFirst({
+        where: {
+            id: userId,
+        },
+        select: {
+            nano_id: true,
+        },
+    });
+    return user?.nano_id;
+}
+
 interface ExperimentTimelineProps {
-    nextExperimentId: number; // 实验ID
+    nextExperimentId: number; // 用户需要进行的下一组实验ID
     userId: number;
     guest?: boolean;
     guestUserNanoId?: string;
-    targetIndex?: number;
+    stepIndex?: number; // 当前实验的步骤
+    userExperimentNanoId: string; // 本次实验中的 实验nano_id
 }
 
 // 获取实验步骤
@@ -58,42 +73,45 @@ export default async function ExperimentTimeline({
     nextExperimentId,
     userId,
     guestUserNanoId,
-    targetIndex = 1,
+    stepIndex = 1,
     guest = false,
+    userExperimentNanoId,
 }: ExperimentTimelineProps) {
-    logger.info(`[实验${nextExperimentId}] 用户${userId}进入实验流程[${targetIndex}]步`);
+    logger.info(
+        `用户 <${userId}> 的下一组实验 [实验${nextExperimentId}] 进入实验流程[${stepIndex}]步`
+    );
 
     // 绑定用户的性别和年龄和Qualtrics
     const user = await getUserPrivacy(userId);
     if (!user) {
         redirect('/login');
     }
-    let showUserPrivacy = false;
-    if (user.gender == null || user.ages == null) {
-        // 需要用户录入性别数据
-        showUserPrivacy = true;
-    }
 
+    // 获取实验
     const experimentData = getExperiment(nextExperimentId);
+    // 获取实验步骤
     const experimentStepData = getExperimentSteps(nextExperimentId);
     const [experiment, experimentSteps] = await Promise.all([experimentData, experimentStepData]);
 
     if (experimentSteps.length === 0) {
         logger.warn(`[实验${nextExperimentId}] 没有添加实验步骤`);
+        toast({
+            title: '无法实验',
+            description: '当前实验没有添加实验步骤，请联系管理员',
+            variant: 'destructive',
+            duration: 5000,
+        });
     }
 
-    const dbUser = await db.user.findUnique({
-        where: {
-            id: userId,
-        },
-        select: {
-            nano_id: true,
-        },
-    });
-
-    const userNanoId = dbUser?.nano_id;
+    const userNanoId = await getUserNanoId(userId);
     if (!userNanoId) {
         logger.error(`[实验${nextExperimentId}] 用户${userId}没有绑定nano_id`);
+        toast({
+            title: '无法实验',
+            description: '您没有绑定nano_id，请联系管理员',
+            variant: 'destructive',
+            duration: 5000,
+        });
         redirect('/guest');
     }
 
@@ -102,12 +120,12 @@ export default async function ExperimentTimeline({
             <ExperimentStepTimeline
                 experiment={experiment}
                 experimentSteps={experimentSteps}
-                showUserPrivacy={showUserPrivacy}
                 userId={userId}
                 guestUserNanoId={guestUserNanoId}
                 guest={guest}
                 userNanoId={userNanoId}
-                targetIndex={targetIndex}
+                targetStepIndex={stepIndex}
+                userExperimentNanoId={userExperimentNanoId}
             />
         </div>
     );

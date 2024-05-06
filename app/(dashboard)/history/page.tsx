@@ -52,9 +52,11 @@ async function getHistory(
     // USER 查看自己
     // GUEST 查看自己
 
+    const { username, engine_name, group_name, experiment_name } = searchParams;
+
     const experiments = await db.$queryRaw<ExperimentProps[]>`
         SELECT e.*, u.username, u.avatar, n.engine_name, n.engine_image, 
-        eper.experiment_name, g.group_name, num, project_group_experiment_num
+        eper.experiment_name, g.group_name, num, project_group_experiment_num, es.step_name
         FROM user_experiments e
         LEFT JOIN user u ON u.id = e.user_id
         LEFT JOIN experiment eper ON eper.id = e.experiment_id
@@ -70,9 +72,14 @@ async function getHistory(
             FROM project_group_experiments
             GROUP BY project_group_id
         ) pge ON pge.project_group_id = e.project_group_id
+        LEFT JOIN experiment_steps es ON es.experiment_id = e.experiment_id and es.order = e.part
         WHERE 1 = 1 
         ${role === 'USER' ? Prisma.sql`and e.user_id = ${currentUser.id}` : Prisma.empty}
         ${role === 'ASSITANT' ? Prisma.sql`and e.manager_id = ${currentUser.id}` : Prisma.empty}
+        ${username ? Prisma.sql`and u.username like ${`%${username}%`}` : Prisma.empty}
+        ${engine_name ? Prisma.sql`and n.engine_name like ${`%${engine_name}%`}` : Prisma.empty}
+        ${group_name ? Prisma.sql`and g.group_name like ${`%${group_name}%`}` : Prisma.empty}
+        ${experiment_name ? Prisma.sql`and eper.experiment_name like ${`%${experiment_name}%`}` : Prisma.empty}
         ORDER BY e.id DESC
         LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
     `;
@@ -148,7 +155,14 @@ const experimentTableConfig: TableConfig[] = [
         children: (data: any) => {
             return (
                 <div className="flex flex-col gap-2">
-                    <span>{data.experiment_name}</span>
+                    {data.part == 0 ? (
+                        <span>{data.experiment_name}</span>
+                    ) : (
+                        <>
+                            <span>{data.experiment_name}</span>
+                            <span>{data.step_name}</span>
+                        </>
+                    )}
                 </div>
             );
         },
@@ -212,14 +226,14 @@ const experimentTableConfig: TableConfig[] = [
             return (
                 <div className="flex flex-col gap-2">
                     <span>{data.group_name}</span>
-                    <div className="flex gap-2 items-center">
+                    {/* <div className="flex gap-2 items-center">
                         <progress
                             className={`progress w-12 ${progress_type}`}
                             value={data.num}
                             max={data.project_group_experiment_num}
                         />
                         <span>{`${data.num} / ${data.project_group_experiment_num}`}</span>
-                    </div>
+                    </div> */}
                 </div>
             );
         },
@@ -296,4 +310,6 @@ const experimentTableConfig: TableConfig[] = [
 const searchDatas = [
     { name: 'username', type: 'input', placeholder: '请输入用户名' },
     { name: 'engine_name', type: 'input', placeholder: '请输入引擎名称' },
+    { name: 'group_name', type: 'input', placeholder: '请输入分组名称' },
+    { name: 'experiment_name', type: 'input', placeholder: '请输入实验名称' },
 ];

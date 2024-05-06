@@ -7,7 +7,11 @@ interface ButtonProps {
 export default function DownloadExperimentHistoryButton({ data }: ButtonProps) {
     async function downloadCSV(data: any) {
         const id = data.nano_id;
-        const filename = `[${data.experiment_name}]-${data.nano_id}`;
+        let filename = `[${data.experiment_name}]-${data.nano_id}`;
+        if (data.part !== 0) {
+            filename = `[${data.experiment_name}]-${data.part}-${data.nano_id}`;
+        }
+
         try {
             const response = await fetch(`/api/log/${id}`);
             if (!response.ok) {

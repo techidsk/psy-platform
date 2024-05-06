@@ -9,18 +9,16 @@ import { logger } from '@/lib/logger';
 interface ExperimentFinishProps extends React.HTMLAttributes<HTMLButtonElement> {
     nanoId: string; // user_experiment表中的nano_id
     disable?: boolean;
-    guest?: boolean;
     experimentList: ImageResponse[];
     callbackUrl: string;
-    nextStepIndex: number;
+    part: number;
 }
 
 export function ExperimentFinishButton({
     nanoId: userExperimentNanoId,
-    guest = false,
     experimentList,
     callbackUrl,
-    nextStepIndex,
+    part,
 }: ExperimentFinishProps) {
     const [disabled, setDisabled] = useState(true);
     const [open, setOpen] = useState(false);
@@ -39,12 +37,8 @@ export function ExperimentFinishButton({
         await fetch(getUrl('/api/experiment/finish'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: userExperimentNanoId, part: nextStepIndex - 1 }),
+            body: JSON.stringify({ id: userExperimentNanoId, part: part }),
         });
-        const resultUrl = guest
-            ? `/guest/result/${userExperimentNanoId}`
-            : `/result/${userExperimentNanoId}`;
-
         const decodeUrl = decodeURIComponent(callbackUrl);
         logger.info(`跳转到${decodeUrl}`);
         router.push(decodeUrl);

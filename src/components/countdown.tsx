@@ -10,19 +10,12 @@ interface CountDownProp {
     start: number; // 开始的时间戳
     limit: number; // 限制的时间 是分钟数
     nanoId: string;
-    guest?: boolean;
     mini?: boolean;
-    nextStepIndex: number;
+    part: number;
+    callbackUrl: string;
 }
 
-export function CountDown({
-    start,
-    limit,
-    nanoId,
-    nextStepIndex,
-    guest = false,
-    mini = true,
-}: CountDownProp) {
+export function CountDown({ start, limit, nanoId, part, callbackUrl, mini = true }: CountDownProp) {
     const router = useRouter();
     usePageLeave();
     const calculateTimeLeft = () => {
@@ -39,10 +32,11 @@ export function CountDown({
         await fetch(getUrl('/api/experiment/finish'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: nanoId, part: nextStepIndex - 1 }),
+            body: JSON.stringify({ id: nanoId, part: part }),
         });
-        const resultUrl = guest ? `/guest/result/${nanoId}` : `/result/${nanoId}`;
-        redirect && router.push(resultUrl);
+        const decodeUrl = decodeURIComponent(callbackUrl);
+        logger.info(`跳转到${decodeUrl}`);
+        router.push(decodeUrl);
     }
 
     useEffect(() => {
@@ -106,13 +100,6 @@ export function CountDown({
             };
         }, []); // 确保依赖项正确，以便正确地响应变化
     }
-
-    // useEffect(() => {
-    //     return () => {
-    //         logger.info('离开倒计时页面，结束实验');
-    //         finish(false);
-    //     };
-    // }, []);
 
     const formatTime = (time: number) => time.toString().padStart(2, '0');
 

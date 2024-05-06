@@ -6,16 +6,28 @@ import { logger } from './logger';
 import { getUrl } from './url';
 
 /**
- * 获取实验倒计时.
+ * 获取实验倒计时, 从 experiment_step 中获取
  *
  * @param {number} experimentId - The ID of the experiment to retrieve countdown time for.
  * @return {number} The countdown time for the specified experiment, defaulting to 1200 if not found.
  */
-async function getCountDownTime(experimentId: number): Promise<number> {
-    const experiment = await db.experiment.findFirst({
-        where: { id: experimentId },
+async function getCountDownTime(experimentId: number, order: string): Promise<number> {
+    const experimentStep = await db.experiment_steps.findFirst({
+        where: { experiment_id: experimentId, order: parseInt(order) },
     });
-    return experiment?.countdown || 20;
+
+    const content = experimentStep?.content as any;
+
+    let countdown = content?.countdown;
+
+    // 如果是 0，表示不限制时间，返回 0
+    if (countdown === 0) {
+        return 0;
+    }
+
+    // 如果是 undefined 或者 null，表示没有设置时间，返回 20
+
+    return content?.countdown || 20;
 }
 
 /**
@@ -50,14 +62,14 @@ async function getCurrentUserExperiment(userId: string, experimentId: string): P
     return experiment;
 }
 
-async function getExperimentInfos(experimentId: string) {
+async function getExperimentInfos(experimentId: string, part: number) {
     if (!experimentId) {
         return [];
     }
 
     // 获取用户实验prompt信息
     const result = await db.trail.findMany({
-        where: { user_experiment_id: experimentId },
+        where: { user_experiment_id: experimentId, part: part },
     });
 
     const formatResult: ImageResponse[] = result.map((e, idx) => {

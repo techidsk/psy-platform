@@ -10,10 +10,12 @@ import { ProjectTableEditButtons } from '@/components/project/project-table-edit
 import { CreateProjectButton } from '@/components/project/project-create-button';
 import { TableSearch } from '@/components/table/table-search';
 import { Prisma } from '@prisma/client';
-import { Icons } from '@/components/icons';
 import { ProjectInviteCodeButton } from '@/components/project/project-invite-code-buttons';
 import GuestModeChecker from '@/components/platform/guest-mode-checker';
-import { LoadingSpin } from '@/components/common/loading';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+
+dayjs.extend(customParseFormat);
 
 type ProjectState = 'AVAILABLE' | 'DRAFT' | 'ACHIVED';
 type ProjectTableProps = {
@@ -66,7 +68,6 @@ async function getProjects(
         };
     });
 }
-
 export default async function Projects({
     searchParams,
 }: {
@@ -157,6 +158,14 @@ const projectTableConfig: TableConfig[] = [
             };
 
             let obj = projectState[data.state];
+            // 判断是否已经超时
+            // data.end_time 格式为2024年05月04日 格式统一后进行比较
+            if (dayjs(data.end_time, 'YYYY年MM月DD日', true).isBefore(dayjs(new Date()))) {
+                obj = {
+                    text: '已超时',
+                    state: 'error',
+                };
+            }
 
             return (
                 <div className="flex flex-col gap-2 items-start">
