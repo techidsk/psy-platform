@@ -50,100 +50,93 @@ export async function POST(request: Request) {
         : undefined;
 
     const json = await request.json();
-
-    const isGuest: boolean = Boolean(json?.guest);
-    const promptNanoId: string = json?.id;
-    const experimentId: string = json?.experimentId;
-    const experimentNanoId: string = json?.experimentNanoId;
+    const { guest, id: promptNanoId, experimentId, experimentNanoId, part: stepOrder } = json;
+    const isGuest = Boolean(guest);
 
     if (!promptNanoId) {
         logger.error('未找到对应promptNanoId数据');
-        return;
+        return NextResponse.json({ msg: '发布失败，缺少参数' });
     }
 
-    const data = await db.trail.findFirst({
+    const trail = await db.trail.findFirst({
         where: { nano_id: promptNanoId },
     });
 
-    if (!data) {
+    if (!trail || !trail.prompt) {
         logger.error('未找到对应trail数据');
-        return;
+        return NextResponse.json({ msg: '发布失败，缺少参数' });
     }
 
-    if (!data.prompt) {
-        logger.error('未找到对应prompt数据');
-        return;
-    }
+    // logger.info(`${isGuest ? 'Guest模式' : '普通用户模式'}`);
+    // logger.info(json);
 
-    logger.info(`${isGuest ? 'Guest模式' : '普通用户模式'}`);
-    logger.info(json);
+    const userExperimentNanoId = isGuest ? experimentNanoId : experimentId;
     let userExperiment = await db.user_experiments.findFirst({
-        where: { nano_id: isGuest ? experimentNanoId : experimentId },
+        where: { nano_id: userExperimentNanoId },
     });
 
-    if (!userExperiment || !userExperiment.experiment_id) {
+    if (!userExperiment || !userExperiment.experiment_id || !userExperiment.engine_id) {
         logger.error('未找到对应userExperiment数据');
-        return;
-    }
-
-    const engineId = userExperiment.engine_id;
-    if (!engineId) {
-        logger.error('未找到对应engine_id数据');
-        return;
+        return NextResponse.json({ msg: '发布失败，缺少参数' });
     }
 
     // 获取生成信息
+    const engineId = userExperiment.engine_id;
+    if (![1, 2, 3, 4].includes(engineId)) {
+        logger.error('未找到对应engine数据');
+        return NextResponse.json({ msg: '发布失败，缺少参数' });
+    }
     const engine = await db.engine.findFirst({
         where: { id: engineId },
     });
 
     if (!engine) {
-        logger.error('未找到对应engine数据');
-        return;
-    }
-
-    if (!engine.engine_description) {
-        logger.error('未找到对应engine_description数据');
-        return;
-    }
-
-    const userPrompts = await db.trail.findMany({
-        where: { user_id: data.user_id, user_experiment_id: data.user_experiment_id },
-        select: { prompt: true, generate_prompt: true },
-        orderBy: { create_time: 'desc' },
-        take: 5,
-    });
-
-    const generateData = {
-        user_prompts: userPrompts,
-        engine_id: engine.id,
-        gpt: {
-            gpt_prompt: engine.gpt_prompt,
-            gpt_setting: engine.gpt_settings,
-        },
-        template: engine.template,
-        user: {
-            gender: (user?.gender && getValueFromObj(user.gender, GENDER_MAP)) || '',
-            ages: (user?.ages && getValueFromObj(user.ages, AGES_MAP)) || '',
-        },
-    };
-    const experiment = await db.experiment.findFirst({
-        where: { id: parseInt(userExperiment.experiment_id) },
-    });
-    if (!experiment) {
-        logger.error('未找到对应experiment数据');
-        return;
+        logger.error(`未找到对应engine数据 -- engineId: ${engineId}`);
+        return NextResponse.json({ msg: '发布失败，缺少参数' });
     }
 
     // 是否开启生成图片模式
     let imageUrl = '';
     let prompt = '';
-    // TODO 图片模式 pic_mode
-    const response = await generate(generateData);
-    logger.info(response);
-    imageUrl = response?.image_url;
-    prompt = response?.chat_result;
-    if (imageUrl) {
+
+    const step = await getExperimentStep(parseInt(userExperiment.experiment_id), stepOrder);
+    const picMode = step?.pic_mode || true;
+    if (picMode) {
+        // 发送生成数据
+        const userPrompts = await db.trail.findMany({
+            where: { user_id: trail.user_id, user_experiment_id: trail.user_experiment_id },
+            select: { prompt: true, generate_prompt: true },
+            orderBy: { create_time: 'desc' },
+            take: 5,
+        });
+
+        const generateData = {
+            user_prompts: userPrompts,
+            engine_id: engine.id,
+            gpt: {
+                gpt_prompt: engine.gpt_prompt,
+                gpt_setting: engine.gpt_settings,
+            },
+            template: engine.template,
+            user: {
+                gender: (user?.gender && getValueFromObj(user.gender, GENDER_MAP)) || '',
+                ages: (user?.ages && getValueFromObj(user.ages, AGES_MAP)) || '',
+            },
+        };
+        const experiment = await db.experiment.findFirst({
+            where: { id: parseInt(userExperiment.experiment_id) },
+        });
+        if (!experiment) {
+            logger.error('未找到对应experiment数据');
+            return;
+        }
+        const response = await generate(generateData);
+        logger.info(response);
+        imageUrl = response?.image_url;
+        prompt = response?.chat_result;
+    }
+
+    if (imageUrl || imageUrl == '') {
         logger.info(`生成图片url: ${imageUrl}`);
         return NextResponse.json({ msg: '发布成功', url: imageUrl, prompt: prompt });
     } else {
@@ -151,14 +144,17 @@ export async function POST(request: Request) {
             where: { nano_id: promptNanoId },
             data: { state: 'FAILED' },
         });
-        const body = JSON.stringify({ msg: '发布失败' });
-        const res = new Response(body, {
-            status: 401,
-            statusText: 'Unauthorized',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-        return res;
+        logger.info(`生成图片失败`);
+        return NextResponse.json({ msg: '发布失败' }, { status: 401 });
     }
+}
+
+async function getExperimentStep(experimentId: number, step: number) {
+    const experimentStep = await db.experiment_steps.findFirst({
+        where: { experiment_id: experimentId, order: step },
+    });
+
+    const content = experimentStep?.content || ('' as any);
+
+    return JSON.parse(content);
 }

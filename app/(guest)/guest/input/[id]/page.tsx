@@ -2,37 +2,42 @@ import { ExperimentEditor } from '@/components/experiment/experiment-editor';
 import { ImageList } from '@/components/experiment/image-list';
 import { ExperimentFinishButton } from '@/components/experiment/experiment-finish-button';
 import { CountDown } from '@/components/countdown';
-import { getCountDownTime, getExperiment, getExperimentInfos } from '@/lib/experiment';
+import {
+    getCountDownTime,
+    getEncodedCallbackUrl,
+    getExperiment,
+    getExperimentInfos,
+} from '@/lib/experiment';
 import { getAccessKey } from '@/lib/platform';
 import { logger } from '@/lib/logger';
 
 export default async function GuestInput({
-    params: { id },
+    params: { id: guestNanoId },
     searchParams,
 }: {
     params: { id: string };
     searchParams: { [key: string]: string };
 }) {
+    // searchParams 部分
+    // 实验 nanoId
     const userExperimentId = searchParams['e'];
+    // 实验分步 index, 对应 experiment_step 的order
     const experimentStepIndex = searchParams['p'] as any as string;
+    // callback url
     const callbackPath = searchParams['callback'];
 
-    const nextStepIndex = parseInt(experimentStepIndex) + 1;
-
-    logger.info(
-        `用户 nanoId: ${id}, 实验(user_experiment) nanoId: ${userExperimentId}, 实验流程部分: ${experimentStepIndex}\n
-            callback 地址: ${callbackPath} 下一步: ${nextStepIndex}
-        `
-    );
     // callback 地址
-    const callbackUrl =
-        callbackPath + '?step_idx=' + nextStepIndex + '&nano_id=' + userExperimentId;
-    const encodedCallbackUrl = encodeURIComponent(callbackUrl);
-    logger.info(`callbackUrl: ${callbackUrl}`);
-
-    const guestNanoId = id;
+    const encodedCallbackUrl = getEncodedCallbackUrl(
+        callbackPath,
+        experimentStepIndex,
+        userExperimentId
+    );
 
     const userExperiment = await getExperiment(guestNanoId, userExperimentId);
+    if (!userExperiment?.experiment_id) {
+        logger.error('未找到用户实验中的关联的experimentId');
+        return;
+    }
 
     const experimentImageList = await getExperimentInfos(
         userExperimentId,
@@ -42,18 +47,13 @@ export default async function GuestInput({
     const platfomrSetting = await getAccessKey();
     const displayNum = platfomrSetting?.display_num || 1;
 
-    const startTime = userExperiment?.start_time
-        ? Math.floor(new Date(userExperiment?.start_time).getTime() / 1000)
-        : new Date().getTime() / 1000;
-
-    if (!userExperiment?.experiment_id) {
-        logger.error('未找到用户实验中的关联的experimentId');
-        return;
-    }
+    const startTime = Math.floor(
+        new Date(userExperiment?.start_time || new Date()).getTime() / 1000
+    );
 
     // 获取实验倒计时
     const countDownTime = await getCountDownTime(
-        parseInt(userExperiment?.experiment_id),
+        parseInt(userExperiment.experiment_id),
         experimentStepIndex
     );
 

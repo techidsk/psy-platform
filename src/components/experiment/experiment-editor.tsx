@@ -106,7 +106,7 @@ export function ExperimentEditor({
 
     async function generate(promptNanoId: string, experimentId: string) {
         // 发送请求生成图片
-        let response = await fetch(getUrl(`/api/generate/`), {
+        let response = await fetch(getUrl(`/api/generate`), {
             method: 'POST',
             body: JSON.stringify({
                 id: promptNanoId,
@@ -114,6 +114,7 @@ export function ExperimentEditor({
                 experimentNanoId: experimentNanoId,
                 guest: guest,
                 guestNanoId: guestNanoId,
+                part: part,
             }),
             headers: { 'Content-Type': 'application/json' },
         });

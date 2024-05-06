@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/session';
 import { DashboardHeader } from '@/components/dashboard-header';
 import { CenteredHero } from '@/components/experiment/modules/centerd-hero';
-import { DashboardReturnButtons } from '@/components/dashboard/dashboard-return-buttons';
 
 export default async function Closed() {
     // 获取用户默认的实验
@@ -22,9 +21,7 @@ export default async function Closed() {
                     <div className="hero">
                         <div className="hero-content text-center">
                             <div className="max-w-md">
-                                <CenteredHero title={'已完成'} content={content}>
-                                    {/* <DashboardReturnButtons /> */}
-                                </CenteredHero>
+                                <CenteredHero title={'已完成'} content={content} />
                             </div>
                         </div>
                     </div>

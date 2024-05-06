@@ -17,7 +17,10 @@ interface CountDownProp {
 
 export function CountDown({ start, limit, nanoId, part, callbackUrl, mini = true }: CountDownProp) {
     const router = useRouter();
+
+    // 询问用户是否离开页面
     usePageLeave();
+
     const calculateTimeLeft = () => {
         const currentTime = Math.floor(Date.now() / 1000); // 当前时间戳（秒）
         const endTime = start + limit * 60; // 结束时间戳（秒）

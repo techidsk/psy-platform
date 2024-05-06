@@ -3,7 +3,6 @@ import { dateFormat } from '@/lib/date';
 import { ImageResponse } from '@/types/experiment';
 import { db } from './db';
 import { logger } from './logger';
-import { getUrl } from './url';
 
 /**
  * 获取实验倒计时, 从 experiment_step 中获取
@@ -26,7 +25,6 @@ async function getCountDownTime(experimentId: number, order: string): Promise<nu
     }
 
     // 如果是 undefined 或者 null，表示没有设置时间，返回 20
-
     return content?.countdown || 20;
 }
 
@@ -86,4 +84,41 @@ async function getExperimentInfos(experimentId: string, part: number) {
     return formatResult;
 }
 
-export { getCountDownTime, getCurrentUserExperiment as getExperiment, getExperimentInfos };
+/**
+ * 确保路径以 "/" 结尾
+ */
+function _ensureTrailingSlash(path: string) {
+    return path.endsWith('/') ? path : path + '/';
+}
+
+/**
+ * 获取编码后的回调URL
+ *
+ * @param callback  - The callback URL to encode.
+ * @param experimentStepIndex - The index of the experiment step.
+ * @param userExperimentNanoId  - The nano ID of the user experiment.
+ * @returns The encoded callback URL.
+ */
+function getEncodedCallbackUrl(
+    callback: string,
+    experimentStepIndex: string,
+    userExperimentNanoId?: string
+) {
+    const nextStepIndex = parseInt(experimentStepIndex) + 1;
+    let baseParams = `step_idx=${encodeURIComponent(nextStepIndex)}`;
+    if (userExperimentNanoId) {
+        baseParams += `&nano_id=${encodeURIComponent(userExperimentNanoId)}`;
+    }
+    // 保证路径以 "/" 结尾
+    const normalizedPath = _ensureTrailingSlash(callback);
+    const callbackUrl = `${encodeURIComponent(normalizedPath)}?${baseParams}`;
+    logger.info(`callbackUrl: ${callbackUrl}`);
+    return callbackUrl;
+}
+
+export {
+    getCountDownTime,
+    getCurrentUserExperiment as getExperiment,
+    getExperimentInfos,
+    getEncodedCallbackUrl,
+};

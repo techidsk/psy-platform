@@ -4,9 +4,14 @@ import { ExperimentFinishButton } from '@/components/experiment/experiment-finis
 import { CountDown } from '@/components/countdown';
 import { getCurrentUser } from '@/lib/session';
 import { getAccessKey } from '@/lib/platform';
-import { getCountDownTime, getExperiment, getExperimentInfos } from '@/lib/experiment';
+import {
+    getCountDownTime,
+    getEncodedCallbackUrl,
+    getExperiment,
+    getExperimentInfos,
+} from '@/lib/experiment';
 import { logger } from '@/lib/logger';
-import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 export default async function MainInput({
     params: { id: userExperimentId },
@@ -19,20 +24,27 @@ export default async function MainInput({
     const user = await getCurrentUser();
     if (!user) {
         logger.error('当前用户未登录');
-        return;
+        redirect('/login');
     }
 
     // searchParams 部分
+    // 实验分步 index, 对应 experiment_step 的order
     const experimentStepIndex = searchParams['p'] as any as string;
+    // callback url
     const callbackPath = searchParams['callback'];
 
     // callbackPath 部分
-    const nextStepIndex = parseInt(experimentStepIndex) + 1;
-    const callbackUrl = callbackPath + '?step_idx=' + nextStepIndex;
-    const encodedCallbackUrl = encodeURIComponent(callbackUrl);
-    logger.info(`callbackUrl: ${callbackUrl}`);
+    const encodedCallbackUrl = getEncodedCallbackUrl(
+        callbackPath,
+        experimentStepIndex,
+        userExperimentId
+    );
 
     const userExperiment = await getExperiment(user?.id, userExperimentId);
+    if (!userExperiment?.experiment_id) {
+        logger.error('未找到用户实验中的关联的experimentId');
+        return;
+    }
 
     const experimentImageList = await getExperimentInfos(
         userExperimentId,
@@ -42,17 +54,12 @@ export default async function MainInput({
     const platfomrSetting = await getAccessKey();
     const displayNum = platfomrSetting?.display_num || 1;
 
-    const startTime = userExperiment?.start_time
-        ? Math.floor(new Date(userExperiment?.start_time).getTime() / 1000)
-        : new Date().getTime() / 1000;
-
-    if (!userExperiment?.experiment_id) {
-        logger.error('未找到用户实验中的关联的experimentId');
-        return;
-    }
+    const startTime = Math.floor(
+        new Date(userExperiment?.start_time || new Date()).getTime() / 1000
+    );
 
     const countDownTime = await getCountDownTime(
-        parseInt(userExperiment?.experiment_id),
+        parseInt(userExperiment.experiment_id),
         experimentStepIndex
     );
 
