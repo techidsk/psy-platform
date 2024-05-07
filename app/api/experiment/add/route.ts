@@ -25,7 +25,7 @@ export async function POST(request: Request) {
         });
         return NextResponse.json({ msg: '成功添加实验' });
     } catch (error) {
-        logger.error('添加实验失败', error);
+        logger.error(`添加实验失败, ${error}`);
         return NextResponse.json({ msg: '添加实验失败' }, { status: 500 });
     }
 }

@@ -11,22 +11,25 @@ import Image from 'next/image';
 import { TableSearch } from '@/components/table/table-search';
 import Pagination from '@/components/pagination';
 import { Prisma } from '@prisma/client';
+import { cache } from 'react';
 
-async function getExperiments(
-    searchParams: { [key: string]: string | undefined },
-    page: number = 1,
-    pageSize: number = 10
-) {
-    const currentUser = await getCurrentUser();
-    if (!currentUser?.id) {
-        return [];
-    }
-    const project_name = searchParams?.project_name || '';
-    const project_group_name = searchParams?.project_group_name || '';
-    const experiment_name = searchParams?.experiment_name || '';
-    const engine_name = searchParams?.engine_name || '';
+const getExperiments = cache(
+    async (
+        searchParams: { [key: string]: string | undefined },
+        page: number = 1,
+        pageSize: number = 10
+    ) => {
+        console.log('fetch experiments');
+        const currentUser = await getCurrentUser();
+        if (!currentUser?.id) {
+            return [];
+        }
+        const project_name = searchParams?.project_name || '';
+        const project_group_name = searchParams?.project_group_name || '';
+        const experiment_name = searchParams?.experiment_name || '';
+        const engine_name = searchParams?.engine_name || '';
 
-    const experiments = await db.$queryRaw<any[]>`
+        const experiments = await db.$queryRaw<any[]>`
         SELECT 
             e.*, 
             MAX(p.project_name) AS project_name,
@@ -69,18 +72,22 @@ async function getExperiments(
             ${pageSize} OFFSET ${(page - 1) * pageSize}
     `;
 
-    return experiments.map((experiment) => {
-        const engineInfos = experiment.engines.split(',');
+        return experiments.map((experiment) => {
+            const engineInfos = experiment.engines.split(',');
 
-        return {
-            ...experiment,
-            engines: engineInfos.map((engineInfo: string) => {
-                const [engine_name, engine_image, engine_id] = engineInfo.split('_');
-                return { engine_name, engine_image, engine_id };
-            }),
-        };
-    });
-}
+            return {
+                ...experiment,
+                engines: engineInfos.map((engineInfo: string) => {
+                    const [engine_name, engine_image, engine_id] = engineInfo.split('_');
+                    return { engine_name, engine_image, engine_id };
+                }),
+            };
+        });
+    }
+);
+
+export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
 /** 实验流程设计与管理 */
 export default async function ExperimentList({

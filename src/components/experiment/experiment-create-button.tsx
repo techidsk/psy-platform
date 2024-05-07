@@ -10,9 +10,6 @@ interface ExperimentCreateButtonProps extends React.HTMLAttributes<HTMLButtonEle
 export function ExperimentCreateButton({ className, ...props }: ExperimentCreateButtonProps) {
     const router = useRouter();
 
-    /**
-     * 创建新实验
-     */
     function onClick() {
         router.push(`/experiment/add/`);
     }

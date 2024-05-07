@@ -109,7 +109,7 @@ export function ExperimentCreateForm({
                 });
             }
         }
-        router.refresh();
+        router.back();
 
         return toast({
             title: dispatch === 'UPDATE' ? '更新成功' : '创建成功',
