@@ -4,6 +4,7 @@
 
 import { getUrl } from '../url';
 
+// TODO 重构
 /**
  * 根据从数据库中获取的用户头像字符串链接，确定最终的头像链接
  * @param avatarUrl 从数据库中获取的用户头像字符串链接
@@ -12,9 +13,9 @@ import { getUrl } from '../url';
  */
 export function getAvatarUrl(avatarUrl: string, username: string = 'DEFAULTNAME#NOBODY?_'): string {
     // 使用默认头像
-    // if (avatarUrl === '' || avatarUrl === undefined || username == 'DEFAULTNAME') {
-    //     return getUrl(`/api/photo/avatar?username=${username}`);
-    // }
+    if (avatarUrl === '' || avatarUrl === undefined || username == 'DEFAULTNAME') {
+        return getUrl(`/api/photo/avatar?username=${username}`);
+    }
 
     // // 根据头像协议链接确认是外链还是使用用户自定义的头像（存放在数据库中）
     // const imageProtocol = new URL(avatarUrl).protocol;

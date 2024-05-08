@@ -17,12 +17,7 @@ interface InviteCodeButtonProps extends React.HTMLAttributes<HTMLButtonElement> 
  * @param param0
  * @returns
  */
-export async function ProjectInviteCodeButton({
-    data,
-    url,
-    className,
-    ...props
-}: InviteCodeButtonProps) {
+export function ProjectInviteCodeButton({ data, url, className, ...props }: InviteCodeButtonProps) {
     const router = useRouter();
 
     function copyInviteLink() {

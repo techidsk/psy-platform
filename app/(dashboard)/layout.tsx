@@ -57,30 +57,31 @@ const sidebarNav: SidebarNavItem[] = [
         auth: ['ADMIN', 'ASSISTANT'],
         category: '用户',
     },
-    {
-        title: '用户设置',
-        href: '/settings',
-        icon: 'settings',
-        auth: ['ADMIN', 'ASSISTANT', 'USER'],
-    },
+    // {
+    //     title: '用户设置',
+    //     href: '/settings',
+    //     icon: 'settings',
+    //     auth: ['ADMIN', 'ASSISTANT', 'USER'],
+    // },
     // {
     //     title: '用户组',
     //     href: '/usergroup',
     //     icon: 'usergroup',
     //     auth: ['ADMIN', 'ASSISTANT'],
     // },
-    {
-        title: '平台设置',
-        href: '/platform/settings',
-        icon: 'wrench',
-        auth: ['ADMIN', 'ASSISTANT'],
-        category: '其他',
-    },
+    // {
+    //     title: '平台设置',
+    //     href: '/platform/settings',
+    //     icon: 'wrench',
+    //     auth: ['ADMIN', 'ASSISTANT'],
+    //     category: '其他',
+    // },
     {
         title: '引擎管理',
         href: '/engine',
         icon: 'engine',
         auth: ['ADMIN', 'ASSISTANT'],
+        category: '引擎',
     },
 ];
 

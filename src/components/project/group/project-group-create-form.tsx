@@ -197,7 +197,9 @@ export function ProjectGroupCreateForm({
         setIsLoading(false);
         // 跳转
         router.back();
-        router.refresh();
+        setTimeout(() => {
+            router.refresh();
+        }, 50);
     }
 
     function initForm() {

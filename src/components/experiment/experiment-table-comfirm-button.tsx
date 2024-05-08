@@ -54,7 +54,9 @@ export function ExperimentTableConfirmButton({
         resetSelected();
         setIsLoading(false);
         router.back();
-        router.refresh();
+        setTimeout(() => {
+            router.refresh();
+        }, 50);
     }
 
     return (

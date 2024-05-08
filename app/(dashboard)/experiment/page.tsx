@@ -73,7 +73,8 @@ const getExperiments = cache(
     `;
 
         return experiments.map((experiment) => {
-            const engineInfos = experiment.engines.split(',');
+            console.log(experiment.engines);
+            const engineInfos = experiment.engines ? experiment.engines.split(',') : [];
 
             return {
                 ...experiment,

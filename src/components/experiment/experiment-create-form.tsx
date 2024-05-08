@@ -110,6 +110,9 @@ export function ExperimentCreateForm({
             }
         }
         router.back();
+        setTimeout(() => {
+            router.refresh();
+        }, 50);
 
         return toast({
             title: dispatch === 'UPDATE' ? '更新成功' : '创建成功',

@@ -37,7 +37,6 @@ export function ProjectDeleteModal({
                 closeModal();
                 return;
             }
-            console.log(response);
             toast({
                 title: '删除成功',
                 description: '已成功删除项目',

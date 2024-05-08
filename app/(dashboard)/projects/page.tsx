@@ -29,11 +29,11 @@ type ProjectTableProps = {
     end_time: Date;
 };
 
-async function getProjects(
+const getProjects = async (
     searchParams: { [key: string]: string | undefined },
     page: number = 1,
     pageSize: number = 10
-) {
+) => {
     const currentUser = await getCurrentUser();
     if (!currentUser) {
         return [];
@@ -67,7 +67,8 @@ async function getProjects(
             end_time: dateFormat(project.end_time).substring(0, 11),
         };
     });
-}
+};
+
 export default async function Projects({
     searchParams,
 }: {

@@ -19,6 +19,7 @@ import { JsonValue } from '@prisma/client/runtime/library';
 import { useTableState } from '@/state/_table_atom';
 import { useProjectState } from '@/state/_project_atoms';
 import { logger } from '@/lib/logger';
+import { getId } from '@/lib/nano-id';
 
 interface ProjectFormProps extends React.HTMLAttributes<HTMLDivElement> {
     closeModal?: Function;
@@ -188,8 +189,6 @@ export function ProjectCreateForm({
         }
 
         setIsLoading(true);
-
-        logger.info(`dispatch: ${dispatch}`);
         if (dispatch === 'UPDATE') {
             await patchProject({ ...data, id: project?.id });
         } else {
@@ -197,8 +196,12 @@ export function ProjectCreateForm({
         }
         setIsLoading(false);
 
+        // const randomId = getId();
+        // router.prefetch(`/projects?crcs=${randomId}`);
         router.back();
-        router.refresh();
+        setTimeout(() => {
+            router.refresh();
+        }, 50);
     }
 
     function initForm() {
@@ -273,10 +276,11 @@ export function ProjectCreateForm({
                         </label>
                         <select
                             className="select select-bordered w-full max-w-xs"
+                            defaultValue={project?.state || 'AVAILABLE'}
                             disabled={isLoading || !edit}
                             {...register('state')}
                         >
-                            <option disabled selected>
+                            <option disabled value={''}>
                                 请选择项目状态
                             </option>
                             <option value={'AVAILABLE'}>可用</option>
