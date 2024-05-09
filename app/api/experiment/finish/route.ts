@@ -30,6 +30,7 @@ export async function POST(request: Request) {
         },
         data: {
             finish_time: new Date(),
+            state: 'FINISHED',
         },
     });
 

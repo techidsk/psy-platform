@@ -207,6 +207,7 @@ model trail_logger {
   images        Json?
   timestamp     DateTime? @db.DateTime(0)
   experiment_id String?   @db.VarChar(32)
+  part          Int?
 
   @@index([experiment_id], map: "idx_experiment_id")
 }

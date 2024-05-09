@@ -1,9 +1,5 @@
 import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/session';
-import { getId } from '@/lib/nano-id';
-import { getUserGroupExperiments } from '@/lib/user_experiment';
-import { logger } from '@/lib/logger';
 
 /**
  * /api/user/experiment/trail
@@ -20,11 +16,35 @@ export async function POST(request: Request) {
                 not: null,
             },
         },
-        orderBy: {
-            part: 'asc',
-            create_time: 'asc',
+        orderBy: [
+            {
+                part: 'asc',
+            },
+            {
+                id: 'asc',
+            },
+        ],
+        select: {
+            prompt: true,
+            image_url: true,
+            part: true,
+            nano_id: true,
         },
     });
 
-    return NextResponse.json({ data: images });
+    const experimentSteps = await db.$queryRaw<any[]>`
+        select es.step_name, es.order as part
+        FROM user_experiments ue 
+        LEFT JOIN experiment_steps es on es.experiment_id = ue.experiment_id
+        WHERE ue.nano_id = ${userExperimentNanoId}
+        AND es.type = 4
+        GROUP BY es.id
+    `;
+
+    return NextResponse.json({
+        data: {
+            images: images,
+            experimentSteps: experimentSteps,
+        },
+    });
 }

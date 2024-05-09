@@ -21,6 +21,10 @@ export default async function Dashboard() {
     if (needExperiment) {
         redirect('/dashboard/home');
     }
+    // TODO 查看用户下次实验记录时间以及是否需要开始下次实验
+    // 1. 判断是否有实验项目
+    // 2. 判断是否是否有未完成项目
+    // 3. 判断是否未达到实验时间
 
     return (
         <>

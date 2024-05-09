@@ -165,6 +165,7 @@ export function ExperimentEditor({
             input: value,
             timestamp: datetime,
             experiment_id: nanoId,
+            part: part,
         };
 
         const storageLogName = `userLogs_${nanoId}`;

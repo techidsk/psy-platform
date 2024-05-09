@@ -40,7 +40,7 @@ export default async function MainInput({
         userExperimentId
     );
 
-    const userExperiment = await getExperiment(user?.id, userExperimentId);
+    const userExperiment = await getExperiment(user?.id, userExperimentId, experimentStepIndex);
     if (!userExperiment?.experiment_id) {
         logger.error('未找到用户实验中的关联的experimentId');
         return;

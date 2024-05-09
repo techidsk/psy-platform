@@ -19,7 +19,6 @@ const getExperiments = cache(
         page: number = 1,
         pageSize: number = 10
     ) => {
-        console.log('fetch experiments');
         const currentUser = await getCurrentUser();
         if (!currentUser?.id) {
             return [];
@@ -73,7 +72,6 @@ const getExperiments = cache(
     `;
 
         return experiments.map((experiment) => {
-            console.log(experiment.engines);
             const engineInfos = experiment.engines ? experiment.engines.split(',') : [];
 
             return {

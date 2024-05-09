@@ -67,9 +67,6 @@ export async function POST(request: Request) {
         return NextResponse.json({ msg: '发布失败，缺少参数' });
     }
 
-    // logger.info(`${isGuest ? 'Guest模式' : '普通用户模式'}`);
-    // logger.info(json);
-
     const userExperimentNanoId = isGuest ? experimentNanoId : experimentId;
     let userExperiment = await db.user_experiments.findFirst({
         where: { nano_id: userExperimentNanoId },
@@ -101,6 +98,10 @@ export async function POST(request: Request) {
 
     const step = await getExperimentStep(parseInt(userExperiment.experiment_id), stepOrder);
     const picMode = step?.pic_mode || true;
+
+    logger.info(`${isGuest ? 'Guest模式' : '普通用户模式'}`);
+    logger.info(json);
+    logger.info(picMode);
     if (picMode) {
         // 发送生成数据
         const userPrompts = await db.trail.findMany({
@@ -134,6 +135,8 @@ export async function POST(request: Request) {
         logger.info(response);
         imageUrl = response?.image_url;
         prompt = response?.chat_result;
+    } else {
+        logger.info(`[实验${userExperiment.experiment_id}]-${stepOrder} 步骤不生成图片`);
     }
 
     if (imageUrl || imageUrl == '') {
@@ -154,7 +157,12 @@ async function getExperimentStep(experimentId: number, step: number) {
         where: { experiment_id: experimentId, order: step },
     });
 
-    const content = experimentStep?.content || ('' as any);
-
-    return JSON.parse(content);
+    const content = experimentStep?.content;
+    if (typeof content === 'object' && content !== null && !Array.isArray(content)) {
+        return content;
+    } else {
+        // Handle the case where content is not an object
+        console.error('Expected content to be an object, but received:', typeof content);
+        return null;
+    }
 }

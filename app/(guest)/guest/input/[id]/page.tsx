@@ -33,7 +33,7 @@ export default async function GuestInput({
         userExperimentId
     );
 
-    const userExperiment = await getExperiment(guestNanoId, userExperimentId);
+    const userExperiment = await getExperiment(guestNanoId, userExperimentId, experimentStepIndex);
     if (!userExperiment?.experiment_id) {
         logger.error('未找到用户实验中的关联的experimentId');
         return;

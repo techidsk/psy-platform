@@ -1,6 +1,5 @@
 import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/session';
 import { getId } from '@/lib/nano-id';
 import { getUserGroupExperiments } from '@/lib/user_experiment';
 import { logger } from '@/lib/logger';
@@ -38,7 +37,7 @@ export async function POST(request: Request) {
         },
     });
 
-    // TOOD engineid异常
+    // TODO engineid异常
 
     if (experiment) {
         // 创建用户实验 user_experiments

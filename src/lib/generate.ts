@@ -1,3 +1,5 @@
+import { logger } from './logger';
+
 require('dotenv').config();
 const url = `http://${process.env.COMFYUI_HOST_URL}/result`;
 
@@ -8,6 +10,7 @@ const url = `http://${process.env.COMFYUI_HOST_URL}/result`;
  * @throws {Error} - If an error occurs during the fetch request.
  */
 async function generate(data: any) {
+    logger.debug(`Sending data to ComfyUI: ${JSON.stringify(data)}`);
     const response = await fetch(url, {
         method: 'POST',
         headers: {

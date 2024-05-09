@@ -196,8 +196,6 @@ export function ProjectCreateForm({
         }
         setIsLoading(false);
 
-        // const randomId = getId();
-        // router.prefetch(`/projects?crcs=${randomId}`);
         router.back();
         setTimeout(() => {
             router.refresh();

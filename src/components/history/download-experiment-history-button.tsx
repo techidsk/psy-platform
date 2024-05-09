@@ -13,7 +13,7 @@ export default function DownloadExperimentHistoryButton({ data }: ButtonProps) {
         }
 
         try {
-            const response = await fetch(`/api/log/${id}`);
+            const response = await fetch(`/api/log/${id}?part=${data.part}`);
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }

@@ -35,7 +35,11 @@ async function getCountDownTime(experimentId: number, order: string): Promise<nu
  * @param {string} experimentId - The ID of the experiment.
  * @return {Promise<any>} The experiment associated with the user ID and experiment ID, or undefined if not found.
  */
-async function getCurrentUserExperiment(userId: string, experimentId: string): Promise<any> {
+async function getCurrentUserExperiment(
+    userId: string,
+    experimentId: string,
+    part: string
+): Promise<any> {
     // guest是nanoid 普通用户是id
     let user;
     if (typeof userId !== 'string') {
@@ -54,7 +58,7 @@ async function getCurrentUserExperiment(userId: string, experimentId: string): P
     }
 
     const experiment = await db.user_experiments.findFirst({
-        where: { user_id: user.id, nano_id: experimentId },
+        where: { user_id: user.id, nano_id: experimentId, part: parseInt(part) },
     });
 
     return experiment;

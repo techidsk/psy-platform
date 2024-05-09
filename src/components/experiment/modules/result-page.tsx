@@ -30,11 +30,11 @@ export function ResultPage({
                 <div className={`max-w-${size} flex flex-col gap-2`}>
                     <h1 className="text-5xl font-bold mb-8">{title}</h1>
                     <StringHTML htmlString={content?.content as string} />
-                    <ImageHistory userExperimentNanoId={userExperimentNanoId} userId={userNanoId} />
                     <div className={`flex ${buttonNum > 1 ? 'justify-between' : 'justify-center'}`}>
                         {children}
                     </div>
                     <RedirectToQualtrics qualtricsUrl={qualtricsUrl} userUnqiueId={userNanoId} />
+                    <ImageHistory userExperimentNanoId={userExperimentNanoId} userId={userNanoId} />
                 </div>
             </div>
         </div>

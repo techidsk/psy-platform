@@ -14,39 +14,55 @@ interface DashboardProps {
     searchParams: { [key: string]: string };
 }
 
-export default async function Dashboard({ searchParams }: DashboardProps) {
+export default async function DashboardHome({ searchParams }: DashboardProps) {
     // 获取用户默认的实验
+    const currentIndex = searchParams['step_idx'] ? parseInt(searchParams['step_idx']) : 1;
     const userExperimentNanoId = searchParams['nano_id'] || '';
 
+    // 未登录
     const currentUser = await getCurrentUser();
     if (!currentUser?.id) {
         redirect('/login');
     }
-    const needExperiment = currentUser.role === 'USER';
 
-    // TODO 查看用户下次实验记录时间以及是否需要开始下次实验
+    // 用户错误跳转
+    const needExperiment = currentUser.role === 'USER';
     if (!needExperiment) {
         redirect('/dashboard');
     }
 
+    const currentUserId = parseInt(currentUser.id);
+    // TODO 这里有问题, 需要处理用户是完全完成了实验, 如果 curreenIndex > 1, 证明还没完成实验
+    // 获取下一组实验 id 以及用户被分配到的项目分组 project_group 表中的 id
     const { experiment_id: nextExperimentId, project_group_id: projectGroupId } =
         await getUserGroupExperiments();
 
-    if (!nextExperimentId) {
-        redirect('/closed');
-    }
-    if (!projectGroupId) {
-        redirect('/closed');
+    if (currentIndex == 1) {
+        // 没有下一组实验
+        if (!nextExperimentId) {
+            logger.error(`<用户${currentUserId}> 没有下一组实验`);
+            redirect('/closed');
+        }
+        // 没获取到分组
+        if (!projectGroupId) {
+            logger.error(`<用户${currentUserId}> 没有获取到分组`);
+            redirect('/closed');
+        }
     }
 
-    const result = await findLastExperiment(currentUser.id, projectGroupId);
+    // 需要处理是否进入下一步还是进入等待实验
+    const result = await findLastExperiment(
+        currentUserId,
+        projectGroupId,
+        userExperimentNanoId,
+        currentIndex
+    );
+
     const needWait = result?.status || false;
     const timeStamp = result.timeStamp;
-    logger.info(`<用户${currentUser.id}> 需要等待 ${timeStamp} 进行实验 ${nextExperimentId}`);
     if (needWait) {
         redirect(`/dashboard/wait?t=${timeStamp}`);
     }
-    logger.info(`<用户${currentUser.id}> 需要进行实验 ${nextExperimentId}`);
 
     return (
         <>
@@ -56,8 +72,9 @@ export default async function Dashboard({ searchParams }: DashboardProps) {
                     {needExperiment && (
                         <ExperimentTimeline
                             nextExperimentId={nextExperimentId}
-                            userId={parseInt(currentUser.id)}
+                            userId={currentUserId}
                             guest={false}
+                            stepIndex={currentIndex}
                             userExperimentNanoId={userExperimentNanoId}
                         />
                     )}

@@ -3,7 +3,7 @@ import { formatTime } from '@/lib/date';
 import { db } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import JSZip from 'jszip';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { P } from 'pino';
 
 /**
@@ -12,11 +12,14 @@ import { P } from 'pino';
  *
  * @returns
  */
-export async function GET(request: Request, context: { params: any }) {
+export async function GET(request: NextRequest, context: { params: any }) {
     try {
         // 记录日志
         // ...
         const userExperimentNanoId = context.params.id;
+        const searchParams = request.nextUrl.searchParams;
+        const part = searchParams.get('part') as string;
+
         const userExperiment = await db.user_experiments.findFirst({
             where: { nano_id: userExperimentNanoId },
         });
@@ -61,7 +64,7 @@ export async function GET(request: Request, context: { params: any }) {
         const ages = AGES_MAP[user?.ages || 0];
 
         const response = await db.trail_logger.findMany({
-            where: { experiment_id: userExperimentNanoId },
+            where: { experiment_id: userExperimentNanoId, part: parseInt(part) },
             select: {
                 input: true,
                 images: true,
@@ -70,7 +73,7 @@ export async function GET(request: Request, context: { params: any }) {
         });
 
         const trail = await db.trail.findMany({
-            where: { user_experiment_id: userExperimentNanoId },
+            where: { user_experiment_id: userExperimentNanoId, part: parseInt(part) },
             select: {
                 image_url: true,
                 prompt: true,
