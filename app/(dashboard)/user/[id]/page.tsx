@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { UserCreateForm } from '@/components/user/user-create-form';
 import SubpageHeader, { SubpageContentHeader } from '@/components/subpage-header';
+import { logger } from '@/lib/logger';
 
 /**
  * 判断数据库中用户是否存在,如果存在则进入编辑流程.
@@ -14,7 +15,7 @@ async function getUser(nanoId: string) {
     });
 
     if (!user) {
-        console.log(`Experiment with nanoId: ${nanoId} not found.`);
+        logger.error(`未找到用户${nanoId}`);
         return null;
     }
 

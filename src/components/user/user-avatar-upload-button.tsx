@@ -25,7 +25,6 @@ export function UserAvatarUploadButton({ user, updateFuc }: UserAvatarUploadButt
 
     /**
     async function uploadFile(e: SyntheticEvent) {
-        console.log(e.targetFile)
         const target = e.target as HTMLInputElement; // 类型断言
         if (!target.files || target.files.length === 0) {
             return; // 没有文件，直接返回
@@ -40,7 +39,6 @@ export function UserAvatarUploadButton({ user, updateFuc }: UserAvatarUploadButt
             formData.append('userid', user.id.toString());
             formData.append('data', targetFile);
 
-            console.log('prepare for uploading...');
 
             const response = await fetch(getUrl('/api/photo/avatar'), {
                 method: 'POST',

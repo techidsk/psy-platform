@@ -12,7 +12,6 @@ interface ComponentProps extends React.HTMLAttributes<HTMLDivElement> {
 
 // 图片生成历史记录
 export function ImageHistory({ userExperimentNanoId, userId, size = 'md' }: ComponentProps) {
-    // TODO 显示用户所有的出图结果
     const [images, setImages] = useState<any[]>([]);
     // 获取实验中的所有图片
     async function getImages() {

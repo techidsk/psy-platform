@@ -18,9 +18,9 @@ export default async function GuestDashboard({
     const currentIndex = searchParams['step_idx'] ? parseInt(searchParams['step_idx']) : 1;
     const userExperimentNanoId = searchParams['nano_id'] || ''; // 本次实验的 nanoId， user_experiment表中
 
-    const userNanoId = id.slice(0, 16);
-    const inviteCode = id.slice(16, 37);
-    // TODO 查看用户下次实验记录时间以及是否需要开始下次实验
+    const userNanoId = id.slice(0, 16); // 游客的nanoId
+    const inviteCode = id.slice(16, 37); // 游客实验的inviteCode
+
     const { experiment_id: nextExperimentId, user_id: userId } = await getUserGroupExperiments(
         true,
         userNanoId,
@@ -36,7 +36,7 @@ export default async function GuestDashboard({
         logger.error(`<临时用户${userNanoId}> 未找到合法userId`);
         redirect('/guest/closed');
     }
-    logger.info(`userExperimentNanoId: ${userExperimentNanoId}`);
+
     return (
         <>
             <div className="container mx-auto">

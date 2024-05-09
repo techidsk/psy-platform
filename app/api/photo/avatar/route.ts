@@ -46,7 +46,6 @@ export async function GET(request: NextRequest) {
                 return new NextResponse('Illegal request.', { status: 400 });
             }
             const avatarUrl = new URL(hasAvatar);
-            console.log(avatarUrl);
 
             // 如果是存放在服务端数据库的用户自定义头像，从数据库中读取对应图像并返回
             // 日后逻辑如果复杂起来将其放在一个函数中进行处理
@@ -62,8 +61,6 @@ export async function GET(request: NextRequest) {
                         version: 'desc',
                     },
                 });
-                console.log('target version number:', avatarLatestResource?.version);
-                console.log(avatarLatestResource?.avatar_type, avatarLatestResource?.version);
                 return new NextResponse(avatarLatestResource?.avatar, {
                     headers: {
                         'Content-Type': avatarLatestResource?.avatar_type || '',

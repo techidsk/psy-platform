@@ -51,8 +51,6 @@ export async function compressBlob(file: Blob): Promise<CompressedStructure> {
 
     const result = await new Response(compressedStream).blob();
 
-    console.log('the test compressed result:', result);
-
     return {
         compressedBlob: result,
         fileOriginType: fileInfo,

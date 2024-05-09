@@ -65,7 +65,7 @@ export function ExperimentEditor({
         if (!value) {
             return;
         }
-        // TODO 配置实验字数
+
         if (value.length < 5) {
             setLoading(false);
             return toast({
@@ -189,7 +189,6 @@ export function ExperimentEditor({
                 .then((response) => response.json())
                 .then(() => {
                     store.remove(storageLogName); // 成功上传后清除本地存储中的日志
-                    console.log('Logs uploaded successfully');
                 })
                 .catch((error) => console.error('Error uploading logs:', error));
         }

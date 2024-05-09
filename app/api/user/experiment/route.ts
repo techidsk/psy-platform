@@ -86,13 +86,9 @@ export async function POST(request: Request) {
 
         let engineId = randomEngineIds[0].engine_id;
 
-        // TODO 优化 如果是相同实验，则使用一样的 nano_id
-        console.log('prevUserExperimentNanoId', prevUserExperimentNanoId);
-
         const userExperimentNanoId =
             prevUserExperimentNanoId === '' ? getId() : prevUserExperimentNanoId;
 
-        console.log('userExperimentNanoId', userExperimentNanoId);
         const dbUserExperiment = await db.user_experiments.findFirst({
             where: {
                 nano_id: userExperimentNanoId,

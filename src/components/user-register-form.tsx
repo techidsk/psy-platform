@@ -28,7 +28,6 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const search = useSearchParams();
 
-    console.log();
     const router = useRouter();
 
     /**

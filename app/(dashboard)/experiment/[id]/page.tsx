@@ -17,7 +17,7 @@ async function getExperiment(nanoId: string) {
     });
 
     if (!experiment) {
-        console.log(`Experiment with nanoId: ${nanoId} not found.`);
+        logger.error(`未找到实验${nanoId}`);
         return null;
     }
     return experiment;

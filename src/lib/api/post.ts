@@ -62,7 +62,6 @@ export async function uploadPhotoWihInput(
     //     formData.append('compressedType', 'gzip');
     //     formData.append('dataType', fileOriginType);
     //     formData.append('hash', hash);
-    //     console.log('prepare for uploading...');
 
     //     const response = await fetch(getUrl('/api/photo'), {
     //         method: 'POST',
@@ -120,7 +119,6 @@ export async function uploadPhotoWithFile(targetFile: File): Promise<FetchResult
         }
 
         const compressResult = await compressBlob(targetFile);
-        console.log('result', compressResult);
 
         const formData = new FormData();
 
@@ -128,8 +126,6 @@ export async function uploadPhotoWithFile(targetFile: File): Promise<FetchResult
         formData.append('compressedType', 'gzip');
         formData.append('dataType', compressResult.fileOriginType);
         formData.append('hash', hash);
-
-        console.log('prepare for uploading...');
 
         const response = await fetch(getUrl('/api/photo'), {
             method: 'POST',

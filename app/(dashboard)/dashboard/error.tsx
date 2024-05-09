@@ -16,7 +16,6 @@ export default function Error({
         // Log the error to an error reporting service
         setErrorMessage(error.message);
     }, [error]);
-    // TODO 优化报错提示
 
     return (
         <div className="container mx-auto">

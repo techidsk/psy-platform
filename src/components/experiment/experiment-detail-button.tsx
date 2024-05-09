@@ -108,7 +108,6 @@ export function ExperimentDetailButton({ experiment }: ExperimentDetailProps) {
                 if (!templateJsonString) {
                     return;
                 }
-                console.log(templateJsonString);
                 const content = JSON.parse(templateJsonString);
                 setSteps({
                     ...data,

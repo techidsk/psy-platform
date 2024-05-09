@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 import { getUrl } from '@/lib/url';
 import { enginePatchFormSchema } from '@/lib/validations/engine';
+import { logger } from '@/lib/logger';
 
 interface EngineFormProps extends React.HTMLAttributes<HTMLDivElement> {
     closeModal: Function;
@@ -72,7 +73,7 @@ export function EnginePatchForm({
                 });
             }
         } catch (error) {
-            console.error('请求失败:', error);
+            logger.error('请求失败:', error);
             toast({
                 title: '请求错误',
                 description: '无法连接到服务器，请稍后再试。',

@@ -208,8 +208,8 @@ export async function getUserGroupExperiments(
         guestUser = await db.user.findFirst({
             where: { nano_id: guestUserNanoId },
         });
-        // console.log('@src/lib/user_experiment.ts:189', guestUser);
         if (!guestUser) {
+            logger.warn('未找到对应的游客用户, 创建新用户');
             guestUser = await db.user.create({
                 data: {
                     nano_id: guestUserNanoId,
@@ -218,7 +218,6 @@ export async function getUserGroupExperiments(
                     invite_code: inviteCode,
                 },
             });
-            logger.warn('未找到对应的游客用户');
         }
         userId = guestUser.id;
     } else {

@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/session';
+import { logger } from '@/lib/logger';
 
 /**
  * /api/project/group/add
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
         });
         return NextResponse.json({ msg: '添加成功' });
     } catch (err) {
-        console.error(err);
+        logger.error(err);
         return NextResponse.json({ msg: '添加失败' }, { status: 500 });
     }
 }

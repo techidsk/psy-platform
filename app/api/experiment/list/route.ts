@@ -12,7 +12,6 @@ import { db } from '@/lib/db';
 export async function POST(request: Request) {
     const data = await request.json();
     const currentUser = await getCurrentUser();
-    console.log(currentUser);
     const role = currentUser?.role;
     // 如果是超级管理员(SUPER_ADMIN), 可以看到所有用户的测试结果
     // 如果是助理学生(ASSISTANT), 则可以看到自己名下管理的被试的测试结果
@@ -22,7 +21,6 @@ export async function POST(request: Request) {
             creator: data.user_id,
         },
     });
-    console.log('experiments : ', experiments);
     return NextResponse.json(experiments);
 }
 
@@ -31,7 +29,6 @@ export async function GET() {
     if (!currentUser) {
         return NextResponse.json('请重新登陆！', { status: 401 });
     }
-    console.log(currentUser);
     const role = currentUser?.role;
     // 如果是超级管理员(SUPER_ADMIN), 可以看到所有用户的测试结果
     // 如果是助理学生(ASSISTANT), 则可以看到自己名下管理的被试的测试结果
@@ -41,6 +38,5 @@ export async function GET() {
             creator: parseInt(currentUser.id),
         },
     });
-    console.log('experiments : ', experiments);
     return NextResponse.json(experiments);
 }

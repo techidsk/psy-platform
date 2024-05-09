@@ -1,4 +1,5 @@
 import { db } from '@/lib/db';
+import { logger } from '@/lib/logger';
 import { NextResponse } from 'next/server';
 
 /**
@@ -18,7 +19,7 @@ export async function POST(request: Request) {
         });
         return NextResponse.json({ msg: '添加成功' });
     } catch (error) {
-        console.error('更新失败:', error);
+        logger.error(`更新失败:${error}`);
         return NextResponse.json({ msg: '服务器错误' }, { status: 500 });
     }
 }

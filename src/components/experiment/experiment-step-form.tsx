@@ -169,8 +169,6 @@ export function ExperimentStepForm({
             setStepType(step?.type || 1);
 
             const content = step.content as any;
-            console.log(experimentSteps);
-            console.log(step);
             setStepContent(content?.content || '');
             setValue('step_image', content?.image || '');
             setValue('redirect_url', content?.redirect_url || undefined);
@@ -193,10 +191,6 @@ export function ExperimentStepForm({
         initForm();
         setInit(true);
     }, []);
-
-    // useEffect(() => {
-    //     console.log(stepErrors);
-    // }, [stepErrors]);
 
     return (
         <>

@@ -1,10 +1,11 @@
 import { db } from './db';
+import { logger } from './logger';
 
 async function getAccessKey() {
     const setting = await db.platform_setting.findFirst({});
 
     if (!setting) {
-        console.log('未找到平台配置');
+        logger.error('未找到平台配置');
         return null;
     }
 

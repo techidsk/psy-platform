@@ -228,7 +228,6 @@ function Template({
     }
 
     switch (type) {
-        // TODO 添加不同流程的操作
         case 1: // 文字
             return (
                 <CenteredHero title={title} content={content?.content} size="lg">

@@ -118,8 +118,6 @@ export function UserPatchForm({
     }
 
     useEffect(() => {
-        console.log(Boolean(!nano_id));
-        console.log(Boolean(!nano_id) || isLoading);
         if (!nano_id) {
             getUser();
         } else {

@@ -36,7 +36,6 @@ export function ProjectGroupTableEditButtons({
     }
 
     function deleteUser() {
-        console.log('delete user');
         setOpenDelete(true);
     }
 

@@ -1,6 +1,7 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { db } from './db';
+import { logger } from './logger';
 const crypto = require('crypto');
 
 export const authOptions: NextAuthOptions = {
@@ -19,7 +20,7 @@ export const authOptions: NextAuthOptions = {
             },
             async authorize(credentials: any) {
                 // 在这里进行登录判断
-                console.log('用户登录: ', credentials);
+                logger.debug('用户登录: ', credentials);
                 const username = credentials['username'];
                 const inputPassword = credentials['password'];
                 let dbUser = await db.user.findFirst({
@@ -28,14 +29,14 @@ export const authOptions: NextAuthOptions = {
                     },
                 });
                 if (!dbUser) {
-                    console.error(`用户${username}不存在`);
+                    logger.error(`用户${username}不存在`);
                     return null;
                 }
                 const password = dbUser['password'] || '';
                 const salt = dbUser['salt'] || '';
                 const r = await verify(inputPassword, salt, password);
                 if (!r) {
-                    console.error(`用户${username}密码错误`);
+                    logger.error(`用户${username}密码错误`);
                     return null;
                 }
                 // 更新用户最后登录时间
@@ -49,9 +50,6 @@ export const authOptions: NextAuthOptions = {
     ],
     callbacks: {
         async session({ session, token }) {
-            // console.log('--- session ----');
-            // console.log(session, token);
-
             if (token) {
                 session.user.id = token.id;
                 session.user.username = token.name || '';
@@ -61,9 +59,6 @@ export const authOptions: NextAuthOptions = {
             return session;
         },
         async jwt({ token, user }) {
-            // console.log('--- jwt ----');
-            // console.log(token, user);
-
             if (user) {
                 return {
                     ...token,

@@ -143,22 +143,14 @@ export function ProjectGroupCreateForm({
         }
     }
 
-    function addProjectGroups(event: any, engines: JsonValue | undefined) {
+    // 添加实验到项目分组中
+    function addExperimentToGroup(event: any) {
         event.preventDefault();
-        // TODO 添加实验
-        // const enginesArray = engines as number[];
-        // setSelectIds(enginesArray, itemName);
         router.push(`/project/experiment?project_group_id=${projectGroupId}`);
-    }
-
-    function showProjectGroup(event: any, id: number) {
-        event.preventDefault();
-        console.log('show experiment', id);
     }
 
     async function removeGroupFromProject(event: any, id: number) {
         event.preventDefault();
-        console.log('remove experiment', id);
         await fetch(getUrl(`/api/project/group/experiment/${id}`), {
             method: 'DELETE',
         });
@@ -293,12 +285,7 @@ export function ProjectGroupCreateForm({
                                     <div className="flex">
                                         <button
                                             className="btn btn-ghost btn-sm"
-                                            onClick={(e) =>
-                                                addProjectGroups(
-                                                    e,
-                                                    experiments?.map((e) => e.id)
-                                                )
-                                            }
+                                            onClick={(e) => addExperimentToGroup(e)}
                                         >
                                             <Icons.add />
                                             添加

@@ -17,7 +17,6 @@ export async function UserSetttingAvatar({ user }: UserSetttingAvatar) {
      * 该函数总是在用户成功上传完头像后调用
      */
     const updateImage = () => {
-        console.log('heelo');
         setResultAvatarUrl(
             getAvatarUrl(`psy://avatar/${user.username}`, user.username || '') +
                 `&update=${new Date().getTime()}`

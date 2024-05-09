@@ -22,8 +22,6 @@ export function ResultPage({
 }: ComponentProps) {
     const qualtricsUrl = content?.redirect_url;
 
-    // TODO 显示用户所有的出图结果
-
     return (
         <div className="hero">
             <div className="hero-content text-center">

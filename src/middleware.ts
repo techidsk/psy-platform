@@ -11,7 +11,6 @@ export default withAuth(
     async function middleware(req) {
         const token = await getToken({ req });
         const isAuth = !!token;
-        console.log(req.nextUrl);
         const isAuthPage = checkAuthPage(req.nextUrl);
 
         if (isAuthPage) {

@@ -36,7 +36,7 @@ async function getUser(userId: string): Promise<HeaderUserInfo> {
             id: true,
         },
     });
-    // console.log('returned:', user);
+
     if (!user) {
         throw new Error('用户不存在');
     }

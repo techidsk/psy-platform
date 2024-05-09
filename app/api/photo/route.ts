@@ -74,8 +74,6 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     const formData = await request.formData();
 
-    console.log(formData);
-
     const compressedData = formData.get('data');
     const compressedType = formData.get('compressedType');
     const fileType = formData.get('dataType');

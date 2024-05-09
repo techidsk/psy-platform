@@ -158,11 +158,11 @@ export function ProjectCreateForm({
         }
     }
 
-    function addProjectGroups(event: any, engines: JsonValue | undefined) {
+    // 添加项目分组
+    function addProjectGroups(event: any, projectGroupsIds: JsonValue | undefined) {
         event.preventDefault();
-        // TODO 添加实验
-        const enginesArray = engines as number[];
-        setSelectIds(enginesArray, itemName);
+        const projectGroupsIdsArray = projectGroupsIds as number[];
+        setSelectIds(projectGroupsIdsArray, itemName);
         // 添加ProjectId
         setProjectId(project?.id);
         router.push('/project/group');

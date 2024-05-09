@@ -65,7 +65,6 @@ export function ExperimentCreateForm({
         }
         setIsLoading(true);
         if (dispatch === 'UPDATE') {
-            // TODO: dispatch为update则进行patch操作
             const patchResult = await fetch(getUrl('/api/experiment/patch'), {
                 method: 'PATCH',
                 headers: {
@@ -158,7 +157,6 @@ export function ExperimentCreateForm({
         // 如果是编辑模式
         // 则需要保留原有数据，否则显示
         initForm();
-        console.log('initForm', '@experiment_create-fomr.tsx');
     }, []);
 
     return (

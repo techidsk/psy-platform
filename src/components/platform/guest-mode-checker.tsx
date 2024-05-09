@@ -1,5 +1,6 @@
 'use client';
 import { toast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 import { getUrl } from '@/lib/url';
 import { useRouter } from 'next/navigation';
 
@@ -35,7 +36,7 @@ export default function GuestModeChecker({ data }: CheckProps) {
                 });
             }
         } catch (error) {
-            console.error('请求失败:', error);
+            logger.error('请求失败:', error);
             toast({
                 title: '请求错误',
                 description: '无法连接到服务器，请稍后再试。',

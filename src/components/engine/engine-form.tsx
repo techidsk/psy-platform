@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { engineFormSchema } from '@/lib/validations/engine';
 import { Icons } from '@/components/icons';
 import { getUrl } from '@/lib/url';
+import { logger } from '@/lib/logger';
 
 interface EngineFormProps extends React.HTMLAttributes<HTMLDivElement> {
     // closeModal: Function;
@@ -51,7 +52,7 @@ export function EngineAddForm({
 
     async function addEngine(data: FormData) {
         try {
-            console.log('this is engine form: ', data);
+            logger.info(`this is engine form: ${data}`);
             // const result = await fetch(getUrl('/api/user/add'), {
             //     method: 'POST',
             //     headers: { 'Content-Type': 'application/json' },

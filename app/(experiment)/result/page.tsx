@@ -38,9 +38,6 @@ export default function ArticleResult() {
         }, 3000);
         updateText(text);
         router.push('./experiment/pre-result');
-        // TODO 回车监听
-        // TODO 逗号监听
-        // TODO 发送请求
     }
 
     return (

@@ -124,7 +124,7 @@ export async function GET(request: NextRequest, context: { params: any }) {
             },
         });
     } catch (error) {
-        console.error('更新失败:', error);
+        logger.error(`更新失败:${error}`);
         return NextResponse.json({ msg: '服务器错误' }, { status: 500 });
     }
 }

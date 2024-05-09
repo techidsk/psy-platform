@@ -32,7 +32,6 @@ export default async function DashboardHome({ searchParams }: DashboardProps) {
     }
 
     const currentUserId = parseInt(currentUser.id);
-    // TODO 这里有问题, 需要处理用户是完全完成了实验, 如果 curreenIndex > 1, 证明还没完成实验
     // 获取下一组实验 id 以及用户被分配到的项目分组 project_group 表中的 id
     const { experiment_id: nextExperimentId, project_group_id: projectGroupId } =
         await getUserGroupExperiments();
