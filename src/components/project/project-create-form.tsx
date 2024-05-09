@@ -173,9 +173,32 @@ export function ProjectCreateForm({
         router.push(`/project/group/${id}`);
     }
 
-    function removeGroupFromProject(event: any, id: number) {
+    async function removeGroupFromProject(event: any, id: number) {
         event.preventDefault();
-        console.log('remove experiment', id);
+        const response = await fetch(getUrl(`/api/project/group/remove`), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                project_id: project?.id,
+                group_id: id,
+            }),
+        });
+        const responseBody = await response.json();
+        if (response.ok) {
+            toast({
+                title: '移除成功',
+                description: responseBody.msg || '已成功移除分组',
+                duration: 3000,
+            });
+            router.refresh();
+        } else {
+            toast({
+                title: '移除失败',
+                description: responseBody.msg || '请查看系统消息',
+                variant: 'destructive',
+                duration: 5000,
+            });
+        }
     }
 
     /**
@@ -393,7 +416,10 @@ export function ProjectCreateForm({
                                                             <button
                                                                 className="btn btn-sm btn-outline btn-error"
                                                                 onClick={(e) =>
-                                                                    removeGroupFromProject(e, i)
+                                                                    removeGroupFromProject(
+                                                                        e,
+                                                                        group.id
+                                                                    )
                                                                 }
                                                             >
                                                                 <Icons.delete size={16} />

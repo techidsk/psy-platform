@@ -16,7 +16,6 @@ export async function Table({ datas, configs, children, searchNode }: TableProp)
     const currentUser = await getCurrentUser();
     const role = currentUser?.role as UserRole;
 
-    // TODO 判断configs中的用户身份
     let filterConfigs = configs;
     if (role !== 'SUPERADMIN') {
         filterConfigs = configs.filter((config) => {
