@@ -18,6 +18,7 @@ async function getExperiment(experimentId: number) {
         },
     });
     if (!experiment) {
+        logger.warn(`实验${experimentId}不存在`);
         throw new Error('实验不存在');
     }
     return experiment;

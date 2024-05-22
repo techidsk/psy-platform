@@ -77,9 +77,8 @@ async function getUserExperimentsState(projectGroupId: number, userId: number) {
             IF(COUNT(*) = COUNT(ue.finish_time), 'COMPLETED', 'NOT COMPLETED') AS completion_status
         FROM project_group_experiments pge
         LEFT JOIN experiment_steps es ON es.experiment_id = pge.experiment_id
-        LEFT JOIN user_experiments ue ON ue.experiment_id = es.experiment_id AND ue.part = es.order
+        LEFT JOIN user_experiments ue ON ue.experiment_id = es.experiment_id AND ue.part = es.order AND ue.user_id = ${userId}
         WHERE pge.project_group_id = ${projectGroupId} AND es.type = 4
-        AND ue.user_id = ${userId}
         GROUP BY es.experiment_id;
     `;
     return experiments;
@@ -140,6 +139,7 @@ async function findProjectGroup(
         }
 
         const userExperimentState = await getUserExperimentsState(userProjectGroupId, userId);
+        logger.info(`<用户${userId}> 实验进度: ${JSON.stringify(userExperimentState)}`);
         // 判断用户实验进度, 获得已经完成实验总次数
         const totalFinishedExperimentCount = userExperimentState.filter(
             (item) => item.completion_status === 'COMPLETED'
@@ -149,10 +149,12 @@ async function findProjectGroup(
         if (guest) {
             if (totalFinishedExperimentCount >= 1) {
                 logger.warn(`<游客${userId}> 已经完成所有实验`);
+
+                // 返回游客用户的上次实验记录
                 return {
                     status: 'FINISHED',
                     message: '已经完成所有实验',
-                    experiment_id: 0,
+                    experiment_id: userExperimentState[0].experiment_id,
                     project_group_id: userProjectGroupId,
                 };
             }

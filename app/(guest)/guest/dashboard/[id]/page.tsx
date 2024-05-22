@@ -28,10 +28,10 @@ export default async function GuestDashboard({
     );
     logger.info(`<临时用户${userNanoId}> 需要进行实验 ${nextExperimentId}`);
 
-    if (!nextExperimentId) {
-        logger.error(`<临时用户${userNanoId}> 没有可用的实验`);
-        redirect('/guest/closed');
-    }
+    // if (!nextExperimentId) {
+    //     logger.error(`<临时用户${userNanoId}> 没有可用的实验`);
+    //     redirect('/guest/closed');
+    // }
     if (!userId) {
         logger.error(`<临时用户${userNanoId}> 未找到合法userId`);
         redirect('/guest/closed');
