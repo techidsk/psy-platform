@@ -79,6 +79,7 @@ export function ExperimentStepForm({
             redirect_url: data.redirect_url,
             countdown: data.countdown,
             pic_mode: data.pic_mode,
+            history_mode: data.history_mode,
         };
         const createResult = await fetch(getUrl('/api/experiment/steps/add'), {
             method: 'POST',
@@ -112,14 +113,17 @@ export function ExperimentStepForm({
     // 更新实验步骤
     const updateExperimentStep = async (data: FormData) => {
         const content = {
+            id: step?.id,
             content: data.step_content,
             image: data.step_image,
             redirect_url: data.redirect_url,
             countdown: data.countdown,
             pic_mode: data.pic_mode,
+            history_mode: data.history_mode,
         };
-        const updateResult = await fetch(getUrl(`/api/experiment/steps/${step?.id}`), {
-            method: 'PUT',
+
+        const updateResult = await fetch(getUrl(`/api/experiment/steps/patch`), {
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -127,6 +131,7 @@ export function ExperimentStepForm({
                 step: { ...data, ...content },
             }),
         });
+
         if (!updateResult?.ok) {
             return toast({
                 title: '更新失败',
@@ -173,6 +178,7 @@ export function ExperimentStepForm({
             setValue('step_image', content?.image || '');
             setValue('redirect_url', content?.redirect_url || undefined);
             setValue('pic_mode', content?.pic_mode || true);
+            setValue('history_mode', content?.history_mode || true);
             setValue('countdown', content?.countdown || 0);
         } else {
             // 初始化
@@ -354,6 +360,26 @@ export function ExperimentStepForm({
                                 )}
                             </>
                         )}
+                        {stepTypes.find((type) => type.id === stepType && type.history_mode) && (
+                            <>
+                                <div className="flex gap-1">
+                                    <label className="" htmlFor="history_mode">
+                                        开启回顾
+                                    </label>
+                                    <input
+                                        type="checkbox"
+                                        className="toggle"
+                                        defaultChecked={true}
+                                        {...register('history_mode')}
+                                    />
+                                </div>
+                                {stepErrors?.history_mode && (
+                                    <p className="px-1 text-xs text-red-600">
+                                        {stepErrors.history_mode.message}
+                                    </p>
+                                )}
+                            </>
+                        )}
                         {stepTypes.find((type) => type.id === stepType && type.image) && (
                             <div className="grid gap-1">
                                 <label className="sr-only" htmlFor="step_image">
@@ -405,6 +431,7 @@ interface StepTypesProps {
     redirect?: boolean;
     countdown?: boolean;
     pic_mode?: boolean;
+    history_mode?: boolean;
 }
 
 const stepTypes: StepTypesProps[] = [
@@ -439,6 +466,7 @@ const stepTypes: StepTypesProps[] = [
         title: true,
         content: true,
         redirect: true,
+        history_mode: true,
     },
     // {
     //     id: 6,

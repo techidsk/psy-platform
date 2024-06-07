@@ -9,6 +9,7 @@ import { NextResponse } from 'next/server';
 export async function POST(request: Request) {
     const data = await request.json();
     const { userExperimentNanoId, userId } = data;
+
     const images = await db.trail.findMany({
         where: {
             user_experiment_id: userExperimentNanoId,
@@ -33,18 +34,26 @@ export async function POST(request: Request) {
     });
 
     const experimentSteps = await db.$queryRaw<any[]>`
-        select es.step_name, es.order as part
-        FROM user_experiments ue 
-        LEFT JOIN experiment_steps es on es.experiment_id = ue.experiment_id
-        WHERE ue.nano_id = ${userExperimentNanoId}
-        AND es.type = 4
-        GROUP BY es.id
+        SELECT step_name, CAST(num AS SIGNED) as part
+        FROM (
+            SELECT es.*, ROW_NUMBER() OVER (ORDER BY es.order)  as num
+                FROM user_experiments ue
+                LEFT JOIN experiment_steps es on es.experiment_id = ue.experiment_id
+                WHERE ue.nano_id = ${userExperimentNanoId}
+                GROUP BY es.id
+            ) AS subquery
+        WHERE type = 4
     `;
+
+    const convertedExperimentSteps = experimentSteps.map((step) => ({
+        ...step,
+        part: Number(step.part),
+    }));
 
     return NextResponse.json({
         data: {
             images: images,
-            experimentSteps: experimentSteps,
+            experimentSteps: convertedExperimentSteps,
         },
     });
 }

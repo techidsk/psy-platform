@@ -13,7 +13,7 @@ export default async function VerifyPage({ params: { id } }: { params: { id: str
     const userUniqueKey = getId();
     return (
         <div className="flex h-screen w-full flex-col items-center justify-center bg-white">
-            <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+            <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[500px]">
                 <GuestUniqueKey
                     userUniqueKey={userUniqueKey}
                     inviteCode={id}

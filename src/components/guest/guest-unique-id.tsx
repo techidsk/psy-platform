@@ -49,18 +49,18 @@ export default function GuestUniqueKey({
     }, []);
 
     return (
-        <div className="flex flex-col space-y-4 text-center">
-            <h1 className="text-4xl font-semibold tracking-tight">欢迎参加本次实验</h1>
+        <div className="flex flex-col space-y-12 text-center items-center">
+            <h1 className="text-5xl font-semibold tracking-tight">欢迎进入写作平台</h1>
             {userKey && (
                 <>
-                    <div className="text text-slate-500 dark:text-slate-400">
+                    {/* <div className="text text-slate-500 dark:text-slate-400">
                         这是您本次实验的唯一ID{'  '}
                         <kbd className="kbd kbd-md">{userKey}</kbd>
                         请牢记在心
-                    </div>
+                    </div> */}
 
                     <button
-                        className="btn btn-primary"
+                        className="btn btn-primary w-[300px]"
                         onClick={() => router.push(`/guest/dashboard/${combineKey}`)}
                     >
                         开始

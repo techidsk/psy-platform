@@ -29,11 +29,12 @@ export async function PATCH(request: Request) {
             pic_mode?: boolean;
             countdown?: number;
             redirect_url?: string;
+            history_mode?: boolean;
         } = data.step;
 
         await db.experiment_steps.update({
             where: {
-                id: data.id,
+                id: step.id,
             },
             data: {
                 experiment_id: experimentId,
@@ -46,6 +47,7 @@ export async function PATCH(request: Request) {
                     image: step.step_image || '',
                     redirect_url: step.redirect_url || '',
                     pic_mode: step.pic_mode || false,
+                    history_mode: step.history_mode || false,
                     countdown: step.countdown || 0,
                 },
             },

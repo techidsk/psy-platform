@@ -315,7 +315,12 @@ const StepContent = ({ type, content }: { type?: number; content: any }) => {
                 </div>
             );
         case 5:
-            return <div>跳转地址：{content?.redirect_url ? '已配置' : '未配置'}</div>;
+            return (
+                <div className="flex flex-col gap-2">
+                    <div>跳转地址：{content?.redirect_url ? '已配置' : '未配置'}</div>
+                    <div>开启回顾：{content?.history_mode ? '开启' : '关闭'}</div>
+                </div>
+            );
         case 6:
             return <span className="badge badge-outline">表单</span>;
         default:

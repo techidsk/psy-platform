@@ -57,7 +57,9 @@ export default async function GuestInput({
         experimentStepIndex
     );
 
-    logger.info(`实验倒计时: ${countDownTime} 分钟，开始时间: ${startTime}`);
+    logger.info(
+        `实验id:${userExperiment.experiment_id}-${experimentStepIndex} 实验倒计时: ${countDownTime} 分钟，开始时间: ${startTime}`
+    );
 
     return (
         <div className="bg-white container max-w-[1024px] mx-auto h-[100vh] py-4 flex flex-col gap-4 justify-between">

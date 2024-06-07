@@ -24,4 +24,5 @@ export const exprimentStepSchema = z.object({
         .optional(),
     countdown: z.number().max(120, '写作时间不得超过120分钟').optional(),
     pic_mode: z.boolean().optional(),
+    history_mode: z.boolean().optional(),
 });

@@ -130,7 +130,7 @@ export function ExperimentStarterButtons({
                     onClose={handleToggle}
                     disableClickOutside={!open}
                 >
-                    <h1 className="text-xl">编辑用户</h1>
+                    <h1 className="text-xl">被试信息</h1>
                     <UserPrivacyForm closeModal={closeModel} userId={userId} guest={guest} />
                 </Modal>
             )}

@@ -18,7 +18,7 @@ export function CenteredHero({
         <div className="hero">
             <div className="hero-content text-center">
                 <div className={`max-w-${size}`}>
-                    <h1 className="text-5xl font-bold mb-8">{title}</h1>
+                    {title && <h1 className="text-5xl font-bold mb-8">{title}</h1>}
                     <StringHTML htmlString={content} />
                     <div className={`flex ${buttonNum > 1 ? 'justify-between' : 'justify-center'}`}>
                         {children}

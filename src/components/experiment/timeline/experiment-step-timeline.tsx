@@ -19,6 +19,7 @@ interface ExperimentTimelineProps {
     userNanoId: string;
     targetStepIndex: number; // 默认是 1
     userExperimentNanoId: string;
+    uniqueKey: string;
 }
 
 export default function ExperimentStepTimeline({
@@ -30,6 +31,7 @@ export default function ExperimentStepTimeline({
     userNanoId,
     targetStepIndex,
     userExperimentNanoId,
+    uniqueKey,
 }: ExperimentTimelineProps) {
     const [currentIndex, setCurrentIndex] = useState(targetStepIndex || 1);
     const [showUserPrivacy, setShowUserPrivacy] = useState(false);
@@ -98,6 +100,7 @@ export default function ExperimentStepTimeline({
                 userNanoId={userNanoId}
                 experimentSteps={experimentSteps}
                 userExperimentNanoId={userExperimentNanoId}
+                uniqueKey={uniqueKey}
             />
         </>
     );
@@ -148,6 +151,7 @@ interface TemplateProps {
     userNanoId: string;
     experimentSteps: experiment_steps[]; // 总实验步数
     userExperimentNanoId: string;
+    uniqueKey: string;
 }
 
 function Template({
@@ -162,6 +166,7 @@ function Template({
     userNanoId,
     experimentSteps,
     userExperimentNanoId,
+    uniqueKey,
 }: TemplateProps) {
     const totalStepNum = experimentSteps.length;
     const currentStep = experimentSteps[currentIndex - 1];
@@ -255,6 +260,7 @@ function Template({
                     content={content}
                     userNanoId={userNanoId}
                     userExperimentNanoId={userExperimentNanoId}
+                    uniqueKey={uniqueKey}
                     size="lg"
                 >
                     <ButtonGroup />

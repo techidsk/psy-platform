@@ -42,6 +42,7 @@ async function getUserPrivacy(userId: number) {
         select: {
             gender: true,
             ages: true,
+            nano_id: true,
         },
     });
     return user;
@@ -88,6 +89,10 @@ export default async function ExperimentTimeline({
         redirect('/login');
     }
 
+    if (!user.nano_id) {
+        redirect('/login');
+    }
+
     // 获取实验
     const experimentData = getExperiment(nextExperimentId);
     // 获取实验步骤
@@ -127,6 +132,7 @@ export default async function ExperimentTimeline({
                 userNanoId={userNanoId}
                 targetStepIndex={stepIndex}
                 userExperimentNanoId={userExperimentNanoId}
+                uniqueKey={user.nano_id}
             />
         </div>
     );

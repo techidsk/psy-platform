@@ -11,11 +11,22 @@ import { logger } from './logger';
  * @return {number} The countdown time for the specified experiment, defaulting to 1200 if not found.
  */
 async function getCountDownTime(experimentId: number, order: string): Promise<number> {
-    const experimentStep = await db.experiment_steps.findFirst({
-        where: { experiment_id: experimentId, order: parseInt(order) },
-    });
+    const experimentStep = await db.$queryRaw<any[]>`
+        SELECT *
+        FROM (
+            SELECT *, ROW_NUMBER() over (order by "order") as num
+            FROM experiment_steps
+            WHERE experiment_id = ${experimentId}
+            ORDER BY "order"
+        ) AS subquery
+        WHERE num = ${parseInt(order)}
+    `;
+    if (!experimentStep || experimentStep.length === 0) {
+        logger.error(`experimentId: ${experimentId}-${order} 实验不存在 @experiment.ts`);
+        return 20;
+    }
 
-    const content = experimentStep?.content as any;
+    const content = experimentStep[0]?.content as any;
 
     let countdown = content?.countdown;
 

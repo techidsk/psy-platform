@@ -25,7 +25,7 @@ export function RightImageHero({
                     alt=""
                 />
                 <div className={`max-w-${size}`}>
-                    <h1 className="text-5xl font-bold mb-8">{title}</h1>
+                    {title && <h1 className="text-5xl font-bold mb-8">{title}</h1>}
                     <StringHTML htmlString={content} />
                 </div>
             </div>

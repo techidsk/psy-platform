@@ -25,8 +25,10 @@ export function ImageHistory({ userExperimentNanoId, userId, size = 'md' }: Comp
                 userId: userId,
             }),
         });
+
         if (result.ok) {
             const responseBody = await result.json();
+
             const dataImages = responseBody.data.images;
             const steps = responseBody.data.experimentSteps;
 
@@ -40,6 +42,7 @@ export function ImageHistory({ userExperimentNanoId, userId, size = 'md' }: Comp
                     stepImages: dataImages.filter((image: any) => image.part == step.part),
                 };
             });
+
             setImages(imagesGroup);
         }
     }
@@ -49,8 +52,8 @@ export function ImageHistory({ userExperimentNanoId, userId, size = 'md' }: Comp
     }, []);
 
     return (
-        <div className="flex-col-center gap-4 w-full">
-            {images.map((image, index) => {
+        <div className="flex-col-cener gap-4 w-full">
+            {images.map((image, indext) => {
                 return (
                     <div key={image.nano_id} className="w-full">
                         <div className="text-2xl font-bold mb-4">{image.title}</div>
@@ -73,6 +76,7 @@ export function ImageHistory({ userExperimentNanoId, userId, size = 'md' }: Comp
                                 );
                             })}
                         </div>
+                        <div className="divider"></div>
                     </div>
                 );
             })}
