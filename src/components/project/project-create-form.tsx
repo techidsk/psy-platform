@@ -163,19 +163,42 @@ export function ProjectCreateForm({
         event.preventDefault();
         // TODO 判断是添加新项目还是编辑项目
         // 如果是编辑项目则继续，否则需要先提交创建新项目
-        await handleSubmit(async (data) => {
-            await onSubmit(data, false);
-        })();
+        const result = await new Promise((resolve, reject) => {
+            handleSubmit(
+                async (data) => {
+                    try {
+                        await onSubmit(data, false);
+                        resolve(true);
+                    } catch (error) {
+                        console.error('处理表单时发生错误', error);
+                        reject(error);
+                    }
+                },
+                (errors) => {
+                    console.error('表单验证失败', errors);
+                    reject(errors);
+                }
+            )();
+        });
 
-        const projectGroupsIdsArray = projectGroupsIds as number[];
-        setSelectIds(projectGroupsIdsArray, itemName);
-        // 添加ProjectId
-        setProjectId(project?.id);
+        if (result) {
+            const projectGroupsIdsArray = projectGroupsIds as number[];
+            setSelectIds(projectGroupsIdsArray, itemName);
+            // 添加ProjectId
+            setProjectId(project?.id);
 
-        router.push('/project/group');
-        setTimeout(() => {
-            router.refresh();
-        }, 50);
+            router.push('/project/group');
+            setTimeout(() => {
+                router.refresh();
+            }, 50);
+        } else {
+            toast({
+                title: '添加失败',
+                description: '请正确填写项目信息后再添加分组',
+                variant: 'destructive',
+                duration: 5000,
+            });
+        }
     }
 
     function showProjectGroup(event: any, id: number) {
