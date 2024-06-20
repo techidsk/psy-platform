@@ -159,13 +159,23 @@ export function ProjectCreateForm({
     }
 
     // 添加项目分组
-    function addProjectGroups(event: any, projectGroupsIds: JsonValue | undefined) {
+    async function addProjectGroups(event: any, projectGroupsIds: JsonValue | undefined) {
         event.preventDefault();
+        // TODO 判断是添加新项目还是编辑项目
+        // 如果是编辑项目则继续，否则需要先提交创建新项目
+        await handleSubmit(async (data) => {
+            await onSubmit(data, false);
+        })();
+
         const projectGroupsIdsArray = projectGroupsIds as number[];
         setSelectIds(projectGroupsIdsArray, itemName);
         // 添加ProjectId
         setProjectId(project?.id);
+
         router.push('/project/group');
+        setTimeout(() => {
+            router.refresh();
+        }, 50);
     }
 
     function showProjectGroup(event: any, id: number) {
@@ -206,7 +216,7 @@ export function ProjectCreateForm({
      * @param data
      * @returns
      */
-    async function onSubmit(data: FormData) {
+    async function onSubmit(data: FormData, shouldRedirect: boolean = true) {
         if (isLoading) {
             return;
         }
@@ -219,10 +229,12 @@ export function ProjectCreateForm({
         }
         setIsLoading(false);
 
-        router.back();
-        setTimeout(() => {
-            router.refresh();
-        }, 50);
+        if (shouldRedirect) {
+            router.back();
+            setTimeout(() => {
+                router.refresh();
+            }, 50);
+        }
     }
 
     function initForm() {
@@ -250,7 +262,7 @@ export function ProjectCreateForm({
 
     return (
         <div className={cn('grid gap-6', className)} {...props}>
-            <form onSubmit={handleSubmit(onSubmit)}>
+            <form onSubmit={handleSubmit((data) => onSubmit(data, true))}>
                 <div className="grid gap-4">
                     <div className="grid gap-1">
                         <label className="sr-only" htmlFor="project_name">
