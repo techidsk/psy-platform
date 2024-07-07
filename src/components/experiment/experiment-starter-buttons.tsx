@@ -7,6 +7,7 @@ import store from 'store2';
 import { Modal } from '../ui/modal';
 import { UserPrivacyForm } from '../user/user-privacy-modal';
 import { logger } from '@/lib/logger';
+import { toast } from '@/hooks/use-toast';
 
 interface Buttons extends React.HTMLAttributes<HTMLDivElement> {
     experimentId?: string;
@@ -68,6 +69,7 @@ export function ExperimentStarterButtons({
                 part: currentStepIndex,
             }),
         });
+
         if (result.ok) {
             const responseBody = await result.json();
             const userExperimentNanoId = responseBody.data.userExperimentNanoId;
@@ -100,6 +102,14 @@ export function ExperimentStarterButtons({
                 }
             }
             userExperimentNanoId && store('experimentId', userExperimentNanoId);
+        } else {
+            const responseBody = await result.json();
+            toast({
+                title: '获取实验失败',
+                description: responseBody.msg,
+                variant: 'destructive',
+                duration: 5000,
+            });
         }
     }
 

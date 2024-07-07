@@ -1,5 +1,7 @@
 'use client';
 
+import { toast } from '@/hooks/use-toast';
+
 interface ButtonProps {
     data: any;
 }
@@ -32,6 +34,12 @@ export default function DownloadExperimentHistoryButton({ data }: ButtonProps) {
             window.URL.revokeObjectURL(url);
         } catch (error) {
             console.error('Download failed:', error);
+            toast({
+                title: '下载失败',
+                description: '下载失败，请重试',
+                variant: 'destructive',
+                duration: 5000,
+            });
         }
     }
 

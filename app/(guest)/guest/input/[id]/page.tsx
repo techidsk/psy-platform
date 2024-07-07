@@ -10,6 +10,7 @@ import {
 } from '@/lib/experiment';
 import { getAccessKey } from '@/lib/platform';
 import { logger } from '@/lib/logger';
+import { toast } from '@/hooks/use-toast';
 
 export default async function GuestInput({
     params: { id: guestNanoId },
@@ -26,6 +27,15 @@ export default async function GuestInput({
     // callback url
     const callbackPath = searchParams['callback'];
 
+    if (callbackPath === undefined) {
+        toast({
+            title: '非法页面',
+            description: '未找到用户实验中的回调地址',
+            variant: 'destructive',
+            duration: 5000,
+        });
+        return;
+    }
     // callback 地址
     const encodedCallbackUrl = getEncodedCallbackUrl(
         callbackPath,
@@ -36,6 +46,12 @@ export default async function GuestInput({
     const userExperiment = await getExperiment(guestNanoId, userExperimentId, experimentStepIndex);
     if (!userExperiment?.experiment_id) {
         logger.error('未找到用户实验中的关联的experimentId');
+        toast({
+            title: '未找到实验',
+            description: '未找到用户实验中的关联实验',
+            variant: 'destructive',
+            duration: 5000,
+        });
         return;
     }
 
@@ -60,6 +76,8 @@ export default async function GuestInput({
     logger.info(
         `实验id:${userExperiment.experiment_id}-${experimentStepIndex} 实验倒计时: ${countDownTime} 分钟，开始时间: ${startTime}`
     );
+
+    // TODO 添加弹窗提示说明
 
     return (
         <div className="bg-white container max-w-[1024px] mx-auto h-[100vh] py-4 flex flex-col gap-4 justify-between">

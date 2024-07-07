@@ -18,10 +18,12 @@ async function generate(data: any) {
         },
         body: JSON.stringify(data),
     });
+
     if (!response.ok) {
         const message = `An error has occurred: ${response.status}`;
         throw new Error(message);
     }
+
     return response.json();
 }
 

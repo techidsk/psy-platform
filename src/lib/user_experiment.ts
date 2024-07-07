@@ -4,7 +4,7 @@ import { logger } from './logger';
 import { getCurrentUser } from './session';
 
 interface projectGroupResult {
-    status: string;
+    status: number;
     message?: string;
     experiment_id: number; // 下一组实验ID
     project_group_id: number; // 用户所属的项目分组id
@@ -152,7 +152,7 @@ async function findProjectGroup(
 
                 // 返回游客用户的上次实验记录
                 return {
-                    status: 'FINISHED',
+                    status: 200,
                     message: '已经完成所有实验',
                     experiment_id: userExperimentState[0].experiment_id,
                     project_group_id: userProjectGroupId,
@@ -165,7 +165,7 @@ async function findProjectGroup(
 
         if (!experimentList[totalFinishedExperimentCount]) {
             return {
-                status: 'FINISHED',
+                status: 200,
                 message: '已经完成所有实验',
                 experiment_id: 0,
                 project_group_id: userProjectGroupId,
@@ -173,15 +173,15 @@ async function findProjectGroup(
         }
 
         return {
-            status: 'SUCCESS',
+            status: 200,
             experiment_id: experimentList[totalFinishedExperimentCount].experiment_id,
             project_group_id: userProjectGroupId,
         };
-    } catch (e) {
-        logger.error(`用户${userId} 获取实验信息时出现错误 :${e}`);
+    } catch (error: Error | any) {
+        logger.error(`用户${userId} 获取实验信息时出现错误 :${error}`);
         return {
-            status: 'ERROR',
-            message: '未分配到项目分组',
+            status: 500,
+            message: error.message || '未分配到项目分组',
             experiment_id: 0,
             project_group_id: 0,
         };
@@ -197,83 +197,95 @@ export async function getUserGroupExperiments(
     guestUserNanoId: string = '',
     inviteCode: string = ''
 ): Promise<projectGroupResult> {
-    if (inviteCode !== '' && inviteCode.length !== 21) {
-        throw new Error(`非法的邀请码: ${inviteCode}`);
-    }
-
-    let userId: number;
-    let guestUser;
-    if (guest) {
-        if (guestUserNanoId === '') {
-            throw new Error('未指定游客ID');
+    try {
+        if (inviteCode !== '' && inviteCode.length !== 21) {
+            throw new Error(`非法的邀请码: ${inviteCode}`);
         }
-        guestUser = await db.user.findFirst({
-            where: { nano_id: guestUserNanoId },
-        });
-        if (!guestUser) {
-            logger.warn('未找到对应的游客用户, 创建新用户');
-            guestUser = await db.user.create({
-                data: {
-                    nano_id: guestUserNanoId,
-                    user_role: 'GUEST',
-                    username: guestUserNanoId,
-                    invite_code: inviteCode,
-                },
+
+        let userId: number;
+        let guestUser;
+        if (guest) {
+            if (guestUserNanoId === '') {
+                throw new Error('未指定游客ID');
+            }
+            guestUser = await db.user.findFirst({
+                where: { nano_id: guestUserNanoId },
+            });
+            if (!guestUser) {
+                logger.warn('未找到对应的游客用户, 创建新用户');
+                guestUser = await db.user.create({
+                    data: {
+                        nano_id: guestUserNanoId,
+                        user_role: 'GUEST',
+                        username: guestUserNanoId,
+                        invite_code: inviteCode,
+                    },
+                });
+            }
+            userId = guestUser.id;
+        } else {
+            const user = await getCurrentUser();
+            if (!user) {
+                logger.error('用户未登陆');
+                throw new Error('用户未登陆');
+            }
+            userId = parseInt(user?.id);
+
+            guestUser = await db.user.findFirst({
+                where: { id: userId },
             });
         }
-        userId = guestUser.id;
-    } else {
-        const user = await getCurrentUser();
-        if (!user) {
-            logger.error('用户未登陆');
-            throw new Error('用户未登陆');
-        }
-        userId = parseInt(user?.id);
 
-        guestUser = await db.user.findFirst({
-            where: { id: userId },
+        const projectInviteCode = inviteCode || guestUser?.invite_code;
+        // 获取用户当前的项目
+        const currentProject = await db.projects.findFirst({
+            where: {
+                invite_code: projectInviteCode,
+            },
         });
+        if (!currentProject) {
+            logger.error(`未找到项目: [${projectInviteCode}]`);
+            throw new Error(`邀请码未找到相关项目，请联系管理员`);
+        }
+
+        if (currentProject.state !== 'AVAILABLE') {
+            logger.error(
+                `项目已经关闭: [Project: ${currentProject.id} | ${currentProject.project_name}]`
+            );
+            throw new Error(`本项目未开启实验或者已经完成实验`);
+        }
+
+        if (currentProject.start_time && currentProject.start_time > new Date()) {
+            logger.error(
+                `项目还未开始: [Project: ${currentProject.id} | ${currentProject.project_name}]`
+            );
+            throw new Error(
+                `项目还未开始，请在项目开始时间后再进行实验: ${currentProject.start_time}`
+            );
+        }
+
+        if (currentProject.end_time && currentProject.end_time < new Date()) {
+            logger.error(
+                `项目已经结束: [Project: ${currentProject.id} | ${currentProject.project_name}]`
+            );
+            throw new Error(`项目已经结束, 请联系管理员`);
+        }
+
+        logger.info(`当前激活的项目: [${currentProject.project_name}]@<${currentProject?.id}>`);
+
+        // 获取用户当前的项目分组
+        const response = await findProjectGroup(userId, currentProject?.id, guest);
+        response['user_id'] = userId;
+        return response;
+    } catch (error: Error | any) {
+        logger.error(`获取用户实验信息时出现错误 :${error}`);
+        return {
+            status: 500,
+            message: error.message || '未分配到项目分组',
+            experiment_id: 0,
+            project_group_id: 0,
+        };
     }
-
-    const projectInviteCode = inviteCode || guestUser?.invite_code;
-    // 获取用户当前的项目
-    const currentProject = await db.projects.findFirst({
-        where: {
-            invite_code: projectInviteCode,
-        },
-    });
-    if (!currentProject) {
-        logger.error(`未找到项目: [${projectInviteCode}]`);
-        throw new Error(`邀请码未找到相关项目，请联系管理员`);
-    }
-
-    if (currentProject.state !== 'AVAILABLE') {
-        logger.error(
-            `项目已经关闭: [Project: ${currentProject.id} | ${currentProject.project_name}]`
-        );
-        throw new Error(`本项目未开启实验或者已经完成实验`);
-    }
-
-    if (currentProject.start_time && currentProject.start_time > new Date()) {
-        logger.error(
-            `项目还未开始: [Project: ${currentProject.id} | ${currentProject.project_name}]`
-        );
-        throw new Error(`项目还未开始，请在项目开始时间后再进行实验: ${currentProject.start_time}`);
-    }
-
-    if (currentProject.end_time && currentProject.end_time < new Date()) {
-        logger.error(
-            `项目已经结束: [Project: ${currentProject.id} | ${currentProject.project_name}]`
-        );
-        throw new Error(`项目已经结束, 请联系管理员`);
-    }
-
-    logger.info(`当前激活的项目: [${currentProject.project_name}]@<${currentProject?.id}>`);
-
-    // 获取用户当前的项目分组
-    const response = await findProjectGroup(userId, currentProject?.id, guest);
-    response['user_id'] = userId;
-    return response;
 }
 
 /**

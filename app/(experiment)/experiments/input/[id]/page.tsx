@@ -12,6 +12,7 @@ import {
 } from '@/lib/experiment';
 import { logger } from '@/lib/logger';
 import { redirect } from 'next/navigation';
+import { toast } from '@/hooks/use-toast';
 
 export default async function MainInput({
     params: { id: userExperimentId },
@@ -33,6 +34,16 @@ export default async function MainInput({
     // callback url
     const callbackPath = searchParams['callback'];
 
+    if (callbackPath === undefined) {
+        toast({
+            title: '非法页面',
+            description: '未找到用户实验中的回调地址',
+            variant: 'destructive',
+            duration: 5000,
+        });
+        return;
+    }
+
     // callbackPath 部分
     const encodedCallbackUrl = getEncodedCallbackUrl(
         callbackPath,
@@ -43,6 +54,12 @@ export default async function MainInput({
     const userExperiment = await getExperiment(user?.id, userExperimentId, experimentStepIndex);
     if (!userExperiment?.experiment_id) {
         logger.error('未找到用户实验中的关联的experimentId');
+        toast({
+            title: '未找到实验',
+            description: '未找到用户实验中的关联实验',
+            variant: 'destructive',
+            duration: 5000,
+        });
         return;
     }
 

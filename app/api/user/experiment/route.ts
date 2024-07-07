@@ -17,17 +17,23 @@ export async function POST(request: Request) {
     const part: number = (data['part'] as any as number) || 0;
 
     const {
+        status: status,
+        message: message,
         project_group_id: projectGroupId,
         experiment_id: experimentId,
         user_id: userId,
     } = await getUserGroupExperiments(guest, guestUserNanoId);
+
+    if (status !== 200) {
+        return NextResponse.json({ msg: message });
+    }
 
     if (!projectGroupId) {
         return NextResponse.json({ msg: '项目分组不存在' });
     }
 
     if (!userId) {
-        return NextResponse.json({ msg: '未找到合法的userId @ /api/user/experiment/route.ts' });
+        return NextResponse.json({ msg: '未找到合法的用户ID' });
     }
 
     // 获取实验属性
@@ -38,7 +44,6 @@ export async function POST(request: Request) {
     });
 
     // TODO engineid异常
-
     if (experiment) {
         // 创建用户实验 user_experiments
         // 平均分配
@@ -79,9 +84,12 @@ export async function POST(request: Request) {
             ORDER BY CASE WHEN num > min_num + 2 THEN num ELSE RAND() END
             LIMIT 1;
         `;
+
         if (randomEngineIds.length === 0) {
             logger.error('没有可用的engineId');
-            return;
+            return NextResponse.json({
+                msg: '没有有效的生成引擎',
+            });
         }
 
         let engineId = randomEngineIds[0].engine_id;
