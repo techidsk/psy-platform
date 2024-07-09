@@ -11,6 +11,7 @@ async function getEngines() {
     const engines = await db.$queryRaw<any[]>`
         SELECT e.*
         FROM engine e
+        WHERE state = true
         group by e.id
     `;
 
@@ -70,7 +71,8 @@ const experimentTableConfig: TableConfig[] = [
         label: '状态',
         children: (data: any) => {
             let text = Boolean(data.state) ? '可用' : '暂停';
-            return <State type="success">{text}</State>;
+            let type = Boolean(data.state) ? 'success' : 'error';
+            return <State type={type}>{text}</State>;
         },
     },
     {
