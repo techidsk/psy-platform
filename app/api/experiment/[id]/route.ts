@@ -40,8 +40,16 @@ export async function DELETE(request: Request, context: { params: any }) {
         const groupExperiments = await db.project_group_experiments.findMany({
             where: { experiment_id: parseInt(context.params.id) },
         });
+
         if (groupExperiments.length > 0) {
-            return NextResponse.json({ msg: '实验已被分配到分组中,无法删除' }, { status: 500 });
+            const groupId = groupExperiments[0].project_group_id;
+            const group = await db.project_group.findFirst({
+                where: { id: groupId },
+            });
+
+            if (group) {
+                return NextResponse.json({ msg: '实验已被分配到分组中,无法删除' }, { status: 500 });
+            }
         }
 
         const experimentId = parseInt(context.params.id);

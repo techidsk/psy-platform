@@ -25,6 +25,14 @@ export async function POST(request: Request) {
         // 取消绑定的删除
         // 新绑定的添加
         const selectIds = data.group_ids as number[];
+        if (selectIds.length === 0) {
+            return NextResponse.json({ msg: '请选择分组' }, { status: 400 });
+        }
+
+        if (!data.project_id) {
+            return NextResponse.json({ msg: '请选择项目' }, { status: 400 });
+        }
+
         await db.project_group.updateMany({
             where: {
                 id: { in: data.group_ids as number[] },
@@ -34,6 +42,7 @@ export async function POST(request: Request) {
                 state: 'AVAILABLE',
             },
         });
+        ``;
 
         const currentGroups = await db.project_group.findMany({
             where: { project_id: data.project_id },
