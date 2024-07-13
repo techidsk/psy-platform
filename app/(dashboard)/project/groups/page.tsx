@@ -170,15 +170,15 @@ const projectTableConfig: TableConfig[] = [
             }
             const projectState: Record<ProjectGroupState, { text: string; state: string }> = {
                 AVAILABLE: {
-                    text: '可用',
+                    text: '分组正常',
                     state: 'success',
                 },
                 UNASSIGNED: {
-                    text: '未分配',
+                    text: '未分配项目',
                     state: 'error',
                 },
                 DISABLED: {
-                    text: '停用',
+                    text: '已停用',
                     state: 'error',
                 },
             };

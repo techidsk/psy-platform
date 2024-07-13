@@ -9,14 +9,15 @@ import { logger } from '@/lib/logger';
  */
 export async function POST(request: Request) {
     const data = await request.json();
+
     // 判断用户是否有输入内容
     const trails = await db.trail.findMany({
         where: { user_experiment_id: data.id },
     });
 
     if (trails.length === 0) {
-        logger.info(`[实验${data.id}] 未完成，已经删除`);
-        return NextResponse.json({ msg: '已成功清理实验' });
+        logger.warn(`[实验${data.id}] 未完成，已经删除`);
+        return NextResponse.json({ msg: '用户未输入内容，实验失败' }, { status: 400 });
     }
 
     logger.info(`[实验${data.id}] 已经完成`);
