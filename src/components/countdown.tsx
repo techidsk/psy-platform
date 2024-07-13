@@ -31,14 +31,26 @@ export function CountDown({ start, limit, nanoId, part, callbackUrl, mini = true
     // 设置初始剩余时间
     const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
 
-    async function finish(redirect: boolean = true) {
-        await fetch(getUrl('/api/experiment/finish'), {
+    async function finishExperimentStep() {
+        const result = await fetch(getUrl('/api/experiment/finish'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: nanoId, part: part }),
         });
+
+        if (!result.ok) {
+            toast({
+                title: '未完成写作任务',
+                description: `未找到任何写作内容，请重新实验`,
+                variant: 'destructive',
+                duration: 3000,
+            });
+            router.back();
+            return;
+        }
+
         const decodeUrl = decodeURIComponent(callbackUrl);
-        logger.info(`跳转到${decodeUrl}`);
+        logger.info(`实验已超时，跳转到${decodeUrl}`);
         router.push(decodeUrl);
     }
 
@@ -65,7 +77,7 @@ export function CountDown({ start, limit, nanoId, part, callbackUrl, mini = true
         if (timeLeft === 0) {
             // 弹窗说明项目已经结束
             logger.info('倒计时结束，结束实验');
-            finish();
+            finishExperimentStep();
             return;
         }
 
@@ -86,7 +98,7 @@ export function CountDown({ start, limit, nanoId, part, callbackUrl, mini = true
         useEffect(() => {
             const handleBeforeUnload = (event: any) => {
                 logger.info('离开倒计时页面，结束实验');
-                finish(false);
+                finishExperimentStep();
 
                 // 在这里，我们不设置任何阻止用户离开的逻辑，
                 // 如需询问用户是否真的想要离开，可以设置 event.returnValue

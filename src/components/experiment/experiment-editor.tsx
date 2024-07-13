@@ -16,6 +16,7 @@ interface ExperimentEditorProps {
     guest?: boolean;
     guestNanoId?: string;
     part?: number;
+    isExperimentFinished?: boolean;
 }
 
 type FetchData = {
@@ -40,6 +41,7 @@ export function ExperimentEditor({
     experimentNanoId = '',
     part = 0,
     guest = false,
+    isExperimentFinished = false,
 }: ExperimentEditorProps) {
     const router = useRouter();
     const ref = useRef<HTMLTextAreaElement>(null);
@@ -227,12 +229,12 @@ export function ExperimentEditor({
             <textarea
                 ref={ref}
                 className={classNames('input-textarea text-2xl cursor-auto', {
-                    'read-only': loading,
+                    'read-only': isExperimentFinished || loading,
                 })}
                 style={{ height: '9rem', width: '75%' }}
                 // value={text} onChange={handleChange}
                 onKeyDown={handleKeyDown}
-                readOnly={loading}
+                readOnly={isExperimentFinished || loading}
                 placeholder=""
             />
             {/* <button className="btn btn-primary" onClick={submit}>

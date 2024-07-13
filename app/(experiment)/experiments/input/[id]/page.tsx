@@ -7,7 +7,7 @@ import { getAccessKey } from '@/lib/platform';
 import {
     getExperimentStepSetting,
     getEncodedCallbackUrl,
-    getExperiment,
+    getCurrentUserExperiment,
     getExperimentInfos,
 } from '@/lib/experiment';
 import { logger } from '@/lib/logger';
@@ -51,7 +51,11 @@ export default async function MainInput({
         userExperimentId
     );
 
-    const userExperiment = await getExperiment(user?.id, userExperimentId, experimentStepIndex);
+    const userExperiment = await getCurrentUserExperiment(
+        user?.id,
+        userExperimentId,
+        experimentStepIndex
+    );
     if (!userExperiment?.experiment_id) {
         logger.error('未找到用户实验中的关联的experimentId');
         toast({
@@ -63,10 +67,10 @@ export default async function MainInput({
         return;
     }
 
-    const experimentImageList = await getExperimentInfos(
-        userExperimentId,
-        parseInt(experimentStepIndex)
-    );
+    const { trails: experimentImageList, experiment_state: experimentState } =
+        await getExperimentInfos(userExperimentId, parseInt(experimentStepIndex));
+    // 实验是否结束
+    const isExperimentFinished = experimentState == 'FINISHED';
 
     const platfomrSetting = await getAccessKey();
     const displayNum = platfomrSetting?.display_num || 1;
@@ -89,7 +93,11 @@ export default async function MainInput({
                 <ImageList experimentList={experimentImageList} displayNum={displayNum} />
             </div>
             <div className="flex-col-center gap-2">
-                <ExperimentEditor nanoId={userExperimentId} part={parseInt(experimentStepIndex)} />
+                <ExperimentEditor
+                    nanoId={userExperimentId}
+                    part={parseInt(experimentStepIndex)}
+                    isExperimentFinished={isExperimentFinished}
+                />
                 <div className="flex gap-8 items-center justify-end">
                     {countDownTime > 0 && (
                         <CountDown
@@ -107,6 +115,7 @@ export default async function MainInput({
                         part={parseInt(experimentStepIndex)}
                         stepTitle={stepTitle}
                         stepContent={stepContent}
+                        isExperimentFinished={isExperimentFinished}
                     />
                 </div>
             </div>

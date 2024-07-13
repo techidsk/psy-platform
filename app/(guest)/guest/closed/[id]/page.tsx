@@ -22,6 +22,10 @@ const ERR_CODES: ERR_CODES_TYPES = {
         title: '录入失败',
         content: '未能成功找到实验身份，请重新请求实验链接',
     },
+    '30003': {
+        title: '已完成实验',
+        content: '您已经完成了本次实验',
+    },
 };
 
 export default async function GuestClosed({ params: { id } }: GuestClosedProps) {

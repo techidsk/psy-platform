@@ -5,7 +5,7 @@ import { CountDown } from '@/components/countdown';
 import {
     getExperimentStepSetting,
     getEncodedCallbackUrl,
-    getExperiment,
+    getCurrentUserExperiment,
     getExperimentInfos,
 } from '@/lib/experiment';
 import { getAccessKey } from '@/lib/platform';
@@ -43,7 +43,11 @@ export default async function GuestInput({
         userExperimentId
     );
 
-    const userExperiment = await getExperiment(guestNanoId, userExperimentId, experimentStepIndex);
+    const userExperiment = await getCurrentUserExperiment(
+        guestNanoId,
+        userExperimentId,
+        experimentStepIndex
+    );
     if (!userExperiment?.experiment_id) {
         logger.error('未找到用户实验中的关联的experimentId');
         toast({
@@ -55,10 +59,10 @@ export default async function GuestInput({
         return;
     }
 
-    const experimentImageList = await getExperimentInfos(
-        userExperimentId,
-        parseInt(experimentStepIndex)
-    );
+    const { trails: experimentImageList, experiment_state: experimentState } =
+        await getExperimentInfos(userExperimentId, parseInt(experimentStepIndex));
+    // 实验是否结束
+    const isExperimentFinished = experimentState == 'FINISHED';
 
     const platfomrSetting = await getAccessKey();
     const displayNum = platfomrSetting?.display_num || 1;
@@ -78,8 +82,6 @@ export default async function GuestInput({
         `实验id:${userExperiment.experiment_id}-${experimentStepIndex} 实验倒计时: ${countDownTime} 分钟，开始时间: ${startTime}`
     );
 
-    // TODO 添加弹窗提示说明
-
     return (
         <div className="bg-white container max-w-[1024px] mx-auto h-[100vh] py-4 flex flex-col gap-4 justify-between">
             <div className="flex justify-between items-center gap-4 flex-1">
@@ -92,9 +94,10 @@ export default async function GuestInput({
                     guestNanoId={guestNanoId}
                     part={parseInt(experimentStepIndex)}
                     guest={true}
+                    isExperimentFinished={isExperimentFinished}
                 />
                 <div className="flex gap-8 items-center justify-end">
-                    {countDownTime > 0 && (
+                    {!isExperimentFinished && countDownTime > 0 && (
                         <CountDown
                             start={startTime}
                             limit={countDownTime}
@@ -110,6 +113,7 @@ export default async function GuestInput({
                         part={parseInt(experimentStepIndex)}
                         stepTitle={stepTitle}
                         stepContent={stepContent}
+                        isExperimentFinished={isExperimentFinished}
                     />
                 </div>
             </div>

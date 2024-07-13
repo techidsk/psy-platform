@@ -20,7 +20,19 @@ interface InviteCodeButtonProps extends React.HTMLAttributes<HTMLButtonElement> 
 export function ProjectInviteCodeButton({ data, url, className, ...props }: InviteCodeButtonProps) {
     const router = useRouter();
 
-    function copyInviteLink() {
+    async function copyInviteLink() {
+        // TODO 判断当前项目是否有分组，是否可以进行实验。
+        const result = await fetch(getUrl(`/api/project/test/${data.id}`));
+        const responseBody = await result.json();
+        if (!result.ok) {
+            return toast({
+                title: '复制失败',
+                description: responseBody.msg,
+                variant: 'destructive',
+                duration: 5000,
+            });
+        }
+
         const navigateToUrl = `${window.location.origin}${url}`;
         navigator.clipboard.writeText(navigateToUrl);
         toast({

@@ -89,8 +89,24 @@ async function getCurrentUserExperiment(
 
 async function getExperimentInfos(experimentId: string, part: number) {
     if (!experimentId) {
-        return [];
+        return {
+            trails: [],
+            experiment_state: 'IN_EXPERIMENT',
+        };
     }
+
+    const userExperiment = await db.user_experiments.findFirst({
+        where: { nano_id: experimentId, part: part },
+    });
+
+    if (!userExperiment) {
+        return {
+            trails: [],
+            experiment_state: 'IN_EXPERIMENT',
+        };
+    }
+
+    const state = userExperiment.state;
 
     // 获取用户实验prompt信息
     const result = await db.trail.findMany({
@@ -108,7 +124,10 @@ async function getExperimentInfos(experimentId: string, part: number) {
             idx: idx,
         };
     });
-    return formatResult;
+    return {
+        trails: formatResult,
+        experiment_state: state,
+    };
 }
 
 /**
@@ -145,7 +164,7 @@ function getEncodedCallbackUrl(
 
 export {
     getExperimentStepSetting,
-    getCurrentUserExperiment as getExperiment,
+    getCurrentUserExperiment,
     getExperimentInfos,
     getEncodedCallbackUrl,
 };

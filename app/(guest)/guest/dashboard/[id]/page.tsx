@@ -21,15 +21,20 @@ export default async function GuestDashboard({
     const userNanoId = id.slice(0, 16); // 游客的nanoId
     const inviteCode = id.slice(16, 37); // 游客实验的inviteCode
 
-    const { experiment_id: nextExperimentId, user_id: userId } = await getUserGroupExperiments(
-        true,
-        userNanoId,
-        inviteCode
-    );
+    const {
+        experiment_id: nextExperimentId,
+        user_id: userId,
+        experiment_status,
+    } = await getUserGroupExperiments(true, userNanoId, inviteCode);
 
     if (nextExperimentId == 0) {
         logger.error(`<临时用户${userNanoId}> 没有可用的实验`);
         redirect('/guest/closed/30001');
+    }
+
+    if (experiment_status == 'FINISH') {
+        logger.error(`<临时用户${userNanoId}> 已经完成实验`);
+        redirect('/guest/closed/30003');
     }
 
     logger.info(`<临时用户${userNanoId}> 需要进行实验 ${nextExperimentId}`);

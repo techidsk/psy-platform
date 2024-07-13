@@ -9,6 +9,7 @@ interface projectGroupResult {
     experiment_id: number; // 下一组实验ID
     project_group_id: number; // 用户所属的项目分组id
     user_id?: number; // 用户id
+    experiment_status: string; // 实验状态
 }
 
 interface experimentState {
@@ -99,7 +100,7 @@ async function getRandomProjectGroup(projectId: number): Promise<number> {
     });
 
     if (projectGroups?.length === 0) {
-        throw new Error('当前时间无可用项目分组');
+        throw new Error(`当前时间无可用项目分组 -> ${projectId}`);
     }
 
     // 随机选择一个分组
@@ -154,11 +155,13 @@ async function findProjectGroup(
                 return {
                     status: 200,
                     message: '已经完成所有实验',
-                    experiment_id: userExperimentState[0].experiment_id,
+                    experiment_id: userExperimentState[0].experiment_id, // 为了保证可以跳转到最后的步骤
                     project_group_id: userProjectGroupId,
+                    experiment_status: 'FINISH',
                 };
             }
         }
+
         logger.info(
             `<用户${userId}> 下一组实验 ${experimentList[totalFinishedExperimentCount]?.experiment_id} `
         );
@@ -169,6 +172,7 @@ async function findProjectGroup(
                 message: '已经完成所有实验',
                 experiment_id: 0,
                 project_group_id: userProjectGroupId,
+                experiment_status: 'FINISH',
             };
         }
 
@@ -176,6 +180,7 @@ async function findProjectGroup(
             status: 200,
             experiment_id: experimentList[totalFinishedExperimentCount].experiment_id,
             project_group_id: userProjectGroupId,
+            experiment_status: 'NOT_FINISH',
         };
     } catch (error: Error | any) {
         logger.error(`用户${userId} 获取实验信息时出现错误 :${error}`);
@@ -184,6 +189,7 @@ async function findProjectGroup(
             message: error.message || '未分配到项目分组',
             experiment_id: 0,
             project_group_id: 0,
+            experiment_status: 'ERROR',
         };
     }
 }
@@ -284,6 +290,7 @@ export async function getUserGroupExperiments(
             message: error.message || '未分配到项目分组',
             experiment_id: 0,
             project_group_id: 0,
+            experiment_status: 'ERROR',
         };
     }
 }
