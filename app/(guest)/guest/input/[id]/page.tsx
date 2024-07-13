@@ -3,7 +3,7 @@ import { ImageList } from '@/components/experiment/image-list';
 import { ExperimentFinishButton } from '@/components/experiment/experiment-finish-button';
 import { CountDown } from '@/components/countdown';
 import {
-    getCountDownTime,
+    getExperimentStepSetting,
     getEncodedCallbackUrl,
     getExperiment,
     getExperimentInfos,
@@ -68,10 +68,11 @@ export default async function GuestInput({
     );
 
     // 获取实验倒计时
-    const countDownTime = await getCountDownTime(
-        parseInt(userExperiment.experiment_id),
-        experimentStepIndex
-    );
+    const {
+        countdown: countDownTime,
+        title: stepTitle,
+        content: stepContent,
+    } = await getExperimentStepSetting(parseInt(userExperiment.experiment_id), experimentStepIndex);
 
     logger.info(
         `实验id:${userExperiment.experiment_id}-${experimentStepIndex} 实验倒计时: ${countDownTime} 分钟，开始时间: ${startTime}`
@@ -107,6 +108,8 @@ export default async function GuestInput({
                         experimentList={experimentImageList}
                         callbackUrl={encodedCallbackUrl}
                         part={parseInt(experimentStepIndex)}
+                        stepTitle={stepTitle}
+                        stepContent={stepContent}
                     />
                 </div>
             </div>

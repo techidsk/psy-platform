@@ -438,8 +438,8 @@ const stepTypes: StepTypesProps[] = [
     {
         id: 4,
         name: '写作实验',
-        title: false,
-        content: false,
+        title: true,
+        content: true,
         trail: true,
         countdown: true,
         pic_mode: true,

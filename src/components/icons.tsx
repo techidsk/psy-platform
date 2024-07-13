@@ -38,6 +38,7 @@ import {
     ArrowDown,
     Copy,
     Lock,
+    CircleHelp,
 } from 'lucide-react';
 
 const CheckedRight = () => (
@@ -112,4 +113,5 @@ export const Icons = {
     down: ArrowDown,
     copy: Copy,
     lock: Lock,
+    help: CircleHelp,
 };

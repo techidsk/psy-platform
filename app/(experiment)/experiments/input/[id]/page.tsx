@@ -5,7 +5,7 @@ import { CountDown } from '@/components/countdown';
 import { getCurrentUser } from '@/lib/session';
 import { getAccessKey } from '@/lib/platform';
 import {
-    getCountDownTime,
+    getExperimentStepSetting,
     getEncodedCallbackUrl,
     getExperiment,
     getExperimentInfos,
@@ -75,10 +75,11 @@ export default async function MainInput({
         new Date(userExperiment?.start_time || new Date()).getTime() / 1000
     );
 
-    const countDownTime = await getCountDownTime(
-        parseInt(userExperiment.experiment_id),
-        experimentStepIndex
-    );
+    const {
+        countdown: countDownTime,
+        title: stepTitle,
+        content: stepContent,
+    } = await getExperimentStepSetting(parseInt(userExperiment.experiment_id), experimentStepIndex);
 
     logger.info(`实验倒计时: ${countDownTime} 分钟，开始时间: ${startTime}`);
 
@@ -104,6 +105,8 @@ export default async function MainInput({
                         experimentList={experimentImageList}
                         callbackUrl={encodedCallbackUrl}
                         part={parseInt(experimentStepIndex)}
+                        stepTitle={stepTitle}
+                        stepContent={stepContent}
                     />
                 </div>
             </div>

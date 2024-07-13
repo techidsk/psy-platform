@@ -4,13 +4,22 @@ import { ImageResponse } from '@/types/experiment';
 import { db } from './db';
 import { logger } from './logger';
 
+interface ExperimentStep {
+    countdown: number;
+    title: string;
+    content: string;
+}
+
 /**
  * 获取实验倒计时, 从 experiment_step 中获取
  *
  * @param {number} experimentId - The ID of the experiment to retrieve countdown time for.
  * @return {number} The countdown time for the specified experiment, defaulting to 1200 if not found.
  */
-async function getCountDownTime(experimentId: number, order: string): Promise<number> {
+async function getExperimentStepSetting(
+    experimentId: number,
+    order: string
+): Promise<ExperimentStep> {
     const experimentStep = await db.$queryRaw<any[]>`
         SELECT *
         FROM (
@@ -23,20 +32,23 @@ async function getCountDownTime(experimentId: number, order: string): Promise<nu
     `;
     if (!experimentStep || experimentStep.length === 0) {
         logger.error(`experimentId: ${experimentId}-${order} 实验不存在 @experiment.ts`);
-        return 20;
+        return {
+            countdown: 20,
+            title: '',
+            content: '',
+        };
     }
 
-    const content = experimentStep[0]?.content as any;
+    const stepContent = experimentStep[0]?.content as any;
 
-    let countdown = content?.countdown;
-
-    // 如果是 0，表示不限制时间，返回 0
-    if (countdown === 0) {
-        return 0;
-    }
-
-    // 如果是 undefined 或者 null，表示没有设置时间，返回 20
-    return content?.countdown || 20;
+    let countdown = stepContent?.countdown;
+    let title = stepContent?.title;
+    let content = stepContent?.content;
+    return {
+        countdown: countdown ?? 20,
+        title: title,
+        content: content,
+    };
 }
 
 /**
@@ -132,7 +144,7 @@ function getEncodedCallbackUrl(
 }
 
 export {
-    getCountDownTime,
+    getExperimentStepSetting,
     getCurrentUserExperiment as getExperiment,
     getExperimentInfos,
     getEncodedCallbackUrl,
