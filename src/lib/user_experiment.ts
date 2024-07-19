@@ -162,6 +162,9 @@ async function findProjectGroup(
             }
         }
 
+        logger.info(`<用户${userId}> 已经完成了 ${totalFinishedExperimentCount} 次，剩余实验: `);
+        logger.info(experimentList);
+
         logger.info(
             `<用户${userId}> 下一组实验 ${experimentList[totalFinishedExperimentCount]?.experiment_id} `
         );
