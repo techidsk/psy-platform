@@ -15,10 +15,6 @@ interface DashboardProps {
 }
 
 export default async function DashboardHome({ searchParams }: DashboardProps) {
-    // 获取用户默认的实验
-    const currentIndex = searchParams['step_idx'] ? parseInt(searchParams['step_idx']) : 1;
-    const userExperimentNanoId = searchParams['nano_id'] || '';
-
     // 未登录
     const currentUser = await getCurrentUser();
     if (!currentUser?.id) {
@@ -31,7 +27,12 @@ export default async function DashboardHome({ searchParams }: DashboardProps) {
         redirect('/dashboard');
     }
 
+    // 获取用户默认的实验
+    const currentIndex = searchParams['step_idx'] ? parseInt(searchParams['step_idx']) : 1;
+    const userExperimentNanoId = searchParams['nano_id'] || '';
+
     const currentUserId = parseInt(currentUser.id);
+
     // 获取下一组实验 id 以及用户被分配到的项目分组 project_group 表中的 id
     const { experiment_id: nextExperimentId, project_group_id: projectGroupId } =
         await getUserGroupExperiments();

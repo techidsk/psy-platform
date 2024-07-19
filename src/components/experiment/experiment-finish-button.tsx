@@ -64,7 +64,7 @@ export function ExperimentFinishButton({
 
         const decodeUrl = decodeURIComponent(callbackUrl);
         logger.info(`用户点击完成，跳转到${decodeUrl}`);
-        router.push(decodeUrl);
+        router.replace(decodeUrl);
     }
 
     function goNext() {

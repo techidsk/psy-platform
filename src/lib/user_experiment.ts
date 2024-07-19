@@ -409,3 +409,40 @@ export async function findLastExperiment(
         timeStamp: 0,
     };
 }
+
+export async function findCallbackUserExperiment(userNanoId: string, userExperimentNanoId: string) {
+    const user = await db.user.findFirst({
+        where: { nano_id: userNanoId },
+    });
+    if (!user) {
+        logger.error(`未找到用户: ${userNanoId}`);
+        return {
+            status: 500,
+            message: '未找到合法用户，请确认url是否正确',
+            user_id: 0,
+            experiment_id: 0,
+        };
+    }
+
+    // 获取用户最后一次写作实验
+    const userExperiment = await db.user_experiments.findFirst({
+        where: { nano_id: userExperimentNanoId, user_id: user.id },
+        orderBy: { id: 'desc' },
+    });
+    if (!userExperiment || !userExperiment.part) {
+        // 用户未进行过实验
+        logger.error(`未找到用户实验: ${userExperimentNanoId}`);
+        return {
+            status: 500,
+            message: '未找到用户实验，请确认url是否正确',
+            user_id: user.id,
+            experiment_id: 0,
+        };
+    }
+
+    return {
+        status: 200,
+        user_id: user.id,
+        experiment_id: parseInt(userExperiment.experiment_id || '0'),
+    };
+}
