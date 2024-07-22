@@ -78,12 +78,14 @@ export function ProjectInviteCodeButton({ data, url, className, ...props }: Invi
                         <Icons.refresh size={16} />
                     </span>
                 </button>
-                <button className="btn btn-link btn-xs" onClick={() => copyInviteLink()}>
-                    <span className="flex gap-1 justify-center items-center">
-                        复制链接
-                        <Icons.copy size={16} />
-                    </span>
-                </button>
+                {data.invite_code && (
+                    <button className="btn btn-link btn-xs" onClick={() => copyInviteLink()}>
+                        <span className="flex gap-1 justify-center items-center">
+                            复制链接
+                            <Icons.copy size={16} />
+                        </span>
+                    </button>
+                )}
             </div>
         </div>
     );
