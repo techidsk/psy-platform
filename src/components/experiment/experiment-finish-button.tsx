@@ -114,7 +114,7 @@ export function ExperimentFinishButton({
                         完成写作
                     </button>
                 )}
-                {stepTitle && stepContent && (
+                {(stepTitle || stepContent) && (
                     <button
                         className="btn btn-ghost btn-outline"
                         disabled={disabled}
