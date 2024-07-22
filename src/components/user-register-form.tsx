@@ -12,10 +12,12 @@ import { registerSchema } from '@/lib/validations/auth';
 import { Icons } from '@/components/icons';
 import { getUrl } from '@/lib/url';
 
-interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
+    qualtricsId?: string;
+}
 type FormData = z.infer<typeof registerSchema>;
 
-export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
+export function UserRegisterForm({ qualtricsId, className, ...props }: UserAuthFormProps) {
     const {
         register,
         handleSubmit,
@@ -41,6 +43,10 @@ export function UserRegisterForm({ className, ...props }: UserAuthFormProps) {
             return;
         }
         setIsLoading(true);
+        if (qualtricsId) {
+            data.qualtrics = qualtricsId;
+        }
+
         const result = await fetch(getUrl('/api/register'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

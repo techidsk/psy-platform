@@ -11,6 +11,8 @@ import { userPrivacySchema } from '@/lib/validations/user';
 import { Icons } from '@/components/icons';
 import { getUrl } from '@/lib/url';
 import { AGES_MAP, GENDER_MAP } from '@/common/user';
+import store from 'store2';
+import { logger } from '@/lib/logger';
 
 interface UserPrivacyProps extends React.HTMLAttributes<HTMLDivElement> {
     closeModal: Function;
@@ -23,6 +25,7 @@ type FormData = z.infer<typeof userPrivacySchema>;
 function getKeyFromMap(value: any, map: any) {
     return Object.keys(map).find((key) => map[key] === value);
 }
+const GUEST_QUALTRICS_ID = 'guestQualtricsId';
 
 export function UserPrivacyForm({
     className,
@@ -126,7 +129,10 @@ export function UserPrivacyForm({
                 setValue('gender', data.gender || '');
                 setValue('ages', data.ages || '');
                 // TODO 添加根据项目来判断是否需要qualtrics
-                setValue('qualtrics', data.qualtrics || '');
+                const qualtricsIdJson = JSON.parse(store.get(GUEST_QUALTRICS_ID) || '{}');
+                const qualtricsId = qualtricsIdJson['value'];
+
+                setValue('qualtrics', qualtricsId || data.qualtrics || '');
             });
     }
 

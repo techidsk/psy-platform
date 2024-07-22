@@ -116,6 +116,7 @@ export function ExperimentStarterButtons({
     function handleToggle() {
         setOpen(!open);
     }
+
     function closeModel() {
         setOpen(false);
     }

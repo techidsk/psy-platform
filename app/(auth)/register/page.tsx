@@ -5,11 +5,17 @@ import { Icons } from '@/components/icons';
 import './register.css';
 import { UserRegisterForm } from '@/components/user-register-form';
 export const metadata: Metadata = {
-    title: '登录',
-    description: '登录平台',
+    title: '注册账号',
+    description: '注册账号-自由写作平台',
 };
 
-export default function RegisterPage() {
+interface RegisterPageProps {
+    searchParams: { [key: string]: string };
+}
+
+export default function RegisterPage({ searchParams }: RegisterPageProps) {
+    const qualtricsId = searchParams['qualtricsId'] || '';
+
     return (
         <div className="container grid h-screen w-screen flex-col items-center justify-center lg:max-w-none lg:grid-cols-2 lg:px-0 bg-white">
             <Link href="/login" className={'absolute top-4 right-4 md:top-8 md:right-8'}>
@@ -25,7 +31,7 @@ export default function RegisterPage() {
                             输入你的信息以注册账号
                         </p>
                     </div>
-                    <UserRegisterForm />
+                    <UserRegisterForm qualtricsId={qualtricsId} />
                     <p className="px-8 text-center text-sm text-slate-500 dark:text-slate-400">
                         点击继续即表示您同意我们的{' '}
                         <Link
