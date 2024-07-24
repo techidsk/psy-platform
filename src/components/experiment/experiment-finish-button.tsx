@@ -115,13 +115,14 @@ export function ExperimentFinishButton({
                     </button>
                 )}
                 {(stepTitle || stepContent) && (
-                    <button
-                        className="btn btn-ghost btn-outline"
-                        disabled={disabled}
-                        onClick={() => setOpenHint(true)}
-                    >
-                        <Icons.help />
-                    </button>
+                    <div className="tooltip" data-tip="写作指导">
+                        <button
+                            className="btn btn-ghost btn-outline"
+                            onClick={() => setOpenHint(true)}
+                        >
+                            <Icons.help />
+                        </button>
+                    </div>
                 )}
             </div>
 
@@ -159,7 +160,7 @@ export function ExperimentFinishButton({
                     <StringHTML htmlString={stepContent ?? ''} margin={false} />
                     <div className="flex gap-4 flex-row-reverse">
                         <button className="btn btn-ghost" onClick={closeHint}>
-                            返回
+                            确认
                         </button>
                     </div>
                 </Modal>

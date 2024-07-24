@@ -89,6 +89,10 @@ export function ExperimentStepTab({
         // 如果是编辑模式
         // 则需要保留原有数据，否则显示
         fetchSteps();
+
+        return () => {
+            console.log('Step form dismount');
+        };
     }, []);
 
     return (
