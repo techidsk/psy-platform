@@ -41,6 +41,7 @@ export function ExperimentStepTab({
         if (experimentId) {
             const response = await fetch(`/api/experiment/${experimentId}/steps`);
             const data = await response.json();
+            console.log(data);
             setExperimentSteps(data);
         }
     }

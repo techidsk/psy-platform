@@ -13,12 +13,12 @@ export function getUrl(url: string) {
     }
 
     if (isDev) {
-        console.log('url is: ', process.env.NEXT_PUBLIC_BASE_URL + url);
+        // console.log('url is: ', process.env.NEXT_PUBLIC_BASE_URL + url);
         return process.env.NEXT_PUBLIC_BASE_URL + url;
     } else if (isProd) {
         return url;
     } else {
-        console.log('Unknown NODE_ENV:', process.env.NODE_ENV, url);
+        // console.log('Unknown NODE_ENV:', process.env.NODE_ENV, url);
         return url;
     }
 }

@@ -71,7 +71,10 @@ export function ExperimentStepForm({
     const addExperimentStep = async (data: FormData) => {
         // 根据 dispatch 进行划分
         if (dispatch === 'UPDATE') {
-            return updateExperimentStep(data);
+            return updateExperimentStep({
+                ...data,
+                step_content: stepContent,
+            });
         }
         const content = {
             content: data.step_content,
@@ -112,6 +115,7 @@ export function ExperimentStepForm({
 
     // 更新实验步骤
     const updateExperimentStep = async (data: FormData) => {
+        console.log('data', data);
         const content = {
             id: step?.id,
             content: data.step_content,
