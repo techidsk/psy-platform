@@ -1,0 +1,77 @@
+# CI/CD 工作流名称
+name: Next.js 构建测试 & 线上生产环境部署
+
+
+# 该 CI/CD 在什么情况下触发
+# 通常设置在目标分支上触发
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # 支持手动触发
+
+
+jobs:
+# 测试任务
+# 可以单独拎出来做测试集成
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '20'
+
+    - name: Install dependencies
+      run: pnpm install
+
+    - name: Run typecheck
+      run: pnpm run type-check
+
+    # - name: Run build
+    #   run: npm run build
+
+  deploy:
+    needs: build-test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '20'
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        # 需要在 仓库密钥 中添加 ssh 私钥
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }} # 服务器的私钥
+      
+    - name: Execute remote commands for update deploy
+        # 需要在 仓库变量 中添加远程服务器的以下信息
+        # - REMOTE_USER 连接的账户
+        # - REMOTE_HOST 连接的主机地址
+        # - REMOTE_PATH 相应仓库代码在目标服务器上的路径
+      run: |
+          ssh -o StrictHostKeyChecking=no root@139.196.216.224 << 'EOF'
+            # 使用 bash -l 启动登录shell
+            bash -l -c '
+              echo "Current user: $(whoami)" # 显示当前登录用户
+
+              nvm use 20 # 切换到 Node.js 版本 20
+
+              cd /root/code/psy-platform
+              git pull
+              pnpm install
+              pnpm run build
+
+              pm2 restart psy
+              pm2 save
+            '
+          EOF
