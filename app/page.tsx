@@ -32,7 +32,11 @@ export default async function Home() {
                         )}
                     </div>
                     <footer className="flex-0">
-                        <div className="flex justify-center my-4">This is footer</div>
+                       <div className="flex justify-center my-4">
+                            <p>
+                                <a href="https://beian.miit.gov.cn/#/Integrated/index" target="_blank" rel="noopener noreferrer">浙ICP备2024070404号-1</a>
+                            </p>
+                       </div>
                     </footer>
                 </div>
             </div>
