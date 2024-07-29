@@ -54,7 +54,7 @@ jobs:
       uses: webfactory/ssh-agent@v0.5.3
       with:
         # 需要在 仓库密钥 中添加 ssh 私钥
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }} # 服务器的私钥
+        ssh-private-key: ${{ secrets.WENDAO_CI }} # 服务器的私钥
       
     - name: Execute remote commands for update deploy
         # 需要在 仓库变量 中添加远程服务器的以下信息
