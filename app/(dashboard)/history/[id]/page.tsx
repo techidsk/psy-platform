@@ -28,7 +28,7 @@ async function getExperimentInfos(experimentId: string) {
             idx: idx,
         };
     });
-    let baseTimestamp = formatResult[0].timestamp || 0;
+    let baseTimestamp = formatResult[0]?.timestamp || 0;
     return formatResult.map((e) => {
         return {
             ...e,
