@@ -8,6 +8,7 @@ import { ImageResponse } from '@/types/experiment';
 import { getUrl } from '@/lib/url';
 import { useExperimentState } from '@/state/_experiment_atoms';
 import classNames from 'classnames';
+import { logger } from '@/lib/logger';
 
 interface ExperimentEditorProps {
     nanoId: string;
@@ -59,6 +60,58 @@ export function ExperimentEditor({
         }
     }
 
+    async function pollForResult(promptNanoId: string) {
+        const generate_response = await fetch(getUrl(`/api/generate/${promptNanoId}`), {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            cache: 'no-store',
+        });
+
+        let response_json = await generate_response.json();
+
+        // 使用递归函数进行轮询
+        const fetchResult: any = async () => {
+            if (response_json.status !== 'success') {
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+                const tempResponse = await fetch(getUrl(`/api/generate/${promptNanoId}`), {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    cache: 'no-store',
+                });
+                response_json = await tempResponse.json();
+                return fetchResult(); // 递归调用直到成功
+            }
+            return response_json;
+        };
+
+        const finalResponse = await fetchResult();
+        // logger.info('pollForResult finalResponse:', finalResponse);
+
+        try {
+            await fetch(getUrl('/api/trail/update'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    promptNanoId: promptNanoId,
+                    guestNanoId: guestNanoId,
+                    nano_id: experimentId,
+                    imageUrl: finalResponse.data.image_url,
+                    prompt: finalResponse.data.chat_result,
+                }),
+                cache: 'no-store',
+            });
+            router.refresh();
+        } catch (error) {
+            console.error('Failed to update trail:', error);
+        }
+    }
+
     async function submit() {
         if (!nanoId) {
             return;
@@ -103,6 +156,8 @@ export function ExperimentEditor({
         ref.current!.value = '';
         setLoading(false);
         router.refresh();
+
+        // 发送请求，然后等待轮训刷新页面
         await generate(promptNanoId, data.nano_id);
     }
 
@@ -121,27 +176,13 @@ export function ExperimentEditor({
             headers: { 'Content-Type': 'application/json' },
         });
 
-        let d = await response.json();
         if (response.ok) {
-            await fetch(getUrl('/api/trail/update'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    promptNanoId: promptNanoId,
-                    imageUrl: d.url,
-                    nano_id: experimentId,
-                    prompt: d.prompt,
-                    guestNanoId: guestNanoId,
-                }),
-                cache: 'no-store',
-            });
-            router.refresh();
+            // 生成成功，轮训获取最新结果
+            await pollForResult(promptNanoId);
         } else {
             toast({
                 title: '发送失败',
-                description: d.msg,
+                description: '未能成功生成图片，请继续输入',
                 variant: 'destructive',
                 duration: 3000,
             });

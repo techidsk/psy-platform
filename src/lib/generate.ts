@@ -1,7 +1,7 @@
 import { logger } from './logger';
 
 require('dotenv').config();
-const url = `http://${process.env.COMFYUI_HOST_URL}/result`;
+const url = `http://${process.env.COMFYUI_HOST_URL2}/result`;
 
 /**
  * 转发到ComfyUI生成接口
@@ -11,20 +11,51 @@ const url = `http://${process.env.COMFYUI_HOST_URL}/result`;
  */
 async function generate(data: any) {
     logger.debug(`Sending data to ComfyUI: ${JSON.stringify(data)}`);
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-    });
+    try {
+        logger.info(`Sending data to ComfyUI: ${url}`);
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+        if (!response.ok) {
+            // 尝试获取更多错误信息
+            const errorBody = await response.text();
+            const message = `An error has occurred: ${response.status} ${errorBody}`;
+            throw new Error(message);
+        }
 
-    if (!response.ok) {
-        const message = `An error has occurred: ${response.status}`;
-        throw new Error(message);
+        return await response.json();
+    } catch (error) {
+        logger.error(`Failed to send data to ComfyUI: ${error}`);
+        // 可以根据需要重新抛出错误或处理错误
+        throw error; // 或者可以返回一个错误响应对象
     }
-
-    return response.json();
 }
 
-export { generate };
+async function getGenerateResult(task_id: string) {
+    try {
+        let u = `http://${process.env.COMFYUI_HOST_URL2}/status/${task_id}`;
+        const response = await fetch(`http://${process.env.COMFYUI_HOST_URL2}/status/${task_id}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            cache: 'no-cache',
+        });
+        const res = await response.json();
+        // logger.info(`Get data from ComfyUI: ${JSON.stringify(res)}`);
+        return res;
+    } catch (error) {
+        logger.error(`Failed to send data to ComfyUI: ${error}`);
+        // 可以根据需要重新抛出错误或处理错误
+        return {
+            status: 'failed',
+            message: error,
+        };
+    }
+}
+
+export { generate, getGenerateResult };

@@ -1,14 +1,10 @@
 import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { generate } from '@/lib/generate';
-import { OpenAIClient, AzureKeyCredential, ChatRequestMessage } from '@azure/openai';
 import { getCurrentUser } from '@/lib/session';
 import { AGES_MAP, GENDER_MAP } from '@/common/user';
 import { logger } from '@/lib/logger';
-
-require('dotenv').config();
-const endpoint = process.env.OPENAI_ENDPOINT || '';
-const azureApiKey = process.env.OPENAI_API_KEY || '';
+import { trail as dbTrail } from '@prisma/client';
 
 function getValueFromObj(key: number, map: object) {
     for (const [k, v] of Object.entries(map)) {
@@ -17,24 +13,6 @@ function getValueFromObj(key: number, map: object) {
         }
     }
     return '';
-}
-
-/**
- * 使用OpenAI翻譯提示词
- *
- * @param {string} systemPrompt - The system prompt.
- * @param {string} userPrompt - The messages to be translated.
- * @returns {Promise<string>} - The translated message.
- */
-async function translate(systemPrompt: string, userPrompt: string): Promise<string> {
-    const messages: ChatRequestMessage[] = [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-    ];
-    const client = new OpenAIClient(endpoint, new AzureKeyCredential(azureApiKey));
-    const deploymentId = '0605chatgpt';
-    const result = await client.getChatCompletions(deploymentId, messages);
-    return result?.choices[0]?.message?.content ?? '';
 }
 
 /**
@@ -92,25 +70,26 @@ export async function POST(request: Request) {
         return NextResponse.json({ msg: '发布失败，缺少参数' });
     }
 
-    // 是否开启生成图片模式
-    let imageUrl = '';
-    let prompt = '';
-
     const step = await getExperimentStep(parseInt(userExperiment.experiment_id), stepOrder);
     const picMode = step?.pic_mode || true;
 
-    logger.info(`${isGuest ? 'Guest模式' : '普通用户模式'}`);
-    logger.info(json);
-    logger.info(picMode);
-    if (picMode) {
-        // 发送生成数据
-        const userPrompts = await db.trail.findMany({
-            where: { user_id: trail.user_id, user_experiment_id: trail.user_experiment_id },
-            select: { prompt: true, generate_prompt: true },
-            orderBy: { create_time: 'desc' },
-            take: 5,
-        });
+    logger.info(`${picMode ? '生成图片' : '不生成图片'}`);
+    if (!picMode) {
+        return NextResponse.json({ msg: '发布成功' });
+    }
 
+    // 获取用户最近5条内容进行发送
+    const userPrompts = await fetchUserPrompts(trail);
+
+    // 获取实验信息
+    const experiment = await fetchExperiment(parseInt(userExperiment.experiment_id));
+    if (!experiment) {
+        logger.error('未找到对应experiment数据');
+        return NextResponse.json({ msg: '发布失败，缺少参数，未找到对应的实验数据' });
+    }
+
+    logger.info(`promptNanoId: ${promptNanoId} 请求已经发送`);
+    try {
         const generateData = {
             user_prompts: userPrompts,
             engine_id: engine.id,
@@ -123,32 +102,27 @@ export async function POST(request: Request) {
                 gender: (user?.gender && getValueFromObj(user.gender, GENDER_MAP)) || '',
                 ages: (user?.ages && getValueFromObj(user.ages, AGES_MAP)) || '',
             },
+            task_id: promptNanoId,
         };
-        const experiment = await db.experiment.findFirst({
-            where: { id: parseInt(userExperiment.experiment_id) },
-        });
-        if (!experiment) {
-            logger.error('未找到对应experiment数据');
-            return;
-        }
         const response = await generate(generateData);
-        logger.info(response);
-        imageUrl = response?.image_url;
-        prompt = response?.chat_result;
-    } else {
-        logger.info(`[实验${userExperiment.experiment_id}]-${stepOrder} 步骤不生成图片`);
-    }
-
-    if (imageUrl || imageUrl == '') {
-        logger.info(`生成图片url: ${imageUrl}`);
-        return NextResponse.json({ msg: '发布成功', url: imageUrl, prompt: prompt });
-    } else {
-        await db.trail.update({
-            where: { nano_id: promptNanoId },
-            data: { state: 'FAILED' },
-        });
-        logger.info(`生成图片失败`);
-        return NextResponse.json({ msg: '发布失败' }, { status: 401 });
+        if (response?.status === 'Task enqueued') {
+            logger.info(`成功发送生成请求 [${promptNanoId}] 到生成服务器`);
+            return NextResponse.json({
+                msg: '发布成功',
+                url: response?.image_url,
+                prompt: response?.chat_result,
+            });
+        } else {
+            await db.trail.update({
+                where: { nano_id: promptNanoId },
+                data: { state: 'FAILED' },
+            });
+            logger.error(`算法生成图片失败`);
+            return NextResponse.json({ msg: '发布失败，生成服务未能响应' }, { status: 401 });
+        }
+    } catch (error) {
+        logger.error(error);
+        return NextResponse.json({ msg: '发布失败，服务端数据处理异常' }, { status: 401 });
     }
 }
 
@@ -165,4 +139,23 @@ async function getExperimentStep(experimentId: number, step: number) {
         console.error('Expected content to be an object, but received:', typeof content);
         return null;
     }
+}
+
+/**
+ * 获取用户最近5条内容
+ * @param trail
+ */
+async function fetchUserPrompts(trail: dbTrail) {
+    return await db.trail.findMany({
+        where: { user_id: trail.user_id, user_experiment_id: trail.user_experiment_id },
+        select: { prompt: true, generate_prompt: true },
+        orderBy: { create_time: 'desc' },
+        take: 5,
+    });
+}
+
+async function fetchExperiment(userExperimentId: number) {
+    return await db.experiment.findFirst({
+        where: { id: userExperimentId },
+    });
 }
