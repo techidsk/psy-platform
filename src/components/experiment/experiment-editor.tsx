@@ -61,6 +61,9 @@ export function ExperimentEditor({
     }
 
     async function pollForResult(promptNanoId: string) {
+        const startTime = Date.now(); // 记录开始时间
+        const timeout = 60000; // 设置超时时间为60000毫秒（1分钟）
+
         const generate_response = await fetch(getUrl(`/api/generate/${promptNanoId}`), {
             method: 'GET',
             headers: {
@@ -73,6 +76,24 @@ export function ExperimentEditor({
 
         // 使用递归函数进行轮询
         const fetchResult: any = async () => {
+            if (Date.now() - startTime > timeout) {
+                // 超时处理，更新状态为FAILED，不再递归调用
+                await fetch(getUrl('/api/trail/update'), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        promptNanoId: promptNanoId,
+                        guestNanoId: guestNanoId,
+                        nano_id: experimentId,
+                        status: 'FAILED', // 添加一个状态字段表明失败
+                    }),
+                    cache: 'no-store',
+                });
+                return null; // 返回null或适当的失败响应
+            }
+
             if (response_json.status !== 'success') {
                 await new Promise((resolve) => setTimeout(resolve, 1000));
                 const tempResponse = await fetch(getUrl(`/api/generate/${promptNanoId}`), {
@@ -88,10 +109,10 @@ export function ExperimentEditor({
             return response_json;
         };
 
-        const finalResponse = await fetchResult();
         // logger.info('pollForResult finalResponse:', finalResponse);
-
         try {
+            const finalResponse = await fetchResult();
+
             await fetch(getUrl('/api/trail/update'), {
                 method: 'POST',
                 headers: {

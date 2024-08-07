@@ -23,12 +23,15 @@ export async function POST(request: Request) {
     }
 
     let imageUrl = data['imageUrl'];
+
+    const state = data['state'] || 'SUCCESS';
+
     await db.trail.update({
         where: {
             nano_id: promptNanoId,
         },
         data: {
-            state: 'SUCCESS',
+            state: state,
             image_url: imageUrl,
             update_time: new Date(),
             generate_prompt: data.prompt,

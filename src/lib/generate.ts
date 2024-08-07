@@ -1,7 +1,7 @@
 import { logger } from './logger';
 
 require('dotenv').config();
-const url = `http://${process.env.COMFYUI_HOST_URL2}/result`;
+const url = `http://${process.env.COMFYUI_HOST_URL}/result`;
 
 /**
  * 转发到ComfyUI生成接口
@@ -37,8 +37,8 @@ async function generate(data: any) {
 
 async function getGenerateResult(task_id: string) {
     try {
-        let u = `http://${process.env.COMFYUI_HOST_URL2}/status/${task_id}`;
-        const response = await fetch(`http://${process.env.COMFYUI_HOST_URL2}/status/${task_id}`, {
+        let u = `http://${process.env.COMFYUI_HOST_URL}/status/${task_id}`;
+        const response = await fetch(`http://${process.env.COMFYUI_HOST_URL}/status/${task_id}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
