@@ -54,6 +54,13 @@ export async function GET(request: NextRequest, context: { params: any }) {
             }
         }
 
+        let engine = null;
+        if (userExperiment?.engine_id) {
+            engine = await db.engine.findFirst({
+                where: { id: userExperiment?.engine_id },
+            });
+        }
+
         // 用户信息
         const userId = userExperiment?.user_id as number;
         const user = await db.user.findFirst({
@@ -77,6 +84,8 @@ export async function GET(request: NextRequest, context: { params: any }) {
             select: {
                 image_url: true,
                 prompt: true,
+                create_time: true,
+                update_time: true,
             },
         });
 
@@ -85,19 +94,31 @@ export async function GET(request: NextRequest, context: { params: any }) {
         if (response.length === 0) {
             return NextResponse.json({ msg: '没有记录' }, { status: 404 });
         }
-        let csvContentJi = '\uFEFF';
-        let csvContentHu = '\uFEFF';
 
-        // 导出文件首行
-        csvContentJi += `uniqueID,Projectname,Condition,Trial,gender,agegroup,qualtricsid,writingtime,totalimages,writing content,images\n`;
-        csvContentJi += `${user?.nano_id},${project?.project_name},${projectGroup?.group_name},${experiment?.experiment_name},${gender},${ages},${user?.qualtrics},${totalTime},${images.length}\n`; // 添加标题行
-        const emptyColumns = new Array(9).fill('').join(','); // 生成9个逗号分隔的空字符串
+        // 纪老师要求的CSV内容
+        let csvContentJi = '\uFEFF';
+
+        // 首行内容
+        csvContentJi += `uniqueID,Projectname,Condition,Trial,gender,agegroup,qualtricsid,writingtime,totalimages,engine,writing content,images,generate time\n`;
+        csvContentJi += `${user?.nano_id},${project?.project_name},${projectGroup?.group_name},${experiment?.experiment_name},${gender},${ages},${user?.qualtrics},${totalTime},${images.length},${engine?.engine_name}\n`; // 添加标题行
+
+        const emptyColumns = new Array(10).fill('').join(',');
         trail.forEach((row) => {
             const input = (row.prompt as string) || '';
             const image = row.image_url as string;
-            csvContentJi += `${emptyColumns},${input},${image}\n`;
+            const generateTime =
+                row.update_time && row.create_time
+                    ? Math.round(
+                          (new Date(row.update_time).getTime() -
+                              new Date(row.create_time).getTime()) /
+                              1000
+                      )
+                    : 0;
+            csvContentJi += `${emptyColumns},${input},${image},${generateTime}\n`;
         });
 
+        // 胡老师要求的CSV内容
+        let csvContentHu = '\uFEFF';
         csvContentHu += 'Input,Images,Timestamp\n'; // 添加标题行
         response.forEach((row) => {
             let input = (row.input as string) || '';
