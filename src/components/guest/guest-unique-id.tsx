@@ -35,22 +35,24 @@ export default function GuestUniqueKey({
 
     useEffect(() => {
         // 尝试从 localStorage 获取用户ID
-        const itemStr = store.get(GUEST_UNIQUE_KEY);
-        if (itemStr) {
-            const item = JSON.parse(itemStr);
-            const now = new Date();
-            // 检查存储的用户ID是否过期
-            if (now.getTime() > item.expiry) {
-                // 已过期，设置新的用户ID并更新localStorage
-                setAndStoreKey(GUEST_UNIQUE_KEY, userUniqueKey);
-            } else {
-                // 未过期，使用localStorage中的用户ID
-                setUserKey(item.value);
-            }
-        } else {
-            // localStorage中没有用户ID，设置新的用户ID
-            setAndStoreKey(GUEST_UNIQUE_KEY, userUniqueKey);
-        }
+        // const itemStr = store.get(GUEST_UNIQUE_KEY);
+        setAndStoreKey(GUEST_UNIQUE_KEY, userUniqueKey);
+
+        // if (itemStr) {
+        //     const item = JSON.parse(itemStr);
+        //     const now = new Date();
+        //     // 检查存储的用户ID是否过期
+        //     if (now.getTime() > item.expiry) {
+        //         // 已过期，设置新的用户ID并更新localStorage
+        //         setAndStoreKey(GUEST_UNIQUE_KEY, userUniqueKey);
+        //     } else {
+        //         // 未过期，使用localStorage中的用户ID
+        //         setUserKey(item.value);
+        //     }
+        // } else {
+        //     // localStorage中没有用户ID，设置新的用户ID
+        //     setAndStoreKey(GUEST_UNIQUE_KEY, userUniqueKey);
+        // }
     }, [userUniqueKey, setAndStoreKey]);
 
     useEffect(() => {
