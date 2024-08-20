@@ -50,7 +50,7 @@ export default function Pagination({ current, pageSize = 10, end = 1 }: Paginati
                 </select>
             </div>
             <div className="join">
-                <div className="join grid grid-cols-2">
+                <div className="join grid grid-cols-3 items-center">
                     <button
                         className="join-item btn btn-outline"
                         data-page={Math.max(1, current - 1)}
@@ -58,6 +58,7 @@ export default function Pagination({ current, pageSize = 10, end = 1 }: Paginati
                     >
                         前一页
                     </button>
+                    <div className="join-item text-center text-sm"> 第 {current} 页</div>
                     <button
                         className="join-item btn btn-outline"
                         data-page={Math.max(1, current + 1)}
