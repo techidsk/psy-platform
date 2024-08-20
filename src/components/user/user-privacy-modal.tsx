@@ -50,6 +50,8 @@ export function UserPrivacyForm({
     });
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    // 添加 qualtrics 是否可以编辑
+    const [isQualtricsEditable, setIsQualtricsEditable] = useState<boolean>(true);
 
     async function updateUserPrivacy(data: FormData) {
         try {
@@ -131,6 +133,7 @@ export function UserPrivacyForm({
                 // TODO 添加根据项目来判断是否需要qualtrics
                 const qualtricsIdJson = JSON.parse(store.get(GUEST_QUALTRICS_ID) || '{}');
                 const qualtricsId = qualtricsIdJson['value'];
+                setIsQualtricsEditable(qualtricsId === undefined);
 
                 setValue('qualtrics', qualtricsId || data.qualtrics || '');
             });
@@ -199,7 +202,7 @@ export function UserPrivacyForm({
                                 type="text"
                                 autoCapitalize="none"
                                 autoCorrect="off"
-                                disabled={isLoading}
+                                disabled={isLoading || !isQualtricsEditable}
                                 className="input input-bordered w-full"
                                 {...register('qualtrics')}
                             />

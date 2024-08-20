@@ -12,7 +12,6 @@ export default function GuestUniqueKey({
     inviteCode: string;
     qualtricsId?: string;
 }) {
-    console.log(userUniqueKey, inviteCode, qualtricsId);
     const [userKey, setUserKey] = useState<string | null>();
     const GUEST_UNIQUE_KEY = 'userUniqueKey';
     const GUEST_QUALTRICS_ID = 'guestQualtricsId';
@@ -46,7 +45,6 @@ export default function GuestUniqueKey({
                 setAndStoreKey(GUEST_UNIQUE_KEY, userUniqueKey);
             } else {
                 // 未过期，使用localStorage中的用户ID
-                console.log(item.value);
                 setUserKey(item.value);
             }
         } else {
