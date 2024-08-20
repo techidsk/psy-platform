@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Icons } from '../icons';
+import { format } from 'date-fns';
+import { zhCN } from 'date-fns/locale';
+import { DatePickerComponent } from '../datepicker/datepicker';
 
 interface FormValues {
     value: any;
@@ -28,6 +31,9 @@ export function TableSearch({
     const router = useRouter();
     const [searchParams, setSearchParams] = useState(defaultParams);
     const [formValues, setFormValues] = useState(defaultParams);
+    // 弹出日期选择器
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    // 对应名称的日期选择器
 
     // 当输入改变时，更新对应字段的状态
     const handleChange = (fieldName: string, value: any) => {
@@ -57,7 +63,7 @@ export function TableSearch({
                     return (
                         <select
                             className="select select-bordered w-full max-w-xs"
-                            value={formValues[field.name] || ''} // 设置默认值
+                            value={formValues[field.name] || ''}
                             onChange={(e) => handleChange(field.name, e.target.value)}
                         >
                             {field.values.map(({ value, label }) => (
@@ -70,6 +76,41 @@ export function TableSearch({
                 } else {
                     return null;
                 }
+            case 'date':
+                return (
+                    <>
+                        <input
+                            type="text"
+                            className="input input-bordered w-full max-w-xs"
+                            placeholder={field.placeholder}
+                            value={formValues[field.name] || ''}
+                            onChange={(e) => handleChange(field.name, e.target.value)}
+                        />
+                        <div className="dropdown">
+                            <div tabIndex={0} role="button" className="btn m-1 btn-sm">
+                                选择日期
+                            </div>
+                            <ul
+                                tabIndex={0}
+                                className="dropdown-content menu bg-base-100 rounded-box z-[1] p-2 shadow w-[320px]"
+                            >
+                                <DatePickerComponent
+                                    selected={
+                                        formValues[field.name]
+                                            ? new Date(formValues[field.name])
+                                            : new Date()
+                                    }
+                                    setSelected={(day: Date | undefined) =>
+                                        handleChange(
+                                            field.name,
+                                            day ? format(day, 'PP', { locale: zhCN }) : ''
+                                        )
+                                    }
+                                />
+                            </ul>
+                        </div>
+                    </>
+                );
             default:
                 return null;
         }
@@ -97,6 +138,7 @@ export function TableSearch({
             router.push(newUrl);
         } else {
             let hasChanged = false;
+            console.log(searchParams);
             Object.entries(searchParams).forEach(([key, value]) => {
                 if (typeof value === 'string') {
                     oldSearchParams.set(key, value.toString());

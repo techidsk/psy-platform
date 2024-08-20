@@ -9,9 +9,11 @@ interface ButtonProps {
 export default function DownloadExperimentHistoryButton({ data }: ButtonProps) {
     async function downloadCSV(data: any) {
         const id = data.nano_id;
-        let filename = `[${data.experiment_name}]-${data.nano_id}`;
+
+        const userQualtrics = data.qualtrics;
+        let filename = `[${data.experiment_name}]-${userQualtrics}`;
         if (data.part !== 0) {
-            filename = `[${data.experiment_name}]-${data.part}-${data.nano_id}`;
+            filename = `[${data.experiment_name}]-${data.part}-${userQualtrics}`;
         }
 
         try {

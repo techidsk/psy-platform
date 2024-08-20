@@ -52,10 +52,18 @@ async function getHistory(
     // USER 查看自己
     // GUEST 查看自己
 
-    const { username, engine_name, group_name, experiment_name } = searchParams;
+    const {
+        username,
+        qualtrics,
+        engine_name,
+        group_name,
+        experiment_name,
+        start_time,
+        finish_time,
+    } = searchParams;
 
     const experiments = await db.$queryRaw<ExperimentProps[]>`
-        SELECT e.*, u.username, u.avatar, n.engine_name, n.engine_image, 
+        SELECT e.*, u.username, u.avatar, u.qualtrics, n.engine_name, n.engine_image, 
         eper.experiment_name, g.group_name, num, project_group_experiment_num, es.step_name
         FROM user_experiments e
         LEFT JOIN user u ON u.id = e.user_id
@@ -76,7 +84,10 @@ async function getHistory(
         WHERE 1 = 1 
         ${role === 'USER' ? Prisma.sql`and e.user_id = ${currentUser.id}` : Prisma.empty}
         ${role === 'ASSITANT' ? Prisma.sql`and e.manager_id = ${currentUser.id}` : Prisma.empty}
+        ${start_time ? Prisma.sql`and e.start_time >= ${start_time}` : Prisma.empty}
+        ${finish_time ? Prisma.sql`and e.finish_time <= ${finish_time}` : Prisma.empty}
         ${username ? Prisma.sql`and u.username like ${`%${username}%`}` : Prisma.empty}
+        ${qualtrics ? Prisma.sql`and u.qualtrics like ${`%${qualtrics}%`}` : Prisma.empty}
         ${engine_name ? Prisma.sql`and n.engine_name like ${`%${engine_name}%`}` : Prisma.empty}
         ${group_name ? Prisma.sql`and g.group_name like ${`%${group_name}%`}` : Prisma.empty}
         ${experiment_name ? Prisma.sql`and eper.experiment_name like ${`%${experiment_name}%`}` : Prisma.empty}
@@ -200,7 +211,10 @@ const experimentTableConfig: TableConfig[] = [
                         width={48}
                         height={48}
                     />
-                    <div className="text-gray-700">{data.username}</div>
+                    <div className="text-gray-700 text-sm">用户名：{data.username}</div>
+                    {data.qualtrics && (
+                        <div className="text-gray-700 text-sm">Qualtrics：{data.qualtrics}</div>
+                    )}
                 </div>
             );
         },
@@ -298,9 +312,11 @@ const experimentTableConfig: TableConfig[] = [
         auth: ['ADMIN', 'ASSISTANT'],
         hidden: true,
         children: (data: any) => {
+            let d = Math.floor((data.finish_timestamp - data.start_timestamp) / 1000);
+
             return (
                 <TableActions>
-                    <DownloadExperimentHistoryButton data={data} />
+                    {d > 0 ? <DownloadExperimentHistoryButton data={data} /> : <>无可下载内容</>}
                 </TableActions>
             );
         },
@@ -309,7 +325,10 @@ const experimentTableConfig: TableConfig[] = [
 
 const searchDatas = [
     { name: 'username', type: 'input', placeholder: '请输入用户名' },
+    { name: 'qualtrics', type: 'input', placeholder: '请输入用户Qualtrics' },
     { name: 'engine_name', type: 'input', placeholder: '请输入引擎名称' },
     { name: 'group_name', type: 'input', placeholder: '请输入分组名称' },
     { name: 'experiment_name', type: 'input', placeholder: '请输入实验名称' },
+    { name: 'start_time', type: 'date', placeholder: '请选择开始时间' },
+    { name: 'finish_time', type: 'date', placeholder: '请选择结束时间' },
 ];
