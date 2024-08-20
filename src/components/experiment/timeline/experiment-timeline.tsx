@@ -40,11 +40,6 @@ async function getUserPrivacy(userId: number) {
         where: {
             id: userId,
         },
-        select: {
-            gender: true,
-            ages: true,
-            nano_id: true,
-        },
     });
     return user;
 }
@@ -87,10 +82,12 @@ export default async function ExperimentTimeline({
     // 绑定用户的性别和年龄和Qualtrics
     const user = await getUserPrivacy(userId);
     if (!user) {
+        logger.warn(`用户${userId}不存在`);
         redirect('/login');
     }
 
     if (!user.nano_id) {
+        logger.warn(`用户${userId}没有绑定nano_id`);
         redirect('/login');
     }
 
@@ -133,7 +130,7 @@ export default async function ExperimentTimeline({
                 userNanoId={userNanoId}
                 targetStepIndex={stepIndex}
                 userExperimentNanoId={userExperimentNanoId}
-                uniqueKey={user.nano_id}
+                user={user}
             />
         </div>
     );

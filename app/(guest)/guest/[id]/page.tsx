@@ -14,7 +14,7 @@ interface GuestVerifyProps {
     searchParams: { [key: string]: string };
 }
 
-export default async function VerifyPage({ params: { id }, searchParams }: GuestVerifyProps) {
+export default function VerifyPage({ params: { id }, searchParams }: GuestVerifyProps) {
     logger.debug(`[访客模式] 访问ID: ${id}`);
     const userUniqueKey = getId();
 

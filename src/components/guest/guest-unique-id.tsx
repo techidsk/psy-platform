@@ -56,13 +56,11 @@ export default function GuestUniqueKey({
     }, [userUniqueKey, setAndStoreKey]);
 
     useEffect(() => {
-        if (qualtricsId) {
-            setAndStoreKey(GUEST_QUALTRICS_ID, qualtricsId);
-        }
+        store.remove(GUEST_QUALTRICS_ID);
+        setAndStoreKey(GUEST_QUALTRICS_ID, qualtricsId || '');
     }, [qualtricsId, setAndStoreKey]); // Separate effect for qualtricsId
 
     function onClick() {
-        console.log(combineKey);
         router.push(`/guest/dashboard/${combineKey}`);
     }
 

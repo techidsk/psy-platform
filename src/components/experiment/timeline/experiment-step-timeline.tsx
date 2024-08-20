@@ -1,7 +1,7 @@
 'use client';
 
 import { Icons } from '@/components/icons';
-import { experiment, experiment_steps } from '@prisma/client';
+import { experiment, experiment_steps, user } from '@prisma/client';
 import { LeftImageHero } from '../modules/left-image-hero';
 import { RightImageHero } from '../modules/right-image-hero';
 import { CenteredHero } from '../modules/centerd-hero';
@@ -19,7 +19,7 @@ interface ExperimentTimelineProps {
     userNanoId: string;
     targetStepIndex: number; // 默认是 1
     userExperimentNanoId: string;
-    uniqueKey: string;
+    user: user;
 }
 
 export default function ExperimentStepTimeline({
@@ -31,10 +31,13 @@ export default function ExperimentStepTimeline({
     userNanoId,
     targetStepIndex,
     userExperimentNanoId,
-    uniqueKey,
+    user,
 }: ExperimentTimelineProps) {
     const [currentIndex, setCurrentIndex] = useState(targetStepIndex || 1);
     const [showUserPrivacy, setShowUserPrivacy] = useState(false);
+
+    const uniqueKey = user.nano_id || '';
+    const qualtricsId = user.qualtrics || '';
 
     async function fetchUserPrivacy() {
         const result = await fetch(getUrl(`/api/user/privacy/${userId}`), {
@@ -101,6 +104,7 @@ export default function ExperimentStepTimeline({
                 experimentSteps={experimentSteps}
                 userExperimentNanoId={userExperimentNanoId}
                 uniqueKey={uniqueKey}
+                qualtricsId={qualtricsId}
             />
         </>
     );
@@ -152,6 +156,7 @@ interface TemplateProps {
     experimentSteps: experiment_steps[]; // 总实验步数
     userExperimentNanoId: string;
     uniqueKey: string;
+    qualtricsId: string;
 }
 
 function Template({
@@ -167,6 +172,7 @@ function Template({
     experimentSteps,
     userExperimentNanoId,
     uniqueKey,
+    qualtricsId,
 }: TemplateProps) {
     const totalStepNum = experimentSteps.length;
     const currentStep = experimentSteps[currentIndex - 1];
@@ -261,6 +267,7 @@ function Template({
                     userNanoId={userNanoId}
                     userExperimentNanoId={userExperimentNanoId}
                     uniqueKey={uniqueKey}
+                    qualtricsId={qualtricsId}
                     size="lg"
                 >
                     <ButtonGroup />

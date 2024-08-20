@@ -10,6 +10,7 @@ interface ComponentProps extends React.HTMLAttributes<HTMLDivElement> {
     size?: 'sm' | 'md' | 'lg' | 'xl';
     userNanoId: string;
     userExperimentNanoId: string;
+    qualtricsId: string;
 }
 
 export function ResultPage({
@@ -17,6 +18,7 @@ export function ResultPage({
     content,
     userNanoId,
     uniqueKey,
+    qualtricsId,
     buttonNum = 0,
     size = 'md',
     userExperimentNanoId,
@@ -49,7 +51,11 @@ export function ResultPage({
                     <div className="text text-slate-500 dark:text-slate-400 mb-4">
                         请复制保存ID，我们将在页面跳转后要求你输入ID
                     </div>
-                    <RedirectToQualtrics qualtricsUrl={qualtricsUrl} userUnqiueId={userNanoId} />
+                    <RedirectToQualtrics
+                        qualtricsUrl={qualtricsUrl}
+                        userUnqiueId={userNanoId}
+                        userQualtrics={qualtricsId}
+                    />
                     <div className={`flex ${buttonNum > 1 ? 'justify-between' : 'justify-center'}`}>
                         {children}
                     </div>

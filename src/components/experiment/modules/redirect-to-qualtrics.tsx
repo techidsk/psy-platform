@@ -4,10 +4,11 @@ import Link from 'next/link';
 interface ComponentProps extends React.HTMLAttributes<HTMLDivElement> {
     qualtricsUrl: string;
     userUnqiueId: string;
+    userQualtrics: string;
 }
 
 // 跳转到 Qualtrics 页面
-export function RedirectToQualtrics({ qualtricsUrl, userUnqiueId }: ComponentProps) {
+export function RedirectToQualtrics({ qualtricsUrl, userUnqiueId, userQualtrics }: ComponentProps) {
     // logger.info(`qualtricsUrl: ${qualtricsUrl} userUnqiueId: ${userUnqiueId}`);
     // 验证 url 以及 unqiueId 是否合法
     if (!qualtricsUrl || !userUnqiueId) {
@@ -16,7 +17,7 @@ export function RedirectToQualtrics({ qualtricsUrl, userUnqiueId }: ComponentPro
     }
 
     // qualtricsUrl https://survey.smith.queensu.ca/jfe/form/SV_bOycfWfCnnd3fz8?id=xxxx
-    const targetUrl = `${qualtricsUrl}?id=${userUnqiueId}`;
+    const targetUrl = `${qualtricsUrl}?id=${userUnqiueId}&qualtricsId=${userQualtrics}`;
 
     return (
         <div className="flex gap-4 justify-center">

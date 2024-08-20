@@ -128,12 +128,13 @@ export function UserPrivacyForm({
         })
             .then((res) => res.json())
             .then((data) => {
+                console.log(data);
                 setValue('gender', data.gender || '');
                 setValue('ages', data.ages || '');
                 // TODO 添加根据项目来判断是否需要qualtrics
                 const qualtricsIdJson = JSON.parse(store.get(GUEST_QUALTRICS_ID) || '{}');
                 const qualtricsId = qualtricsIdJson['value'];
-                setIsQualtricsEditable(qualtricsId === undefined);
+                setIsQualtricsEditable(!qualtricsId);
 
                 setValue('qualtrics', qualtricsId || data.qualtrics || '');
             });
