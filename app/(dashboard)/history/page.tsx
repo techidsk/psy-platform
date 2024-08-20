@@ -137,7 +137,12 @@ export default async function ExperimentHistory({
                             <TableSearch
                                 defaultParams={searchParams}
                                 searchDatas={searchDatas}
-                                actionNode={<HistoryTableActionButtons datas={datas} />}
+                                actionNode={
+                                    <HistoryTableActionButtons
+                                        datas={datas}
+                                        searchParams={searchParams}
+                                    />
+                                }
                             />
                         }
                     >

@@ -4,7 +4,6 @@ import { db } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import JSZip from 'jszip';
 import { NextRequest, NextResponse } from 'next/server';
-import { P } from 'pino';
 
 /**
  * /api/log/[id]
