@@ -6,6 +6,7 @@ import { getCurrentUser } from '@/lib/session';
 import { Prisma } from '@prisma/client';
 import JSZip from 'jszip';
 import { logger } from '@/lib/logger';
+import { getUserExperimentHistory } from '@/lib/user_experment_history';
 
 export async function POST(req: NextRequest) {
     const currentUser = await getCurrentUser();
@@ -53,12 +54,8 @@ export async function POST(req: NextRequest) {
 
 const fetchZipFile = async (nano_id: string, part: number) => {
     try {
-        const response = await fetch(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/api/log/${nano_id}?part=${part}`
-        );
-        if (!response.ok) {
-            throw new Error(`Server responded with status: ${response.status}`);
-        }
+        const partString = part ? part.toString() : '0';
+        const response = await getUserExperimentHistory(nano_id, partString);
 
         const arrayBuffer = await response.arrayBuffer();
         return arrayBuffer;
