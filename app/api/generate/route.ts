@@ -94,8 +94,8 @@ export async function POST(request: Request) {
             },
             template: engine.template,
             user: {
-                gender: (user?.gender && getValueFromObj(user.gender, GENDER_MAP)) || '',
-                ages: (user?.ages && getValueFromObj(user.ages, AGES_MAP)) || '',
+                gender: GENDER_MAP[user?.gender || 0] || '',
+                ages: AGES_MAP[user?.ages || 0] || '',
             },
             task_id: promptNanoId,
         };
