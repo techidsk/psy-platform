@@ -17,11 +17,6 @@ function getValueFromObj(key: number, map: Record<number, string>) {
  * @returns
  */
 export async function POST(request: Request) {
-    const currentUser = await getCurrentUser();
-    const user = currentUser?.id
-        ? await db.user.findFirst({ where: { id: parseInt(currentUser.id) } })
-        : undefined;
-
     const json = await request.json();
     const { guest, id: promptNanoId, experimentId, experimentNanoId, part: stepOrder } = json;
     const isGuest = Boolean(guest);
@@ -39,6 +34,11 @@ export async function POST(request: Request) {
         logger.error('未找到对应trail数据');
         return NextResponse.json({ msg: '发布失败，缺少参数' });
     }
+
+    const currentUser = await getCurrentUser();
+    const user = currentUser?.id
+        ? await db.user.findFirst({ where: { id: parseInt(currentUser.id) } })
+        : await db.user.findFirst({ where: { id: trail?.user_id || 0 } });
 
     const userExperimentNanoId = isGuest ? experimentNanoId : experimentId;
     let userExperiment = await db.user_experiments.findFirst({
