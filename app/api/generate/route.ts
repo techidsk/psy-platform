@@ -6,13 +6,8 @@ import { AGES_MAP, GENDER_MAP } from '@/common/user';
 import { logger } from '@/lib/logger';
 import { trail as dbTrail } from '@prisma/client';
 
-function getValueFromObj(key: number, map: object) {
-    for (const [k, v] of Object.entries(map)) {
-        if (parseInt(k) === key) {
-            return v;
-        }
-    }
-    return '';
+function getValueFromObj(key: number, map: Record<number, string>) {
+    return map[key] || '';
 }
 
 /**
@@ -104,6 +99,7 @@ export async function POST(request: Request) {
             },
             task_id: promptNanoId,
         };
+        logger.info(`用户性别: ${user?.gender} 用户年龄: ${user?.ages}`);
         const response = await generate(generateData);
         if (response?.status === 'Task enqueued') {
             logger.info(`成功发送生成请求 [${promptNanoId}] 到生成服务器`);
