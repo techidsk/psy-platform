@@ -199,7 +199,11 @@ export function ExperimentEditor({
 
         if (response.ok) {
             // 生成成功，轮训获取最新结果
-            await pollForResult(promptNanoId);
+            // 判断是否是无图模式，需要轮训结果
+            const response_msg = await response.json();
+            if (response_msg.msg !== '不需要生成图片') {
+                await pollForResult(promptNanoId);
+            }
         } else {
             toast({
                 title: '发送失败',

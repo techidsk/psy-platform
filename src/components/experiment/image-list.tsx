@@ -10,25 +10,17 @@ import classNames from 'classnames';
 interface ImageListProps extends React.HTMLAttributes<HTMLDivElement> {
     experimentList: ImageResponse[];
     displayNum?: number;
+    isPicMode?: boolean;
 }
 
-export function ImageList({ experimentList, displayNum = 1 }: ImageListProps) {
+const DEFAULT_IMAGE = 'https://zju-queen-psy.oss-cn-shanghai.aliyuncs.com/assets/bg-1.jpg';
+
+export function ImageList({ experimentList, displayNum = 1, isPicMode = false }: ImageListProps) {
     const [list, setList] = useState<ImageResponse[]>([]);
     const [index, setIndex] = useState(0);
     const [useFullSize, setUseFullSize] = useState(true);
 
     const setCurrentImages = useExperimentState((state) => state.setCurrentImages);
-
-    useEffect(() => {
-        let temp: ImageResponse[] = experimentList.map((item: ImageResponse, idx: number) => ({
-            ...item,
-            idx: idx,
-        }));
-        const imageList = temp.slice(-1 * displayNum);
-        setList(imageList);
-        setIndex(experimentList.length);
-        setCurrentImages(imageList.map((item) => item.image_url));
-    }, [experimentList, displayNum]);
 
     function prev() {
         if (experimentList.length > displayNum) {
@@ -53,9 +45,20 @@ export function ImageList({ experimentList, displayNum = 1 }: ImageListProps) {
             .map((item: ImageResponse, idx: number) => ({ ...item, idx: idx + s }));
 
         setList(imageList);
-        setCurrentImages(imageList.map((item) => item.image_url));
+        setCurrentImages(imageList.map((item) => (isPicMode ? item.image_url : DEFAULT_IMAGE)));
         setIndex(Math.max(newIndex, 0));
     }
+
+    useEffect(() => {
+        let temp: ImageResponse[] = experimentList.map((item: ImageResponse, idx: number) => ({
+            ...item,
+            idx: idx,
+        }));
+        const imageList = temp.slice(-1 * displayNum);
+        setList(imageList);
+        setIndex(experimentList.length);
+        setCurrentImages(imageList.map((item) => (isPicMode ? item.image_url : DEFAULT_IMAGE)));
+    }, [experimentList, displayNum]);
 
     useEffect(() => {
         function updateSize() {
@@ -103,34 +106,18 @@ export function ImageList({ experimentList, displayNum = 1 }: ImageListProps) {
                             key={item.id}
                             className="flex-col-center rounded border border-slate-300 w-full"
                         >
-                            {item.state === 'GENERATING' ? (
-                                <div
-                                    className={classNames('flex-1 ', {
-                                        'w-full h-full': useFullSize,
-                                        'w-[calc(100vh-200px-8rem)] h-[calc(100vh-200px-8rem)]':
-                                            !useFullSize,
-                                    })}
-                                >
-                                    <div className="max-w-[1024px] max-h-[1024px] aspect-square flex-col-center gap-8">
-                                        <LoadingSpin displayNum={displayNum} />
-                                    </div>
+                            {isPicMode && item.state === 'GENERATING' ? (
+                                <div className="max-w-[1024px] max-h-[1024px] aspect-square flex-col-center gap-8">
+                                    <LoadingSpin displayNum={displayNum} />
                                 </div>
                             ) : (
-                                <div
-                                    className={classNames('flex-1 ', {
-                                        'w-full h-full': useFullSize,
-                                        'w-[calc(100vh-200px-8rem)] h-[calc(100vh-200px-8rem)]':
-                                            !useFullSize,
-                                    })}
-                                >
-                                    <Image
-                                        className="image-holder w-full"
-                                        src={item.image_url}
-                                        alt=""
-                                        width={1024}
-                                        height={1024}
-                                    />
-                                </div>
+                                <Image
+                                    className="image-holder w-full"
+                                    src={isPicMode ? item.image_url : DEFAULT_IMAGE}
+                                    alt=""
+                                    width={1024}
+                                    height={1024}
+                                />
                             )}
                             {item.prompt && (
                                 <div className="w-full">

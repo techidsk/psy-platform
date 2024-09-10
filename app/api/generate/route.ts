@@ -66,11 +66,12 @@ export async function POST(request: Request) {
     }
 
     const step = await getExperimentStep(parseInt(userExperiment.experiment_id), stepOrder);
-    const picMode = step?.pic_mode || true;
+    console.log('step', step);
+    const picMode = step?.pic_mode ?? false;
 
     logger.info(`${picMode ? '生成图片' : '不生成图片'}`);
     if (!picMode) {
-        return NextResponse.json({ msg: '发布成功' });
+        return NextResponse.json({ msg: '不需要生成图片' });
     }
 
     // 获取用户最近5条内容进行发送

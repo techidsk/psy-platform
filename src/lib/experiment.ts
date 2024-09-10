@@ -8,6 +8,7 @@ interface ExperimentStep {
     countdown: number;
     title: string;
     content: string;
+    picMode: boolean;
 }
 
 /**
@@ -36,6 +37,7 @@ async function getExperimentStepSetting(
             countdown: 20,
             title: '',
             content: '',
+            picMode: false,
         };
     }
 
@@ -44,10 +46,12 @@ async function getExperimentStepSetting(
     let countdown = stepContent?.countdown;
     let title = stepContent?.title;
     let content = stepContent?.content;
+    let picMode = stepContent?.pic_mode;
     return {
         countdown: countdown ?? 20,
         title: title,
         content: content,
+        picMode: picMode,
     };
 }
 
