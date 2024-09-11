@@ -89,39 +89,41 @@ export default async function MainInput({
     logger.info(`实验倒计时: ${countDownTime} 分钟，开始时间: ${startTime}`);
 
     return (
-        <div className="bg-white container max-w-[1024px] mx-auto h-[100vh] py-4 flex flex-col gap-4 justify-between">
-            <div className="flex justify-between items-center gap-4 flex-1">
-                <ImageList
-                    experimentList={experimentImageList}
-                    displayNum={displayNum}
-                    isPicMode={isPicMode}
-                />
-            </div>
-            <div className="flex-col-center gap-2">
-                <ExperimentEditor
-                    nanoId={userExperimentId}
-                    part={parseInt(experimentStepIndex)}
-                    isExperimentFinished={isExperimentFinished}
-                />
-                <div className="flex gap-8 items-center justify-end">
-                    {countDownTime > 0 && (
-                        <CountDown
-                            start={startTime}
-                            limit={countDownTime}
-                            nanoId={userExperimentId}
-                            callbackUrl={encodedCallbackUrl}
-                            part={parseInt(experimentStepIndex)}
-                        />
-                    )}
-                    <ExperimentFinishButton
-                        nanoId={userExperimentId}
+        <div className="bg-white container max-w-[1024px] mx-auto h-screen py-4 flex flex-col">
+            <div className="flex flex-col h-full">
+                <div className="flex min-h-[50%] overflow-auto">
+                    <ImageList
                         experimentList={experimentImageList}
-                        callbackUrl={encodedCallbackUrl}
+                        displayNum={displayNum}
+                        isPicMode={isPicMode}
+                    />
+                </div>
+                <div className="flex-1 min-h-[50%] flex-col-center">
+                    <ExperimentEditor
+                        nanoId={userExperimentId}
                         part={parseInt(experimentStepIndex)}
-                        stepTitle={stepTitle}
-                        stepContent={stepContent}
                         isExperimentFinished={isExperimentFinished}
                     />
+                    <div className="flex gap-8 items-center justify-end mt-4">
+                        {countDownTime > 0 && (
+                            <CountDown
+                                start={startTime}
+                                limit={countDownTime}
+                                nanoId={userExperimentId}
+                                callbackUrl={encodedCallbackUrl}
+                                part={parseInt(experimentStepIndex)}
+                            />
+                        )}
+                        <ExperimentFinishButton
+                            nanoId={userExperimentId}
+                            experimentList={experimentImageList}
+                            callbackUrl={encodedCallbackUrl}
+                            part={parseInt(experimentStepIndex)}
+                            stepTitle={stepTitle}
+                            stepContent={stepContent}
+                            isExperimentFinished={isExperimentFinished}
+                        />
+                    </div>
                 </div>
             </div>
         </div>

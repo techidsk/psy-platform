@@ -294,10 +294,10 @@ export function ExperimentEditor({
         <>
             <textarea
                 ref={ref}
-                className={classNames('input-textarea text-2xl cursor-auto', {
+                className={classNames('input-textarea text-3xl cursor-auto', {
                     'read-only': isExperimentFinished || loading,
                 })}
-                style={{ height: '9rem', width: '75%' }}
+                style={{ height: '80%', width: '90%' }}
                 // value={text} onChange={handleChange}
                 onKeyDown={handleKeyDown}
                 readOnly={isExperimentFinished || loading}

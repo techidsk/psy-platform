@@ -79,61 +79,54 @@ export function ImageList({ experimentList, displayNum = 1, isPicMode = false }:
     }, []);
 
     return (
-        <>
+        <div className="w-full h-full flex items-center justify-center">
             <div className="cursor-pointer" onClick={prev}>
-                <Icons.chevronLeft className="mr-2 h-8 w-8" />
+                <Icons.chevronLeft className="h-8 w-8" />
             </div>
-            <div className="flex flex-wrap w-full justify-center items-center max-h-[100%] image-container">
-                {list.length === 0 && (
-                    <div className="flex-col-center rounded border-2 border-slate-300 w-full">
-                        <div
-                            className={classNames('flex-1', {
-                                'w-full h-full': useFullSize,
-                                'w-[calc(100vh-200px-8rem)] h-[calc(100vh-200px-8rem)]':
-                                    !useFullSize,
-                            })}
-                        >
-                            <div className="max-w-[1024px] max-h-[1024px] aspect-square flex-col-center gap-8">
-                                <Icons.folder className="mr-2 h-8 w-8" />
-                                <div className="text-gray-400">暂无历史内容</div>
-                            </div>
-                        </div>
+            <div className="flex-1 h-full flex justify-center items-center">
+                <div className="w-full h-full flex flex-col">
+                    <div className="flex-1 relative min-h-0">
+                        {list.length === 0 ? (
+                            <Image
+                                className="object-contain"
+                                src={DEFAULT_IMAGE}
+                                alt="默认图片"
+                                layout="fill"
+                            />
+                        ) : (
+                            list.map((item) => (
+                                <div key={item.id} className="w-full h-full relative">
+                                    {isPicMode && item.state === 'GENERATING' ? (
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <LoadingSpin displayNum={displayNum} />
+                                        </div>
+                                    ) : (
+                                        <Image
+                                            className="object-contain"
+                                            src={isPicMode ? item.image_url : DEFAULT_IMAGE}
+                                            alt=""
+                                            layout="fill"
+                                        />
+                                    )}
+                                </div>
+                            ))
+                        )}
                     </div>
-                )}
-                {list.map((item) => {
-                    return (
-                        <div
-                            key={item.id}
-                            className="flex-col-center rounded border border-slate-300 w-full"
-                        >
-                            {isPicMode && item.state === 'GENERATING' ? (
-                                <div className="max-w-[1024px] max-h-[1024px] aspect-square flex-col-center gap-8">
-                                    <LoadingSpin displayNum={displayNum} />
-                                </div>
-                            ) : (
-                                <Image
-                                    className="image-holder w-full"
-                                    src={isPicMode ? item.image_url : DEFAULT_IMAGE}
-                                    alt=""
-                                    width={1024}
-                                    height={1024}
-                                />
-                            )}
-                            {item.prompt && (
-                                <div className="w-full">
-                                    <p className="border-t border-slate-300 bg-gray-50 px-2 py-4 text-lg text-gray-600">
-                                        <span className="text-gray-900">{item.idx + 1}: </span>{' '}
-                                        {item.prompt}
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
+                    <div className="p-2 bg-gray-50 text-lg text-gray-600 overflow-hidden text-ellipsis">
+                        {list.length === 0 ? (
+                            '暂无历史内容'
+                        ) : (
+                            <>
+                                <span className="font-semibold">{list[0].idx + 1}: </span>
+                                {list[0].prompt}
+                            </>
+                        )}
+                    </div>
+                </div>
             </div>
             <div className="cursor-pointer" onClick={next}>
-                <Icons.chevronRight className="mr-2 h-8 w-8" />
+                <Icons.chevronRight className="h-8 w-8" />
             </div>
-        </>
+        </div>
     );
 }
