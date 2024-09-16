@@ -66,8 +66,7 @@ export async function POST(request: Request) {
     }
 
     const step = await getExperimentStep(parseInt(userExperiment.experiment_id), stepOrder);
-    console.log('step', step);
-    const picMode = step?.pic_mode ?? false;
+    const picMode = step === null ? true : step?.pic_mode ?? false;
 
     logger.info(`${picMode ? '生成图片' : '不生成图片'}`);
     if (!picMode) {
@@ -128,14 +127,23 @@ async function getExperimentStep(experimentId: number, step: number) {
         where: { experiment_id: experimentId, order: step },
     });
 
-    const content = experimentStep?.content;
-    if (typeof content === 'object' && content !== null && !Array.isArray(content)) {
-        return content;
-    } else {
-        // Handle the case where content is not an object
-        console.error('Expected content to be an object, but received:', typeof content);
+    if (!experimentStep) {
+        logger.error(`No experiment step found for experimentId: ${experimentId}, step: ${step}`);
         return null;
     }
+
+    if (!isValidContent(experimentStep.content)) {
+        logger.error(
+            `Invalid content for experimentId: ${experimentId}, step: ${step}. Received: ${typeof experimentStep.content}`
+        );
+        return null;
+    }
+
+    return experimentStep.content;
+}
+
+function isValidContent(content: unknown): content is Record<string, unknown> {
+    return typeof content === 'object' && content !== null && !Array.isArray(content);
 }
 
 /**
