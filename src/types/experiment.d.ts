@@ -1,6 +1,6 @@
 export type ImageResponse = {
     id: string;
-    nano_id: string;
+    nano_id?: string;
     request_id?: string;
     prompt?: string;
     state?: string;

@@ -308,7 +308,10 @@ export function ExperimentEditor({
             setGeneratingIds(
                 experimentImageList
                     .filter((item) => item.state === 'GENERATING')
-                    .map((item) => ({ nano_id: item.nano_id, request_id: item.request_id || '' }))
+                    .map((item) => ({
+                        nano_id: item.nano_id || '',
+                        request_id: item.request_id || '',
+                    }))
                     .filter((item) => item.request_id !== '')
             );
         }
