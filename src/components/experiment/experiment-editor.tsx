@@ -9,7 +9,6 @@ import { getUrl } from '@/lib/url';
 import { useExperimentState } from '@/state/_experiment_atoms';
 import classNames from 'classnames';
 import { logger } from '@/lib/logger';
-import { getGenerateResult } from '@/lib/generate';
 
 interface ExperimentEditorProps {
     nanoId: string;
@@ -100,11 +99,29 @@ export function ExperimentEditor({
                         promptNanoId: promptNanoId,
                         guestNanoId: guestNanoId,
                         nano_id: experimentId,
-                        state: 'FAILED', // 添加一个状态字段表明失败
+                        state: 'TIMEOUT', // 添加一个状态字段表明失败
                     }),
                     cache: 'no-store',
                 });
                 return null; // 返回null或适当的失败响应
+            }
+
+            if (response_json.status === 'error') {
+                // 错误处理
+                await fetch(getUrl('/api/trail/update'), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        promptNanoId: promptNanoId,
+                        guestNanoId: guestNanoId,
+                        nano_id: experimentId,
+                        state: 'FAILED',
+                    }),
+                    cache: 'no-store',
+                });
+                return null;
             }
 
             if (response_json.status !== 'success') {
@@ -230,7 +247,6 @@ export function ExperimentEditor({
             // 生成成功，轮训获取最新结果
             // 判断是否是无图模式，需要轮训结果
             const response_msg = await response.json();
-            logger.info(`Generate response: ${JSON.stringify(response_msg)}`);
             if (response_msg.msg !== '不需要生成图片') {
                 // add to generatingIds
                 setGeneratingIds((prevIds) => {
