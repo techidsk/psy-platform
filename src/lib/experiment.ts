@@ -126,6 +126,8 @@ async function getExperimentInfos(experimentId: string, part: number) {
             update_time: e.update_time ? dateFormat(e.update_time) : undefined,
             image_url: e.image_url || '',
             idx: idx,
+            nano_id: e.nano_id?.toString() || '',
+            request_id: e.request_id || '',
         };
     });
     return {

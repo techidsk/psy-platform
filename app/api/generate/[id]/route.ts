@@ -1,9 +1,6 @@
 // import dynamic from 'next/dynamic'
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { getCurrentUser } from '@/lib/session';
 import { getGenerateResult } from '@/lib/generate';
-import { logger } from '@/lib/logger';
 
 /**
  * /api/generate/[id]

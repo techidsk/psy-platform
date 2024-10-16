@@ -90,7 +90,7 @@ export default async function GuestInput({
             <div className="flex flex-col h-full">
                 <div className="flex min-h-[50%] overflow-auto">
                     <ImageList
-                        experimentList={experimentImageList}
+                        experimentImageList={experimentImageList}
                         displayNum={displayNum}
                         isPicMode={isPicMode}
                     />
@@ -103,6 +103,7 @@ export default async function GuestInput({
                         part={parseInt(experimentStepIndex)}
                         guest={true}
                         isExperimentFinished={isExperimentFinished}
+                        experimentImageList={experimentImageList}
                     />
                     <div className="flex gap-8 items-center justify-end mt-4">
                         {!isExperimentFinished && countDownTime > 0 && (
@@ -116,7 +117,7 @@ export default async function GuestInput({
                         )}
                         <ExperimentFinishButton
                             nanoId={userExperimentId}
-                            experimentList={experimentImageList}
+                            experimentImageList={experimentImageList}
                             callbackUrl={encodedCallbackUrl}
                             part={parseInt(experimentStepIndex)}
                             stepTitle={stepTitle}

@@ -1,7 +1,9 @@
+import { P } from 'pino';
 import { logger } from './logger';
 
 require('dotenv').config();
-const url = `http://${process.env.COMFYUI_HOST_URL}/result`;
+// const url = `http://${process.env.COMFYUI_HOST_URL}/result`;
+const url = `http://${process.env.CELERY_HOST}/create_task`;
 
 /**
  * 转发到ComfyUI生成接口
@@ -18,7 +20,7 @@ async function generate(data: any) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(data),
+            body: JSON.stringify({ payload: data }),
         });
         if (!response.ok) {
             // 尝试获取更多错误信息
@@ -36,9 +38,17 @@ async function generate(data: any) {
 }
 
 async function getGenerateResult(task_id: string) {
+    if (!task_id || task_id === undefined) {
+        return {
+            status: 'failed',
+            message: 'task_id is empty or undefined',
+        };
+    }
+
     try {
-        let u = `http://${process.env.COMFYUI_HOST_URL}/status/${task_id}`;
-        const response = await fetch(`http://${process.env.COMFYUI_HOST_URL}/status/${task_id}`, {
+        // let result_url = `http://${process.env.COMFYUI_HOST_URL}/status/${task_id}`;
+        let result_url = `http://${process.env.CELERY_HOST}/get_result/${task_id}`;
+        const response = await fetch(result_url, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -46,10 +56,23 @@ async function getGenerateResult(task_id: string) {
             cache: 'no-cache',
         });
         const res = await response.json();
-        // logger.info(`Get data from ComfyUI: ${JSON.stringify(res)}`);
+        if (res.status === 'completed') {
+            const result = await fetch(
+                `http://${process.env.CELERY_HOST}/get_result/${res.result}`,
+                {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    cache: 'no-cache',
+                }
+            );
+            const result_data = await result.json();
+            return result_data;
+        }
         return res;
     } catch (error) {
-        logger.error(`Failed to send data to ComfyUI: ${error}`);
+        logger.error(`Failed to get data from ComfyUI: ${error}`);
         // 可以根据需要重新抛出错误或处理错误
         return {
             status: 'failed',

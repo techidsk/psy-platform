@@ -93,7 +93,7 @@ export default async function MainInput({
             <div className="flex flex-col h-full">
                 <div className="flex min-h-[50%] overflow-auto">
                     <ImageList
-                        experimentList={experimentImageList}
+                        experimentImageList={experimentImageList}
                         displayNum={displayNum}
                         isPicMode={isPicMode}
                     />
@@ -116,7 +116,7 @@ export default async function MainInput({
                         )}
                         <ExperimentFinishButton
                             nanoId={userExperimentId}
-                            experimentList={experimentImageList}
+                            experimentImageList={experimentImageList}
                             callbackUrl={encodedCallbackUrl}
                             part={parseInt(experimentStepIndex)}
                             stepTitle={stepTitle}

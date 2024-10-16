@@ -68,8 +68,12 @@ export async function POST(request: Request) {
     const step = await getExperimentStep(parseInt(userExperiment.experiment_id), stepOrder);
     const picMode = step === null ? true : step?.pic_mode ?? false;
 
-    logger.info(`${picMode ? '生成图片' : '不生成图片'}`);
+    logger.info(`图像模式：${picMode ? '生成图片' : '不生成图片'}`);
     if (!picMode) {
+        await db.trail.update({
+            where: { nano_id: promptNanoId },
+            data: { state: 'SUCCESS' },
+        });
         return NextResponse.json({ msg: '不需要生成图片' });
     }
 
@@ -83,7 +87,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ msg: '发布失败，缺少参数，未找到对应的实验数据' });
     }
 
-    logger.info(`promptNanoId: ${promptNanoId} 请求已经发送`);
+    logger.info(`===== 生成任务：[${promptNanoId}] 准备发送请求 =====`);
     try {
         const generateData = {
             user_prompts: userPrompts,
@@ -101,10 +105,16 @@ export async function POST(request: Request) {
         };
         logger.info(`用户性别: ${user?.gender} 用户年龄: ${user?.ages}`);
         const response = await generate(generateData);
+
         if (response?.status === 'Task enqueued') {
-            logger.info(`成功发送生成请求 [${promptNanoId}] 到生成服务器`);
+            logger.info(`===== 生成任务：[${promptNanoId}] 成功发送生成请求 =====`);
+            await db.trail.update({
+                where: { nano_id: promptNanoId },
+                data: { request_id: response?.task_id },
+            });
             return NextResponse.json({
                 msg: '发布成功',
+                request_id: response?.task_id,
                 url: response?.image_url,
                 prompt: response?.chat_result,
             });

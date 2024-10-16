@@ -9,6 +9,7 @@ import { getUrl } from '@/lib/url';
 import { useExperimentState } from '@/state/_experiment_atoms';
 import classNames from 'classnames';
 import { logger } from '@/lib/logger';
+import { getGenerateResult } from '@/lib/generate';
 
 interface ExperimentEditorProps {
     nanoId: string;
@@ -18,6 +19,7 @@ interface ExperimentEditorProps {
     guestNanoId?: string;
     part?: number;
     isExperimentFinished?: boolean;
+    experimentImageList: ImageResponse[];
 }
 
 type FetchData = {
@@ -31,7 +33,6 @@ type FetchData = {
     guest?: boolean;
     part?: number;
 };
-``;
 
 const LOG_INTERVAL = 100; // 记录日志的时间间隔
 const UPLOAD_INTERVAL = 10000; // 上传日志的时间间隔
@@ -43,11 +44,16 @@ export function ExperimentEditor({
     part = 0,
     guest = false,
     isExperimentFinished = false,
+    experimentImageList,
 }: ExperimentEditorProps) {
     const router = useRouter();
     const ref = useRef<HTMLTextAreaElement>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [experimentId, setExperimentId] = useState<string>();
+    const [generatingIds, setGeneratingIds] = useState<{ nano_id: string; request_id: string }[]>(
+        []
+    );
+    const [activePolls, setActivePolls] = useState<Set<string>>(new Set());
 
     function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
         if (loading) {
@@ -60,11 +66,18 @@ export function ExperimentEditor({
         }
     }
 
-    async function pollForResult(promptNanoId: string) {
-        const startTime = Date.now(); // 记录开始时间
-        const timeout = 60000; // 设置超时时间为60000毫秒（1分钟）
+    async function pollForResult(promptNanoId: string, requestId: string) {
+        if (activePolls.has(promptNanoId)) {
+            return; // 如果已经在轮询，则直接返回
+        }
 
-        const generate_response = await fetch(getUrl(`/api/generate/${promptNanoId}`), {
+        setActivePolls((prev) => new Set(prev).add(promptNanoId));
+
+        const startTime = Date.now();
+        const timeout = 60000;
+
+        logger.info(`Poll for result: ${requestId} and ${promptNanoId}`);
+        const generate_response = await fetch(getUrl(`/api/generate/${requestId}`), {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -87,7 +100,7 @@ export function ExperimentEditor({
                         promptNanoId: promptNanoId,
                         guestNanoId: guestNanoId,
                         nano_id: experimentId,
-                        status: 'FAILED', // 添加一个状态字段表明失败
+                        state: 'FAILED', // 添加一个状态字段表明失败
                     }),
                     cache: 'no-store',
                 });
@@ -96,7 +109,7 @@ export function ExperimentEditor({
 
             if (response_json.status !== 'success') {
                 await new Promise((resolve) => setTimeout(resolve, 1000));
-                const tempResponse = await fetch(getUrl(`/api/generate/${promptNanoId}`), {
+                const tempResponse = await fetch(getUrl(`/api/generate/${requestId}`), {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -110,26 +123,42 @@ export function ExperimentEditor({
         };
 
         // logger.info('pollForResult finalResponse:', finalResponse);
+
+        // 更新图像到trail
         try {
             const finalResponse = await fetchResult();
 
-            await fetch(getUrl('/api/trail/update'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    promptNanoId: promptNanoId,
-                    guestNanoId: guestNanoId,
-                    nano_id: experimentId,
-                    imageUrl: finalResponse.data.image_url,
-                    prompt: finalResponse.data.chat_result,
-                }),
-                cache: 'no-store',
-            });
-            router.refresh();
+            if (finalResponse) {
+                await fetch(getUrl('/api/trail/update'), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        promptNanoId: promptNanoId,
+                        guestNanoId: guestNanoId,
+                        nano_id: experimentId,
+                        imageUrl: finalResponse.data.image_url,
+                        prompt: finalResponse.data.chat_result,
+                    }),
+                    cache: 'no-store',
+                });
+                router.refresh();
+
+                // Remove the ID from generatingIds after successful update
+                setGeneratingIds((prevIds) => prevIds.filter((id) => id.nano_id !== promptNanoId));
+            }
         } catch (error) {
             console.error('Failed to update trail:', error);
+            // Optionally remove the ID from generatingIds on error as well
+            setGeneratingIds((prevIds) => prevIds.filter((id) => id.nano_id !== promptNanoId));
+        } finally {
+            setActivePolls((prev) => {
+                const newSet = new Set(prev);
+                newSet.delete(promptNanoId);
+                return newSet;
+            });
+            setGeneratingIds((prevIds) => prevIds.filter((id) => id.nano_id !== promptNanoId));
         }
     }
 
@@ -201,8 +230,19 @@ export function ExperimentEditor({
             // 生成成功，轮训获取最新结果
             // 判断是否是无图模式，需要轮训结果
             const response_msg = await response.json();
+            logger.info(`Generate response: ${JSON.stringify(response_msg)}`);
             if (response_msg.msg !== '不需要生成图片') {
-                await pollForResult(promptNanoId);
+                // add to generatingIds
+                setGeneratingIds((prevIds) => {
+                    if (!prevIds.some((id) => id.nano_id === promptNanoId)) {
+                        return [
+                            ...prevIds,
+                            { nano_id: promptNanoId, request_id: response_msg.request_id },
+                        ];
+                    }
+                    return prevIds;
+                });
+                // await pollForResult(promptNanoId);
             }
         } else {
             toast({
@@ -262,6 +302,18 @@ export function ExperimentEditor({
         }
     }
 
+    // 获取未完成的图片id
+    useEffect(() => {
+        if (experimentImageList.length > 0) {
+            setGeneratingIds(
+                experimentImageList
+                    .filter((item) => item.state === 'GENERATING')
+                    .map((item) => ({ nano_id: item.nano_id, request_id: item.request_id || '' }))
+                    .filter((item) => item.request_id !== '')
+            );
+        }
+    }, [experimentImageList]);
+
     useEffect(() => {
         const tempExperimentId = store('experimentId');
         if (!tempExperimentId) {
@@ -271,6 +323,7 @@ export function ExperimentEditor({
         }
     }, []);
 
+    // 记录用户输入
     useEffect(() => {
         const logIntervalId = setInterval(() => {
             (async () => {
@@ -289,6 +342,15 @@ export function ExperimentEditor({
             clearInterval(uploadIntervalId);
         };
     }, []);
+
+    // Add this new useEffect
+    useEffect(() => {
+        generatingIds.forEach((id) => {
+            if (!activePolls.has(id.nano_id)) {
+                pollForResult(id.nano_id, id.request_id);
+            }
+        });
+    }, [generatingIds, activePolls]);
 
     return (
         <>

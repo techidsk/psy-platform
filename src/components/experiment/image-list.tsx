@@ -8,14 +8,18 @@ import { useExperimentState } from '@/state/_experiment_atoms';
 import classNames from 'classnames';
 
 interface ImageListProps extends React.HTMLAttributes<HTMLDivElement> {
-    experimentList: ImageResponse[];
+    experimentImageList: ImageResponse[];
     displayNum?: number;
     isPicMode?: boolean;
 }
 
 const DEFAULT_IMAGE = 'https://zju-queen-psy.oss-cn-shanghai.aliyuncs.com/assets/bg-1.jpg';
 
-export function ImageList({ experimentList, displayNum = 1, isPicMode = false }: ImageListProps) {
+export function ImageList({
+    experimentImageList,
+    displayNum = 1,
+    isPicMode = false,
+}: ImageListProps) {
     const [list, setList] = useState<ImageResponse[]>([]);
     const [index, setIndex] = useState(0);
     const [useFullSize, setUseFullSize] = useState(true);
@@ -23,23 +27,23 @@ export function ImageList({ experimentList, displayNum = 1, isPicMode = false }:
     const setCurrentImages = useExperimentState((state) => state.setCurrentImages);
 
     function prev() {
-        if (experimentList.length > displayNum) {
+        if (experimentImageList.length > displayNum) {
             setSliceList(index - 1);
         }
     }
 
     function next() {
-        if (experimentList.length > displayNum) {
-            if (index + 1 <= experimentList.length) {
+        if (experimentImageList.length > displayNum) {
+            if (index + 1 <= experimentImageList.length) {
                 setSliceList(index + 1);
             }
         }
     }
 
     function setSliceList(newIndex: number) {
-        let tmp = experimentList;
+        let tmp = experimentImageList;
         let s = Math.max(newIndex - displayNum, 0);
-        let e = Math.min(s + displayNum, experimentList.length);
+        let e = Math.min(s + displayNum, experimentImageList.length);
         const imageList = tmp
             .slice(s, e)
             .map((item: ImageResponse, idx: number) => ({ ...item, idx: idx + s }));
@@ -50,15 +54,15 @@ export function ImageList({ experimentList, displayNum = 1, isPicMode = false }:
     }
 
     useEffect(() => {
-        let temp: ImageResponse[] = experimentList.map((item: ImageResponse, idx: number) => ({
+        let temp: ImageResponse[] = experimentImageList.map((item: ImageResponse, idx: number) => ({
             ...item,
             idx: idx,
         }));
         const imageList = temp.slice(-1 * displayNum);
         setList(imageList);
-        setIndex(experimentList.length);
+        setIndex(experimentImageList.length);
         setCurrentImages(imageList.map((item) => (isPicMode ? item.image_url : DEFAULT_IMAGE)));
-    }, [experimentList, displayNum]);
+    }, [experimentImageList, displayNum]);
 
     useEffect(() => {
         function updateSize() {

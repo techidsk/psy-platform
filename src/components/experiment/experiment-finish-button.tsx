@@ -12,7 +12,7 @@ import { toast } from '@/hooks/use-toast';
 interface ExperimentFinishProps extends React.HTMLAttributes<HTMLButtonElement> {
     nanoId: string; // user_experiment表中的nano_id
     disable?: boolean;
-    experimentList: ImageResponse[];
+    experimentImageList: ImageResponse[];
     callbackUrl: string;
     part: number;
     stepTitle?: string;
@@ -22,7 +22,7 @@ interface ExperimentFinishProps extends React.HTMLAttributes<HTMLButtonElement> 
 
 export function ExperimentFinishButton({
     nanoId: userExperimentNanoId,
-    experimentList,
+    experimentImageList: experimentList,
     callbackUrl,
     part,
     stepTitle,
@@ -35,6 +35,7 @@ export function ExperimentFinishButton({
 
     const router = useRouter();
 
+    // 判断是否可以完成实验
     useEffect(() => {
         if (experimentList.length > 0) {
             setDisabled(false);

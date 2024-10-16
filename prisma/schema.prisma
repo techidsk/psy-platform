@@ -62,6 +62,7 @@ model trail {
   nano_id            String?   @unique(map: "psy_trail_nano_id_uindex") @db.VarChar(16)
   part               Int?
   experiment_id      Int?
+  request_id         String?   @db.VarChar(36)
 
   @@index([user_experiment_id], map: "idx_exp_nano_id")
   @@index([state], map: "idx_state")
