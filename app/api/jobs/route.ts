@@ -9,9 +9,25 @@ import { logger } from '@/lib/logger';
  */
 export async function GET(request: Request) {
     try {
+        // 添加新的 SQL 语句来重新排序 experiment_steps
+        logger.info('重新排序实验步骤');
+        await db.$executeRaw`
+        SET @current_experiment_id = NULL;
+        SET @new_order = 0;
+
+        UPDATE experiment_steps
+        SET \`order\` = (
+            CASE
+                WHEN @current_experiment_id = experiment_id THEN @new_order := @new_order + 1
+                ELSE @new_order := 1 AND @current_experiment_id := experiment_id
+            END
+        )
+        ORDER BY experiment_id, \`order\`;
+        `;
+
         // 使用原始 SQL 查询获取需要更新的实验 ID
-        const rawQuery = `
-            SELECT id
+        const userExperiments = await db.$queryRaw<any[]>`
+        SELECT id
             FROM (
                 SELECT ue.id,
                     CASE
@@ -22,14 +38,12 @@ export async function GET(request: Request) {
                 FROM user_experiments ue
                 LEFT JOIN experiment_steps s
                     ON s.experiment_id = ue.experiment_id
-                    AND s.'order' = ue.part
+                    AND s.\`order\` = ue.part
                 WHERE ue.state = 'IN_EXPERIMENT'
                 ORDER BY ue.id DESC
             ) a
             WHERE countdown_result < minutes_since_start
         `;
-
-        const userExperiments = await db.$queryRaw<any[]>`${rawQuery}`;
 
         // 更新状态
         if (userExperiments.length > 0) {
