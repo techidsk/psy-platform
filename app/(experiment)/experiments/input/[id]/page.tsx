@@ -103,6 +103,7 @@ export default async function MainInput({
                         nanoId={userExperimentId}
                         part={parseInt(experimentStepIndex)}
                         isExperimentFinished={isExperimentFinished}
+                        experimentImageList={experimentImageList}
                     />
                     <div className="flex gap-8 items-center justify-end mt-4">
                         {countDownTime > 0 && (
