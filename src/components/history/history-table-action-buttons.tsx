@@ -37,9 +37,9 @@ export default function HistoryTableActionButtons({ datas, searchParams }: Butto
                 const id = data.nano_id;
                 const userQualtrics = data.qualtrics;
 
-                let filename = `[${data.experiment_name}]-${userQualtrics}`;
+                let filename = `[${data.experiment_name}]-${userQualtrics}-${id}`;
                 if (data.part !== 0) {
-                    filename = `[${data.experiment_name}]-${data.part}-${userQualtrics}`;
+                    filename = `[${data.experiment_name}]-${data.part}-${userQualtrics}-${id}`;
                 }
                 try {
                     const response = await fetch(`/api/log/${id}?part=${data.part}`);
