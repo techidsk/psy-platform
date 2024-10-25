@@ -22,7 +22,8 @@
         "paths": {
             "@/*": ["./src/*"]
         },
-        "typeRoots": ["src/types"]
+        "typeRoots": ["./node_modules/@types", "src/types"],
+        "types": ["ramda"]
     },
     "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/**/*", "app"],
     "exclude": ["node_modules", "**/*.spec.ts"]

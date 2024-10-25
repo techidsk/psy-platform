@@ -5,7 +5,12 @@ import { logger } from '@/lib/logger';
 import JSZip from 'jszip';
 import { NextResponse } from 'next/server';
 
-export async function getUserExperimentHistory(userExperimentNanoId: string, part: string) {
+export async function getUserExperimentHistory(
+    userExperimentNanoId: string,
+    part: string,
+    includeExperimentRecord: boolean = true,
+    includeInputRecord: boolean = true
+) {
     // 获取用户实验记录
     const userExperiment = await db.user_experiments.findFirst({
         where: { nano_id: userExperimentNanoId },
@@ -75,16 +80,22 @@ export async function getUserExperimentHistory(userExperimentNanoId: string, par
     });
 
     // 返回CSV文件
-    const csvContentJi = generateJiCsv(
-        user,
-        project,
-        projectGroup,
-        experiment,
-        totalTime,
-        engine,
-        trail
-    );
-    const csvContentHu = generateHuCsv(response);
+    let csvContentJi = '';
+    if (includeExperimentRecord) {
+        csvContentJi = generateJiCsv(
+            user,
+            project,
+            projectGroup,
+            experiment,
+            totalTime,
+            engine,
+            trail
+        );
+    }
+    let csvContentHu = '';
+    if (includeInputRecord) {
+        csvContentHu = generateHuCsv(response);
+    }
 
     const zipFileContent = await generateZipFile(csvContentJi, csvContentHu);
 
@@ -156,8 +167,12 @@ function generateHuCsv(response: any[]): string {
 
 async function generateZipFile(jiCsv: string, huCsv: string): Promise<Buffer> {
     const zip = new JSZip();
-    zip.file('ji.csv', jiCsv);
-    zip.file('hu.csv', huCsv);
+    if (jiCsv) {
+        zip.file('ji.csv', jiCsv);
+    }
+    if (huCsv) {
+        zip.file('hu.csv', huCsv);
+    }
     return await zip.generateAsync({ type: 'nodebuffer' });
 }
 

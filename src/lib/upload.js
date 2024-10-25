@@ -38,7 +38,25 @@ async function uploadImage(url, object) {
     }
 }
 
+async function uploadFile(buffer, object) {
+    try {
+        console.log('开始上传文件: ', object);
+        if (buffer) {
+            const result = await client.put(object, buffer);
+            console.log('上传成功: ', result.url);
+            return result.url; // Return the OSS URL
+        } else {
+            console.error('Buffer is empty, upload failed.');
+            return null;
+        }
+    } catch (e) {
+        console.log(`Error uploading file: ${e.message}`);
+        return null;
+    }
+}
+
 export {
     // put,
     uploadImage,
+    uploadFile, // Export the uploadFile function
 };

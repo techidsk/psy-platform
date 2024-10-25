@@ -1,13 +1,18 @@
 // 下载实验记录
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/session';
-import { Prisma } from '@prisma/client';
-import JSZip from 'jszip';
+import downloadQueue from '@/lib/queue';
+import { getId } from '@/lib/nano-id';
 import { logger } from '@/lib/logger';
-import { getUserExperimentHistory } from '@/lib/user_experment_history';
+import processDownload from '@/lib/downloadProcessor';
+import { readFile } from 'fs/promises';
+import { unlink } from 'fs/promises';
 
+// 在文件顶部添加这行
+downloadQueue.process('process-download', processDownload);
+
+// api/experiment/history
 export async function POST(req: NextRequest) {
     const currentUser = await getCurrentUser();
     if (!currentUser) {
@@ -18,93 +23,100 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
-    const { searchParams } = await req.json();
-    const experiments = await getFilteredExperiments(searchParams, currentUser, currentUser.role);
+    const { searchParams, includeExperimentRecord, includeInputRecord } = await req.json();
+    const jobId = getId();
 
-    const zip = new JSZip();
-
-    logger.info(`实验记录数量: ${experiments.length}`);
-
-    await Promise.all(
-        experiments.map(async (experiment) => {
-            const { nano_id, qualtrics, experiment_name, part } = experiment;
-            const filename =
-                part !== 0
-                    ? `[${experiment_name}]-${part}-${qualtrics}-${nano_id}.zip`
-                    : `[${experiment_name}]-${qualtrics}-${nano_id}.zip`;
-
-            const blob = await fetchZipFile(nano_id, part);
-            if (blob) {
-                zip.file(filename, blob, { binary: true });
-            } else {
-                console.error(`Could not add file ${filename} to zip`);
-            }
-        })
-    );
-
-    const zipContent = await zip.generateAsync({ type: 'blob' });
-
-    return new NextResponse(zipContent, {
-        headers: {
-            'Content-Type': 'application/zip',
-            'Content-Disposition': 'attachment; filename=all_filtered_experiments.zip',
+    // Add job to the queue
+    await downloadQueue.add(
+        'process-download',
+        {
+            searchParams,
+            includeExperimentRecord,
+            includeInputRecord,
+            currentUser,
+            jobId,
         },
+        { jobId }
+    );
+    logger.info(`Job added to queue: ${jobId}`);
+    return NextResponse.json({ jobId });
+}
+
+export async function GET(req: NextRequest) {
+    const jobId = req.nextUrl.searchParams.get('jobId');
+    logger.info(`Checking job status for Job ID: ${jobId}`);
+
+    if (!jobId) {
+        return NextResponse.json({ error: 'Missing jobId' }, { status: 400 });
+    }
+
+    const job = await downloadQueue.getJob(jobId);
+    if (!job) {
+        return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+    }
+
+    const state = await job.getState();
+    const progress = job.progress();
+
+    if (state === 'completed') {
+        const result = job.returnvalue;
+        logger.info(`Job ${jobId} completed. Preparing download...`);
+        logger.info(result);
+
+        if (result && result.tempFilePath && result.completed) {
+            logger.info(`Job ${jobId} completed, Reading zip file from ${result.tempFilePath}`);
+
+            try {
+                const zipContent = await readFile(result.tempFilePath);
+
+                // 删除临时文件
+                await unlink(result.tempFilePath);
+
+                return new NextResponse(zipContent, {
+                    headers: {
+                        'Content-Type': 'application/zip',
+                        'Content-Disposition': 'attachment; filename=all_filtered_experiments.zip',
+                    },
+                });
+            } catch (error) {
+                logger.error(`Error reading zip file: ${error}`);
+                return NextResponse.json({ error: 'Error reading zip file' }, { status: 500 });
+            }
+        } else {
+            logger.error(`Job ${jobId} completed but no zip file path found`);
+            return NextResponse.json({ error: 'No zip file available' }, { status: 500 });
+        }
+    } else if (state === 'failed') {
+        const failedReason = job.failedReason || 'Unknown error';
+        logger.error(`Job ${jobId} failed: ${failedReason}`);
+        return NextResponse.json({ error: failedReason }, { status: 500 });
+    }
+
+    return NextResponse.json({
+        status: state,
+        progress,
     });
 }
 
-const fetchZipFile = async (nano_id: string, part: number) => {
-    try {
-        const partString = part ? part.toString() : '0';
-        const response = await getUserExperimentHistory(nano_id, partString);
-
-        const arrayBuffer = await response.arrayBuffer();
-        return arrayBuffer;
-    } catch (error) {
-        console.error(`Failed to fetch or process the blob: ${error}`);
-        return null; // Return null to indicate failure
+export async function DELETE(req: NextRequest) {
+    const jobId = req.nextUrl.searchParams.get('jobId');
+    if (!jobId) {
+        return NextResponse.json({ error: 'Missing jobId' }, { status: 400 });
     }
-};
 
-async function getFilteredExperiments(searchParams: any, currentUser: any, role: string) {
-    const {
-        username,
-        qualtrics,
-        engine_name,
-        group_name,
-        experiment_name,
-        start_time,
-        finish_time,
-    } = searchParams;
+    const job = await downloadQueue.getJob(jobId);
+    if (!job) {
+        return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+    }
 
-    return await db.$queryRaw<any[]>`
-        SELECT e.*, u.username, u.avatar, u.qualtrics, n.engine_name, n.engine_image, 
-        eper.experiment_name, g.group_name, num, project_group_experiment_num, es.step_name
-        FROM user_experiments e
-        LEFT JOIN user u ON u.id = e.user_id
-        LEFT JOIN experiment eper ON eper.id = e.experiment_id
-        LEFT JOIN project_group g ON g.id = e.project_group_id
-        LEFT JOIN engine n ON n.id = e.engine_id
-        LEFT JOIN (
-            SELECT count(id) as num, user_id, project_group_id 
-            FROM user_experiments 
-            GROUP BY user_id, project_group_id
-            ) ue ON ue.user_id = u.id AND ue.project_group_id = g.id
-        LEFT JOIN (
-            SELECT count(id) as project_group_experiment_num, project_group_id
-            FROM project_group_experiments
-            GROUP BY project_group_id
-        ) pge ON pge.project_group_id = e.project_group_id
-        LEFT JOIN experiment_steps es ON es.experiment_id = e.experiment_id and es.order = e.part
-        WHERE 1 = 1 
-        ${role === 'USER' ? Prisma.sql`and e.user_id = ${currentUser.id}` : Prisma.empty}
-        ${role === 'ASSITANT' ? Prisma.sql`and e.manager_id = ${currentUser.id}` : Prisma.empty}
-        ${start_time ? Prisma.sql`and e.start_time >= ${start_time}` : Prisma.empty}
-        ${finish_time ? Prisma.sql`and e.finish_time <= ${finish_time}` : Prisma.empty}
-        ${username ? Prisma.sql`and u.username like ${`%${username}%`}` : Prisma.empty}
-        ${qualtrics ? Prisma.sql`and u.qualtrics like ${`%${qualtrics}%`}` : Prisma.empty}
-        ${engine_name ? Prisma.sql`and n.engine_name like ${`%${engine_name}%`}` : Prisma.empty}
-        ${group_name ? Prisma.sql`and g.group_name like ${`%${group_name}%`}` : Prisma.empty}
-        ${experiment_name ? Prisma.sql`and eper.experiment_name like ${`%${experiment_name}%`}` : Prisma.empty}
-        ORDER BY e.id DESC
-    `;
+    // 取消任务
+    await job.remove();
+
+    // 如果任务正在处理中，我们需要等待它完成当前的批处理
+    if (await job.isActive()) {
+        logger.info(`Job ${jobId} is active, waiting for it to finish current batch`);
+        // 可以在这里添加一个超时机制，如果等待时间过长就强制终止
+    }
+
+    return NextResponse.json({ message: 'Job cancelled successfully' });
 }

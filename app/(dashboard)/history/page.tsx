@@ -60,6 +60,7 @@ async function getHistory(
         experiment_name,
         start_time,
         finish_time,
+        state,
     } = searchParams;
 
     const experiments = await db.$queryRaw<ExperimentProps[]>`
@@ -91,6 +92,7 @@ async function getHistory(
         ${engine_name ? Prisma.sql`and n.engine_name like ${`%${engine_name}%`}` : Prisma.empty}
         ${group_name ? Prisma.sql`and g.group_name like ${`%${group_name}%`}` : Prisma.empty}
         ${experiment_name ? Prisma.sql`and eper.experiment_name like ${`%${experiment_name}%`}` : Prisma.empty}
+        ${state ? Prisma.sql`and e.state = ${state}` : Prisma.empty}
         ORDER BY e.id DESC
         LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
     `;
@@ -334,6 +336,16 @@ const searchDatas = [
     { name: 'engine_name', type: 'input', placeholder: '请输入引擎名称' },
     { name: 'group_name', type: 'input', placeholder: '请输入分组名称' },
     { name: 'experiment_name', type: 'input', placeholder: '请输入实验名称' },
+    {
+        name: 'state',
+        type: 'select',
+        placeholder: '请选择实验状态',
+        values: [
+            { value: '', label: '全部' },
+            { value: 'FINISHED', label: '已完成' },
+            { value: 'IN_EXPERIMENT', label: '未完成' },
+        ],
+    },
     { name: 'start_time', type: 'date', placeholder: '请选择开始时间' },
     { name: 'finish_time', type: 'date', placeholder: '请选择结束时间' },
 ];
