@@ -7,6 +7,16 @@ import { getUserExperimentHistory } from '@/lib/user_experment_history';
 import * as R from 'ramda';
 import path from 'path';
 import { promises as fs } from 'fs';
+import os from 'os';
+
+// 方案1：使用系统临时目录（推荐）
+const tempDir = path.join(os.tmpdir(), 'psy-platform');
+
+// 方案2：使用环境变量
+// const tempDir = process.env.TEMP_DIR || '/tmp/psy-platform';
+
+// 方案3：使用固定的绝对路径
+// const tempDir = '/tmp/psy-platform';
 
 async function processDownload(job: Job) {
     const { searchParams, includeExperimentRecord, includeInputRecord, currentUser } = job.data;
@@ -78,10 +88,7 @@ async function processDownload(job: Job) {
             throw new Error('Generated zip is empty');
         }
 
-        // 准备临时目录和文件路径
-        const tempDir = path.join(process.cwd(), 'temp');
         const tempFilePath = path.join(tempDir, `${job.id}.zip`);
-
         logger.info(`Preparing to write zip file to: ${tempFilePath}`);
 
         // 确保临时目录存在
