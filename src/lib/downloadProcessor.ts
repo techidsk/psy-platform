@@ -38,6 +38,8 @@ async function processDownload(job: Job) {
         const totalExperiments = experiments.length;
         let addedFiles = 0;
 
+        logger.info(`========= Job ${job.id}: Temporary directory: ${tempDir} `);
+
         for (const batch of experimentBatches) {
             // 检查任务是否被取消
             if ((await job.isActive()) === false) {
