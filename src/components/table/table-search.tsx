@@ -140,15 +140,20 @@ export function TableSearch({
         let oldSearchParams = new URLSearchParams(window.location.search);
         const pathname = window.location.pathname;
 
+        // 如果是通过搜索按钮触发的，重置页码为1
+        if (!reset && oldSearchParams.has('page')) {
+            oldSearchParams.set('page', '1');
+        }
+
         if (reset) {
             let emptySearchParams = new URLSearchParams();
-            emptySearchParams.set('page', (oldSearchParams.get('page') || 1).toString());
-            emptySearchParams.set('pagesize', (oldSearchParams.get('pagesize') || 15).toString());
+            emptySearchParams.set('page', '1');
+            emptySearchParams.set('pagesize', '10');
             const newUrl = `${pathname}?${emptySearchParams.toString()}`;
             router.push(newUrl);
         } else {
             let hasChanged = false;
-            console.log(searchParams);
+
             Object.entries(searchParams).forEach(([key, value]) => {
                 if (typeof value === 'string') {
                     oldSearchParams.set(key, value.toString());
@@ -157,7 +162,6 @@ export function TableSearch({
             });
 
             if (hasChanged) {
-                // 构造新的URL，保留现有的查询参数
                 const newUrl = `${pathname}?${oldSearchParams.toString()}`;
                 router.push(newUrl);
             }

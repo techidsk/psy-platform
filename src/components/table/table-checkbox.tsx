@@ -11,35 +11,28 @@ export default function TableCheckbox({ data, itemName }: TableCheckboxProps) {
     const selectedIds = useTableState((state) => state.selectedIds);
     const addId = useTableState((state) => state.addSelectId);
     const removeId = useTableState((state) => state.removeSelectId);
-    function onCheck(e: any, data: any) {
-        if (e.target.checked) {
-            setChecked(true);
+
+    // 初始化时设置 checked 状态
+    const [checked, setChecked] = useState(false);
+
+    useEffect(() => {
+        // 组件挂载和selectedIds变化时更新checked状态
+        setChecked(selectedIds[itemName]?.includes(data.id) || false);
+    }, [selectedIds, itemName, data.id]);
+
+    function onCheck(e: any) {
+        const isChecked = e.target.checked;
+        setChecked(isChecked);
+        if (isChecked) {
             addId(data.id, itemName);
         } else {
-            setChecked(false);
             removeId(data.id, itemName);
         }
     }
 
-    const itemIds = selectedIds[itemName] || [];
-    // 初始化时设置 checked 状态
-    const [checked, setChecked] = useState(selectedIds[itemName]?.includes(data.id));
-
-    // 当 selectedIds 变化时更新 checked 状态
-    useEffect(() => {
-        setChecked(selectedIds[itemName]?.includes(data.id));
-    }, [selectedIds, itemName, data.id]);
-
     return (
         <div className="flex justify-center items-center">
-            <input
-                type="checkbox"
-                checked={checked}
-                className="checkbox"
-                onChange={(e) => {
-                    onCheck(e, data);
-                }}
-            />
+            <input type="checkbox" checked={checked} className="checkbox" onChange={onCheck} />
         </div>
     );
 }

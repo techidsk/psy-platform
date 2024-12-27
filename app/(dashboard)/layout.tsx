@@ -101,7 +101,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
             <header className="container sticky top-0 w-full bg-white">
                 <Header user={dbUser} />
             </header>
-            <div className="container grid gap-12 md:grid-cols-[200px_1fr] px-8">
+            <div className="container grid gap-12 md:grid-cols-[200px_1fr]">
                 <aside className="hidden w-[200px] flex-col md:flex">
                     <DashboardNav items={authedSidebar} />
                 </aside>

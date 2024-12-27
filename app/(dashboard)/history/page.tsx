@@ -82,7 +82,7 @@ async function getHistory(
             GROUP BY project_group_id
         ) pge ON pge.project_group_id = e.project_group_id
         LEFT JOIN experiment_steps es ON es.experiment_id = e.experiment_id and es.order = e.part
-        WHERE 1 = 1 
+        WHERE 1 = 1 AND e.state = 'FINISHED'
         ${role === 'USER' ? Prisma.sql`and e.user_id = ${currentUser.id}` : Prisma.empty}
         ${role === 'ASSITANT' ? Prisma.sql`and e.manager_id = ${currentUser.id}` : Prisma.empty}
         ${start_time ? Prisma.sql`and e.start_time >= ${start_time}` : Prisma.empty}
@@ -92,7 +92,6 @@ async function getHistory(
         ${engine_name ? Prisma.sql`and n.engine_name like ${`%${engine_name}%`}` : Prisma.empty}
         ${group_name ? Prisma.sql`and g.group_name like ${`%${group_name}%`}` : Prisma.empty}
         ${experiment_name ? Prisma.sql`and eper.experiment_name like ${`%${experiment_name}%`}` : Prisma.empty}
-        ${state ? Prisma.sql`and e.state = ${state}` : Prisma.empty}
         ORDER BY e.id DESC
         LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
     `;
@@ -128,10 +127,10 @@ export default async function ExperimentHistory({
         end = currentPage + 1;
     }
     return (
-        <div className="container mx-auto">
-            <div className="flex flex-col gap-4">
+        <div className="container mx-auto h-[calc(100vh-theme(spacing.32))] flex flex-col">
+            <div className="flex flex-col gap-4 h-full overflow-auto">
                 <DashboardHeader heading="实验记录" text="查看用户实验记录"></DashboardHeader>
-                <div className="w-full overflow-auto">
+                <div className="w-full overflow-auto flex-1">
                     <Table
                         configs={experimentTableConfig}
                         datas={datas}
@@ -211,13 +210,13 @@ const experimentTableConfig: TableConfig[] = [
         children: (data: any) => {
             return (
                 <div className="flex flex-col gap-2 justify-center">
-                    <Image
+                    {/* <Image
                         className="rounded-full"
                         src="https://techidsk.oss-cn-hangzhou.aliyuncs.com/project/_psy_/avatar.avif"
                         alt=""
                         width={48}
                         height={48}
-                    />
+                    /> */}
                     <div className="text-gray-700 text-sm">用户名：{data.username}</div>
                     {data.qualtrics && (
                         <div className="text-gray-700 text-sm">Qualtrics：{data.qualtrics}</div>
@@ -277,39 +276,12 @@ const experimentTableConfig: TableConfig[] = [
         children: (data: any) => {
             let d = Math.floor((data.finish_timestamp - data.start_timestamp) / 1000);
             return (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col items-center gap-2">
                     {d > 0 ? <span>{formatTime(d)}</span> : '项目未完成'}
+                    <TableActions>
+                        <CheckExperimentHistoryButton data={data} />
+                    </TableActions>
                 </div>
-            );
-        },
-    },
-    // {
-    //     key: 'type',
-    //     label: '状态',
-    //     children: (data: any) => {
-    //         let obj =
-    //             data.type === 'TRAIL'
-    //                 ? {
-    //                       text: '预实验',
-    //                       type: 'pending',
-    //                   }
-    //                 : {
-    //                       text: '正式实验',
-    //                       type: 'success',
-    //                   };
-
-    //         return <State type={obj.type}>{obj.text}</State>;
-    //     },
-    // },
-    {
-        key: 'id',
-        label: '操作',
-        hidden: true,
-        children: (data: any) => {
-            return (
-                <TableActions>
-                    <CheckExperimentHistoryButton data={data} />
-                </TableActions>
             );
         },
     },
@@ -336,17 +308,17 @@ const searchDatas = [
     { name: 'engine_name', type: 'input', placeholder: '请输入引擎名称' },
     { name: 'group_name', type: 'input', placeholder: '请输入分组名称' },
     { name: 'experiment_name', type: 'input', placeholder: '请输入实验名称' },
-    {
-        name: 'state',
-        type: 'select',
-        placeholder: '请选择实验状态',
-        defaultValue: 'FINISHED',
-        values: [
-            { value: '', label: '全部' },
-            { value: 'FINISHED', label: '已完成' },
-            { value: 'IN_EXPERIMENT', label: '未完成' },
-        ],
-    },
+    // {
+    //     name: 'state',
+    //     type: 'select',
+    //     placeholder: '请选择实验状态',
+    //     defaultValue: 'FINISHED',
+    //     values: [
+    //         { value: '', label: '全部' },
+    //         { value: 'FINISHED', label: '已完成' },
+    //         { value: 'IN_EXPERIMENT', label: '未完成' },
+    //     ],
+    // },
     { name: 'start_time', type: 'date', placeholder: '请选择开始时间' },
     { name: 'finish_time', type: 'date', placeholder: '请选择结束时间' },
 ];
