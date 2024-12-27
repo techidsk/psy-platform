@@ -99,11 +99,19 @@ export function ExperimentEditor({
                         promptNanoId: promptNanoId,
                         guestNanoId: guestNanoId,
                         nano_id: experimentId,
-                        state: 'TIMEOUT', // 添加一个状态字段表明失败
+                        state: 'TIMEOUT',
                     }),
                     cache: 'no-store',
                 });
-                return null; // 返回null或适当的失败响应
+
+                toast({
+                    title: '生成超时',
+                    description: '图片生成超时，请重试或联系管理员',
+                    variant: 'destructive',
+                    duration: 3000,
+                });
+
+                return null;
             }
 
             if (response_json.status === 'error') {
@@ -121,6 +129,14 @@ export function ExperimentEditor({
                     }),
                     cache: 'no-store',
                 });
+
+                toast({
+                    title: '生成失败',
+                    description: '图片生成失败，请重试或联系管理员',
+                    variant: 'destructive',
+                    duration: 3000,
+                });
+
                 return null;
             }
 
