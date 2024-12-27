@@ -17,10 +17,11 @@ interface SearchProps {
     type: string;
     placeholder?: string;
     values?: FormValues[];
+    defaultValue?: any;
 }
 
 export function TableSearch({
-    defaultParams,
+    defaultParams = {},
     searchDatas,
     actionNode,
 }: {
@@ -29,8 +30,17 @@ export function TableSearch({
     actionNode?: React.ReactNode;
 }) {
     const router = useRouter();
-    const [searchParams, setSearchParams] = useState(defaultParams);
-    const [formValues, setFormValues] = useState(defaultParams);
+    const initialValues = {
+        ...defaultParams,
+        ...Object.fromEntries(
+            searchDatas
+                .filter((field) => field.defaultValue !== undefined)
+                .map((field) => [field.name, field.defaultValue])
+        ),
+    };
+
+    const [searchParams, setSearchParams] = useState(initialValues);
+    const [formValues, setFormValues] = useState(initialValues);
     // 弹出日期选择器
     const [showDatePicker, setShowDatePicker] = useState(false);
     // 对应名称的日期选择器
@@ -43,7 +53,7 @@ export function TableSearch({
 
     // 重置表单值到默认值
     const resetForm = () => {
-        setFormValues(defaultParams);
+        setFormValues(initialValues);
     };
 
     const renderField = (field: SearchProps) => {

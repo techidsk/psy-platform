@@ -340,6 +340,7 @@ const searchDatas = [
         name: 'state',
         type: 'select',
         placeholder: '请选择实验状态',
+        defaultValue: 'FINISHED',
         values: [
             { value: '', label: '全部' },
             { value: 'FINISHED', label: '已完成' },
