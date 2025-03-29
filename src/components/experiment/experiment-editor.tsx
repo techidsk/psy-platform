@@ -70,6 +70,18 @@ export function ExperimentEditor({
             return; // 如果已经在轮询，则直接返回
         }
 
+        // 检查requestId是否有效
+        if (!requestId || requestId === 'undefined') {
+            logger.error(`Invalid requestId: ${requestId} for promptNanoId: ${promptNanoId}`);
+            toast({
+                title: '生成失败',
+                description: '无效的任务ID，请重试',
+                variant: 'destructive',
+                duration: 3000,
+            });
+            return;
+        }
+
         setActivePolls((prev) => new Set(prev).add(promptNanoId));
 
         const startTime = Date.now();
@@ -142,6 +154,13 @@ export function ExperimentEditor({
 
             if (response_json.status !== 'success') {
                 await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                // 再次检查requestId是否有效
+                if (!requestId || requestId === 'undefined') {
+                    logger.error(`轮询过程中发现无效的requestId: ${requestId}`);
+                    return null;
+                }
+
                 const tempResponse = await fetch(getUrl(`/api/generate/${requestId}`), {
                     method: 'GET',
                     headers: {
@@ -264,6 +283,18 @@ export function ExperimentEditor({
             // 判断是否是无图模式，需要轮训结果
             const response_msg = await response.json();
             if (response_msg.msg !== '不需要生成图片') {
+                // 检查返回的request_id是否有效
+                if (!response_msg.request_id || response_msg.request_id === 'undefined') {
+                    logger.error(`无效的request_id: ${response_msg.request_id}`);
+                    toast({
+                        title: '生成失败',
+                        description: '服务器返回了无效的任务ID，请重试',
+                        variant: 'destructive',
+                        duration: 3000,
+                    });
+                    return;
+                }
+
                 // add to generatingIds
                 setGeneratingIds((prevIds) => {
                     if (!prevIds.some((id) => id.nano_id === promptNanoId)) {
@@ -274,7 +305,9 @@ export function ExperimentEditor({
                     }
                     return prevIds;
                 });
-                // await pollForResult(promptNanoId);
+
+                // 开始轮询结果
+                pollForResult(promptNanoId, response_msg.request_id);
             }
         } else {
             toast({
@@ -386,6 +419,39 @@ export function ExperimentEditor({
             }
         });
     }, [generatingIds, activePolls]);
+
+    useEffect(() => {
+        // 在组件加载时，检查是否有未完成的生成任务
+        async function checkPendingGenerations() {
+            try {
+                // 查询所有状态为GENERATING的trail
+                const response = await fetch(getUrl(`/api/trail/pending?nano_id=${nanoId}`));
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.trails && data.trails.length > 0) {
+                        // 设置正在生成的ID列表
+                        const pendingTrails = data.trails.map((trail: any) => ({
+                            nano_id: trail.nano_id,
+                            request_id: trail.request_id,
+                        }));
+
+                        setGeneratingIds(pendingTrails);
+
+                        // 为每个待处理的trail启动轮询
+                        pendingTrails.forEach((trail: any) => {
+                            if (trail.request_id && trail.request_id !== 'undefined') {
+                                pollForResult(trail.nano_id, trail.request_id);
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to check pending generations:', error);
+            }
+        }
+
+        checkPendingGenerations();
+    }, [nanoId]);
 
     return (
         <>

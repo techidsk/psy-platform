@@ -22,6 +22,12 @@ export async function PATCH(request: Request) {
     const data = await request.json();
     try {
         const { id, ...updateData } = data;
+
+        // 验证项目ID是否存在
+        if (!id) {
+            return NextResponse.json({ msg: '项目ID不能为空' }, { status: 400 });
+        }
+
         await db.projects.update({
             where: { id: id },
             data: updateData,

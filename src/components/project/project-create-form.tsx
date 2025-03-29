@@ -107,6 +107,17 @@ export function ProjectCreateForm({
     }
 
     async function patchProject(data: FormData) {
+        // 检查项目ID是否存在
+        if (!data.id) {
+            toast({
+                title: '更新失败',
+                description: '项目ID不存在',
+                variant: 'destructive',
+                duration: 5000,
+            });
+            return;
+        }
+
         try {
             const result = await fetch(getUrl(`/api/project/patch`), {
                 method: 'PATCH',
@@ -246,7 +257,17 @@ export function ProjectCreateForm({
 
         setIsLoading(true);
         if (dispatch === 'UPDATE') {
-            await patchProject({ ...data, id: project?.id });
+            if (!project?.id) {
+                toast({
+                    title: '更新失败',
+                    description: '找不到项目ID',
+                    variant: 'destructive',
+                    duration: 5000,
+                });
+                setIsLoading(false);
+                return;
+            }
+            await patchProject({ ...data, id: project.id });
         } else {
             await addProject(data);
         }

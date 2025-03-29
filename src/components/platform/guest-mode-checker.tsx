@@ -11,6 +11,16 @@ interface CheckProps {
 export default function GuestModeChecker({ data }: CheckProps) {
     const router = useRouter();
     async function patchProject() {
+        if (!data || !data.id) {
+            toast({
+                title: '更新失败',
+                description: '项目ID不存在',
+                variant: 'destructive',
+                duration: 5000,
+            });
+            return;
+        }
+
         try {
             const result = await fetch(getUrl(`/api/project/patch`), {
                 method: 'PATCH',

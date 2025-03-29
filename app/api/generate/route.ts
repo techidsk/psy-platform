@@ -21,9 +21,23 @@ export async function POST(request: Request) {
     const { guest, id: promptNanoId, experimentId, experimentNanoId, part: stepOrder } = json;
     const isGuest = Boolean(guest);
 
-    if (!promptNanoId) {
-        logger.error('未找到对应promptNanoId数据');
-        return NextResponse.json({ msg: '发布失败，缺少参数' });
+    // 检查关键参数是否为undefined
+    if (!promptNanoId || promptNanoId === 'undefined') {
+        logger.error('promptNanoId为undefined或缺失');
+        return NextResponse.json({ msg: '发布失败，promptNanoId为undefined或缺失' });
+    }
+
+    if (
+        (isGuest && (!experimentNanoId || experimentNanoId === 'undefined')) ||
+        (!isGuest && (!experimentId || experimentId === 'undefined'))
+    ) {
+        logger.error('experiment ID为undefined或缺失');
+        return NextResponse.json({ msg: '发布失败，experiment ID为undefined或缺失' });
+    }
+
+    if (stepOrder === undefined || stepOrder === 'undefined') {
+        logger.error('stepOrder为undefined或缺失');
+        return NextResponse.json({ msg: '发布失败，步骤参数为undefined或缺失' });
     }
 
     const trail = await db.trail.findFirst({
@@ -41,6 +55,13 @@ export async function POST(request: Request) {
         : await db.user.findFirst({ where: { id: trail?.user_id || 0 } });
 
     const userExperimentNanoId = isGuest ? experimentNanoId : experimentId;
+
+    // 再次检查userExperimentNanoId是否有效
+    if (!userExperimentNanoId || userExperimentNanoId === 'undefined') {
+        logger.error('userExperimentNanoId无效或为undefined');
+        return NextResponse.json({ msg: '发布失败，无效的实验ID' });
+    }
+
     let userExperiment = await db.user_experiments.findFirst({
         where: { nano_id: userExperimentNanoId },
     });
@@ -52,10 +73,11 @@ export async function POST(request: Request) {
 
     // 获取生成信息
     const engineId = userExperiment.engine_id;
-    if (![1, 2, 3, 4].includes(engineId)) {
-        logger.error('未找到对应engine数据');
-        return NextResponse.json({ msg: '发布失败，缺少参数' });
+    if (!engineId || isNaN(Number(engineId))) {
+        logger.error(`无效的引擎ID: ${engineId}`);
+        return NextResponse.json({ msg: '发布失败，引擎ID无效' });
     }
+
     const engine = await db.engine.findFirst({
         where: { id: engineId },
     });
@@ -81,6 +103,15 @@ export async function POST(request: Request) {
     const userPrompts = await fetchUserPrompts(trail);
 
     // 获取实验信息
+    if (
+        !userExperiment.experiment_id ||
+        userExperiment.experiment_id === undefined ||
+        isNaN(parseInt(userExperiment.experiment_id))
+    ) {
+        logger.error(`实验ID无效: ${userExperiment.experiment_id}`);
+        return NextResponse.json({ msg: '发布失败，无效的实验ID' });
+    }
+
     const experiment = await fetchExperiment(parseInt(userExperiment.experiment_id));
     if (!experiment) {
         logger.error('未找到对应experiment数据');
@@ -133,6 +164,12 @@ export async function POST(request: Request) {
 }
 
 async function getExperimentStep(experimentId: number, step: number) {
+    // 检查参数是否有效
+    if (experimentId === undefined || isNaN(experimentId) || step === undefined || isNaN(step)) {
+        logger.error(`Invalid parameters: experimentId: ${experimentId}, step: ${step}`);
+        return null;
+    }
+
     const experimentStep = await db.experiment_steps.findFirst({
         where: { experiment_id: experimentId, order: step },
     });

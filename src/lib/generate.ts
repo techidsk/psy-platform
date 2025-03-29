@@ -57,18 +57,26 @@ async function getGenerateResult(task_id: string) {
         });
         const res = await response.json();
         if (res.status === 'completed') {
-            const result = await fetch(
-                `http://${process.env.CELERY_HOST}/get_result/${res.result}`,
-                {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    cache: 'no-cache',
-                }
-            );
-            const result_data = await result.json();
-            return result_data;
+            try {
+                const result = await fetch(
+                    `http://${process.env.CELERY_HOST}/get_result/${res.result}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        cache: 'no-cache',
+                    }
+                );
+                const result_data = await result.json();
+                return result_data;
+            } catch (fetchError) {
+                logger.error(`Failed to get result data: ${fetchError}`);
+                return {
+                    status: 'failed',
+                    message: fetchError instanceof Error ? fetchError.message : String(fetchError),
+                };
+            }
         }
         return res;
     } catch (error) {
@@ -76,7 +84,7 @@ async function getGenerateResult(task_id: string) {
         // 可以根据需要重新抛出错误或处理错误
         return {
             status: 'failed',
-            message: error,
+            message: error instanceof Error ? error.message : String(error),
         };
     }
 }

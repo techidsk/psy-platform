@@ -45,6 +45,7 @@ const getProjects = async (
 
     const project_name = searchParams?.project_name || '';
     const state = searchParams?.state || '';
+    const currentDate = new Date().toISOString().split('T')[0]; // 获取当前日期，格式为YYYY-MM-DD
 
     // 判断当前用户角色
     const projects = await db.$queryRaw<ProjectTableProps[]>`
@@ -55,7 +56,15 @@ const getProjects = async (
                 ? Prisma.sql`AND p.project_name LIKE '%${Prisma.raw(project_name)}%'`
                 : Prisma.empty
         }
-        ${state ? Prisma.sql`AND p.state LIKE '%${Prisma.raw(state)}%'` : Prisma.empty}
+        ${
+            state === 'AVAILABLE'
+                ? Prisma.sql`AND p.state = 'AVAILABLE' AND p.end_time >= ${currentDate}`
+                : state === 'EXPIRED'
+                  ? Prisma.sql`AND p.state = 'AVAILABLE' AND p.end_time < ${currentDate}`
+                  : state
+                    ? Prisma.sql`AND p.state = '${Prisma.raw(state)}'`
+                    : Prisma.empty
+        }
 
         LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
     `;
@@ -213,6 +222,7 @@ const searchDatas = [
             { value: 'AVAILABLE', label: '可用' },
             { value: 'DRAFT', label: '未激活' },
             { value: 'ACHIVED', label: '已归档' },
+            { value: 'EXPIRED', label: '已超时' },
         ],
     },
 ];

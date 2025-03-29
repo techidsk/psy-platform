@@ -1,6 +1,7 @@
 // import dynamic from 'next/dynamic'
 import { NextResponse } from 'next/server';
 import { getGenerateResult } from '@/lib/generate';
+import { logger } from '@/lib/logger';
 
 /**
  * /api/generate/[id]
@@ -9,8 +10,19 @@ import { getGenerateResult } from '@/lib/generate';
  * @returns
  */
 export async function GET(request: Request, context: { params: any }) {
+    // 检查ID是否为undefined
+    if (!context.params.id || context.params.id === 'undefined') {
+        logger.error(`无效的生成任务ID: ${context.params.id}`);
+        return NextResponse.json(
+            { msg: '生成失败，无效的任务ID', status: 'error' },
+            { status: 400 }
+        );
+    }
+
     // 首先请求
     const response = await getGenerateResult(context.params.id);
+    logger.info(`获取生成结果: ${context.params.id}, 响应: ${JSON.stringify(response)}`);
+
     if (response) {
         const status = response.status;
         if (status === 'pending') {
@@ -21,7 +33,19 @@ export async function GET(request: Request, context: { params: any }) {
             return NextResponse.json({ msg: '生成成功', status: 'success', data: response.result });
         } else {
             // 生成失败
-            return NextResponse.json({ msg: '生成失败', status: 'error' }, { status: 500 });
+            logger.error(`生成失败，状态: ${status}, 消息: ${response.message || '无错误消息'}`);
+            return NextResponse.json(
+                {
+                    msg: '生成失败',
+                    status: 'error',
+                    error: response.message,
+                },
+                { status: 500 }
+            );
         }
+    } else {
+        // 添加处理response为null/undefined的情况
+        logger.error(`生成请求失败，响应为空`);
+        return NextResponse.json({ msg: '生成请求失败', status: 'error' }, { status: 500 });
     }
 }
