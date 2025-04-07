@@ -19,7 +19,10 @@ export default function DownloadExperimentHistoryButton({ data }: ButtonProps) {
         try {
             const response = await fetch(`/api/log/${id}?part=${data.part}`);
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                if (response.status === 404) {
+                    throw new Error('实验记录文件未找到，可能数据尚未生成或已被删除');
+                }
+                throw new Error(`服务器响应错误 (${response.status})`);
             }
             const blob = await response.blob();
             // 创建一个指向blob的URL
@@ -39,7 +42,10 @@ export default function DownloadExperimentHistoryButton({ data }: ButtonProps) {
             const errorMessage = error instanceof Error ? error.message : String(error);
             toast({
                 title: '下载失败',
-                description: `无法下载实验记录，请检查您的网络连接或稍后重试。错误详情: ${errorMessage}`,
+                description:
+                    errorMessage === '实验记录文件未找到，可能数据尚未生成或已被删除'
+                        ? errorMessage
+                        : `无法下载实验记录，请检查您的网络连接或稍后重试。${errorMessage}`,
                 variant: 'destructive',
                 duration: 5000,
             });
