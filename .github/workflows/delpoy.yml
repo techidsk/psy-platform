@@ -57,24 +57,24 @@ jobs:
         ssh-private-key: ${{ secrets.WENDAO_CI }} # 服务器的私钥
       
     - name: Execute remote commands for update deploy
-        # 需要在 仓库变量 中添加远程服务器的以下信息
-        # - REMOTE_USER 连接的账户
-        # - REMOTE_HOST 连接的主机地址
-        # - REMOTE_PATH 相应仓库代码在目标服务器上的路径
+      # 需要在 仓库变量 中添加远程服务器的以下信息
+      # - REMOTE_USER 连接的账户
+      # - REMOTE_HOST 连接的主机地址
+      # - REMOTE_PATH 相应仓库代码在目标服务器上的路径
       run: |
-          ssh -o StrictHostKeyChecking=no root@139.196.216.224 << 'EOF'
-            # 使用 bash -l 启动登录shell
-            bash -l -c '
-              echo "Current user: $(whoami)" # 显示当前登录用户
+        ssh -o StrictHostKeyChecking=no root@139.196.216.224 << 'EOF'
+          # 使用 bash -l 启动登录shell
+          bash -l -c '
+            echo "Current user: $(whoami)" # 显示当前登录用户
 
-              nvm use 20 # 切换到 Node.js 版本 20
+            nvm use 20 # 切换到 Node.js 版本 20
 
-              cd /root/code/psy-platform
-              git pull
-              pnpm install
-              pnpm run build
+            cd /root/code/psy-platform
+            git pull
+            pnpm install
+            pnpm run build
 
-              pm2 restart psy
-              pm2 save
-            '
-          EOF
+            pm2 restart psy
+            pm2 save
+          '
+        EOF
