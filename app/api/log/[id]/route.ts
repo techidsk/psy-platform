@@ -24,7 +24,14 @@ export async function GET(request: NextRequest, context: { params: any }) {
             includeInputRecord
         );
     } catch (error) {
-        logger.error(`更新失败:${error}`);
-        return NextResponse.json({ msg: '服务器错误' }, { status: 500 });
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        logger.error(
+            `获取实验记录失败 [ID: ${context.params.id}, Part: ${request.nextUrl.searchParams.get('part')}]: ${errorMessage}`
+        );
+        // Consider returning a more specific but safe message depending on the error type if possible
+        return NextResponse.json(
+            { msg: '获取实验记录失败，请稍后重试或联系管理员。' },
+            { status: 500 }
+        );
     }
 }

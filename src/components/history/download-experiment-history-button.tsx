@@ -36,9 +36,10 @@ export default function DownloadExperimentHistoryButton({ data }: ButtonProps) {
             window.URL.revokeObjectURL(url);
         } catch (error) {
             console.error('Download failed:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
             toast({
                 title: '下载失败',
-                description: '下载失败，请重试',
+                description: `无法下载实验记录，请检查您的网络连接或稍后重试。错误详情: ${errorMessage}`,
                 variant: 'destructive',
                 duration: 5000,
             });

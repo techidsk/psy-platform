@@ -2,6 +2,7 @@ import { db } from '@/lib/db';
 import { ProjectCreateForm } from '@/components/project/project-create-form';
 import SubpageHeader, { SubpageContentHeader } from '@/components/subpage-header';
 import { ProjectEditButton } from '@/components/project/project-edit-button';
+import { notFound } from 'next/navigation';
 
 /**
  * 判断数据库中项目是否存在,如果存在则进入编辑流程.
@@ -38,6 +39,12 @@ async function getProjectGroupIds(id: string) {
 }
 
 export default async function ProjectDetail({ params: { id }, searchParams }: any) {
+    // Validate the id parameter
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId) || parsedId <= 0 || String(parsedId) !== id) {
+        notFound(); // Show 404 if id is not a valid positive integer string
+    }
+
     // Initiate both requests in parallel
     const projectData = getProject(id);
     const projectGroupData = getProjectGroupIds(id);
