@@ -282,7 +282,7 @@ export function ExperimentStepForm({
                                 <label className="sr-only" htmlFor="step_content">
                                     内容
                                 </label>
-                                <div className="grid gap-1 border-[1px] border-solid border-neutral-200 rounded-md">
+                                <div className="grid gap-1 border-[1px] border-solid border-neutral-200 rounded-md overflow-y-auto max-h-64">
                                     <TiptapEditor
                                         placeholder="请输入显示内容（被试可见，详细内容，支持Markdown格式）"
                                         content={stepContent}

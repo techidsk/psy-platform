@@ -23,7 +23,7 @@ export function Modal({ open, disableClickOutside, onClose, className, children 
 
     return (
         <div className={modalClass}>
-            <div className={cn('modal-box w-[600px]', className)} ref={ref}>
+            <div className={cn('modal-box', className)} ref={ref}>
                 {children}
             </div>
         </div>
