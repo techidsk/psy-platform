@@ -353,7 +353,7 @@ export function ExperimentStepForm({
                                     <input
                                         type="checkbox"
                                         className="toggle"
-                                        defaultChecked={true}
+                                        defaultChecked={false}
                                         {...register('pic_mode')}
                                     />
                                 </div>
