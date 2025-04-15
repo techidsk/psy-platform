@@ -110,12 +110,14 @@ model user_experiments {
   finish_time      DateTime? @db.DateTime(0)
   state            String?   @default("IN_EXPERIMENT") @db.VarChar(16)
   part             Int?      @default(1)
+  is_deleted       Int?      @default(0) @db.TinyInt
 
   @@unique([nano_id, part], map: "user_experiments_nano_id_part_uindex")
   @@index([user_id], map: "idx_user_id")
   @@index([project_group_id], map: "idx_project_group_id")
   @@index([experiment_id], map: "idx_experiment_id")
   @@index([state], map: "idx_state")
+  @@index([is_deleted], map: "idx_deleted")
 }
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments

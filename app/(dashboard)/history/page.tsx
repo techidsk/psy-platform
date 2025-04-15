@@ -1,5 +1,4 @@
 import { DashboardHeader } from '@/components/dashboard-header';
-import { State } from '@/components/state';
 import { Table } from '@/components/table/table';
 import { TableConfig } from '@/types/table';
 import Image from 'next/image';
@@ -13,9 +12,9 @@ import { TableSearch } from '@/components/table/table-search';
 import { Prisma } from '@prisma/client';
 import DownloadExperimentHistoryButton from '@/components/history/download-experiment-history-button';
 import CheckExperimentHistoryButton from '@/components/history/check-experiment-history-button';
-import { logger } from '@/lib/logger';
 import TableCheckbox from '@/components/table/table-checkbox';
 import HistoryTableActionButtons from '@/components/history/history-table-action-buttons';
+import { HistoryExperimentDeleteButton } from '@/components/history/history-experiment-delete-button';
 
 interface ExperimentProps {
     id: number;
@@ -82,7 +81,7 @@ async function getHistory(
             GROUP BY project_group_id
         ) pge ON pge.project_group_id = e.project_group_id
         LEFT JOIN experiment_steps es ON es.experiment_id = e.experiment_id and es.order = e.part
-        WHERE 1 = 1 AND e.state = 'FINISHED'
+        WHERE 1 = 1 AND e.state = 'FINISHED' AND e.is_deleted = 0
         ${role === 'USER' ? Prisma.sql`and e.user_id = ${currentUser.id}` : Prisma.empty}
         ${role === 'ASSITANT' ? Prisma.sql`and e.manager_id = ${currentUser.id}` : Prisma.empty}
         ${start_time ? Prisma.sql`and e.start_time >= ${start_time}` : Prisma.empty}
@@ -297,6 +296,18 @@ const experimentTableConfig: TableConfig[] = [
                 <TableActions>
                     {d > 0 ? <DownloadExperimentHistoryButton data={data} /> : <>无可下载内容</>}
                 </TableActions>
+            );
+        },
+    },
+    {
+        key: 'id',
+        label: '操作',
+        hidden: true,
+        children: (data: any) => {
+            return (
+                <div className="flex gap-4 items-center">
+                    <HistoryExperimentDeleteButton userExperimentId={data.id} />
+                </div>
             );
         },
     },
