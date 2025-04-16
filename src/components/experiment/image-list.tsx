@@ -95,7 +95,7 @@ export function ImageList({
                                 className="object-contain"
                                 src={DEFAULT_IMAGE}
                                 alt="默认图片"
-                                layout="fill"
+                                fill
                             />
                         ) : (
                             list.map((item) => (
@@ -109,7 +109,7 @@ export function ImageList({
                                             className="object-contain"
                                             src={isPicMode ? item.image_url : DEFAULT_IMAGE}
                                             alt=""
-                                            layout="fill"
+                                            fill
                                         />
                                     )}
                                 </div>
