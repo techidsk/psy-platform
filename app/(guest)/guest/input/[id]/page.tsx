@@ -61,8 +61,12 @@ export default async function GuestInput({
 
     const { trails: experimentImageList, experiment_state: experimentState } =
         await getExperimentInfos(userExperimentId, parseInt(experimentStepIndex));
-    // 实验是否结束
+
+    console.log(`Page Component: Received experimentState: ${experimentState}`);
+
     const isExperimentFinished = experimentState == 'FINISHED';
+
+    console.log(`Page Component: Calculated isExperimentFinished: ${isExperimentFinished}`);
 
     const platfomrSetting = await getAccessKey();
     const displayNum = platfomrSetting?.display_num || 1;

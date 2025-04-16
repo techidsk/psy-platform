@@ -117,6 +117,11 @@ async function getExperimentInfos(experimentId: string, part: number) {
         where: { user_experiment_id: experimentId, part: part },
     });
 
+    // Add log here
+    logger.info(
+        `getExperimentInfos: For experiment ${experimentId}, part ${part}, DB state is: ${state}`
+    );
+
     const formatResult: ImageResponse[] = result.map((e, idx) => {
         return {
             id: e.id.toString(),
@@ -128,6 +133,7 @@ async function getExperimentInfos(experimentId: string, part: number) {
             idx: idx,
             nano_id: e.nano_id?.toString() || '',
             request_id: e.request_id || '',
+            experiment_state: state,
         };
     });
     return {

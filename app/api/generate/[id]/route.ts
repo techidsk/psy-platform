@@ -21,7 +21,6 @@ export async function GET(request: Request, context: { params: any }) {
 
     // 首先请求
     const response = await getGenerateResult(context.params.id);
-    logger.info(`获取生成结果: ${context.params.id}, 响应: ${JSON.stringify(response)}`);
 
     if (response) {
         const status = response.status;

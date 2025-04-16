@@ -48,6 +48,7 @@ export function ExperimentEditor({
     const router = useRouter();
     const ref = useRef<HTMLTextAreaElement>(null);
     const [loading, setLoading] = useState<boolean>(false);
+    const [isGenerating, setIsGenerating] = useState<boolean>(false);
     const [experimentId, setExperimentId] = useState<string>();
     const [generatingIds, setGeneratingIds] = useState<{ nano_id: string; request_id: string }[]>(
         []
@@ -55,14 +56,29 @@ export function ExperimentEditor({
     const [activePolls, setActivePolls] = useState<Set<string>>(new Set());
 
     function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
-        if (loading) {
+        // 检查 loading (短暂的文本提交状态) 或 isGenerating (后台图片处理状态)
+        // 如果任一为 true，则阻止 Enter 键触发新的提交，但允许其他按键输入
+        if (event.key === 'Enter' && (loading || isGenerating)) {
+            event.preventDefault(); // 阻止 Enter 键的默认行为（换行）和我们的 submit 调用
+            // 可以选择性地给用户一个提示，比如按钮短暂闪烁或toast提示"正在处理上一个请求"
+            console.warn('Previous generation/submission in progress. Cannot submit now.'); // 临时log
+            toast({
+                title: '正在处理上一个请求',
+                description: '请稍后再试',
+                variant: 'destructive',
+                duration: 3000,
+            });
             return;
         }
+
+        // 如果是 Enter 键，并且不是 loading 或 isGenerating 状态，则正常提交
         if (event.key === 'Enter') {
-            event.preventDefault(); // 阻止默认的按键行为
-            setLoading(true); // submit后改为false
+            event.preventDefault(); // 阻止默认的换行行为
+            setLoading(true); // 开始短暂的文本提交 loading
             submit();
         }
+
+        // 对于非 Enter 键，不做任何阻止，允许用户自由输入
     }
 
     async function pollForResult(promptNanoId: string, requestId: string) {
@@ -82,12 +98,12 @@ export function ExperimentEditor({
             return;
         }
 
+        setIsGenerating(true);
         setActivePolls((prev) => new Set(prev).add(promptNanoId));
 
         const startTime = Date.now();
         const timeout = 60000;
 
-        logger.info(`Poll for result: ${requestId} and ${promptNanoId}`);
         const generate_response = await fetch(getUrl(`/api/generate/${requestId}`), {
             method: 'GET',
             headers: {
@@ -205,6 +221,7 @@ export function ExperimentEditor({
             // Optionally remove the ID from generatingIds on error as well
             setGeneratingIds((prevIds) => prevIds.filter((id) => id.nano_id !== promptNanoId));
         } finally {
+            setIsGenerating(false);
             setActivePolls((prev) => {
                 const newSet = new Set(prev);
                 newSet.delete(promptNanoId);
@@ -461,14 +478,10 @@ export function ExperimentEditor({
                     'read-only': isExperimentFinished || loading,
                 })}
                 style={{ height: '80%', width: '90%' }}
-                // value={text} onChange={handleChange}
                 onKeyDown={handleKeyDown}
                 readOnly={isExperimentFinished || loading}
                 placeholder=""
             />
-            {/* <button className="btn btn-primary" onClick={submit}>
-                提交
-            </button> */}
         </>
     );
 }
