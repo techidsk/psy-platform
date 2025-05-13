@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
-import cron from 'node-cron';
 
 // Celery 长耗时任务检查的配置
 const CELERY_HOST = process.env.HEALTH_CHECK_CELERY_HOST || process.env.CELERY_HOST;
@@ -45,55 +44,7 @@ const WEBHOOK_URL =
     process.env.NOTIFICATION_WEBHOOK_URL ||
     'https://open.feishu.cn/open-apis/bot/v2/hook/936d62f0-b764-4a61-8877-b3f6dddd7aea';
 
-// --- 定时任务配置 ---
-const APP_BASE_URL = process.env.APP_BASE_URL || 'http://localhost:3000';
-const HEALTH_CHECK_CRON_SCHEDULE = process.env.HEALTH_CHECK_CRON_SCHEDULE || '0 */4 * * *'; // 每4小时执行一次
-
-if (process.env.NODE_ENV !== 'test') {
-    // 避免在测试环境中意外运行 cron
-    if (cron.validate(HEALTH_CHECK_CRON_SCHEDULE)) {
-        console.log(
-            `[定时任务 ✅] 健康检查已计划，将按照 cron 表达式 "${HEALTH_CHECK_CRON_SCHEDULE}" 执行。`
-        );
-        cron.schedule(HEALTH_CHECK_CRON_SCHEDULE, async () => {
-            const cronTriggerTime = new Date().toISOString();
-            console.log(
-                `[定时任务 🚀] ${cronTriggerTime} - 触发健康检查 API: ${APP_BASE_URL}/api/health-monitor`
-            );
-            try {
-                const response = await fetch(`${APP_BASE_URL}/api/health-monitor`, {
-                    method: 'GET',
-                    headers: {
-                        'User-Agent': 'CronJob-HealthChecker/1.0',
-                        'X-Cron-Triggered': 'true', // 添加header以便GET处理器识别
-                    },
-                });
-                const responseBodyText = await response.text(); // 获取响应体用于日志
-                if (!response.ok) {
-                    console.error(
-                        `[定时任务 ❌] 健康检查 API 调用失败。状态码: ${response.status}, 响应: ${responseBodyText.substring(0, 500)}`
-                    );
-                } else {
-                    console.log(
-                        `[定时任务 ✔️] 健康检查 API 调用成功。状态码: ${response.status}, 响应: ${responseBodyText.substring(0, 200)}...`
-                    );
-                }
-            } catch (error: any) {
-                console.error(
-                    '[定时任务 🔥] 调用健康检查 API 时发生网络错误或异常:',
-                    error.message
-                );
-            }
-        });
-    } else {
-        console.error(
-            `[定时任务 💀] 无效的 cron 表达式: "${HEALTH_CHECK_CRON_SCHEDULE}". 健康检查定时任务未启动。`
-        );
-    }
-} else {
-    console.log('[定时任务 😴] 检测到测试环境 (NODE_ENV=test)，健康检查定时任务已跳过。');
-}
-
+// --- GET Handler ---
 export async function GET(request: Request) {
     const currentPayload = { ...healthCheckTaskPayload, task_id: nanoid() };
 
@@ -157,7 +108,7 @@ export async function GET(request: Request) {
             );
         }
 
-        console.log(`[健康检查 ��]最终使用任务ID: ${taskIdToUse} 进行后续操作。`);
+        console.log(`[健康检查 📌]最终使用任务ID: ${taskIdToUse} 进行后续操作。`);
 
         operationStage = '任务状态轮询阶段 🔄';
         const startTime = Date.now();
@@ -297,7 +248,7 @@ export async function GET(request: Request) {
 // 更新后的发送通知函数 (适配飞书)
 async function sendNotification(summary: string, details: string, taskId?: string | null) {
     const notificationTitle = `[🩺 服务健康巡检] ${summary}`;
-    let notificationBody = `�� **详情**：\n${details}`;
+    let notificationBody = `📝 **详情**：\n${details}`;
     if (taskId) {
         notificationBody += `\n🆔 **任务ID**：\`${taskId}\``;
     }
