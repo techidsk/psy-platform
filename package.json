@@ -40,6 +40,7 @@
     "nanoid": "^5.0.6",
     "next": "^14.2.3",
     "next-auth": "^4.24.7",
+    "node-cron": "^4.0.4",
     "node-fetch": "^3.3.2",
     "pino": "^8.19.0",
     "pino-pretty": "^10.3.1",
@@ -62,6 +63,7 @@
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.10",
     "@types/cors": "^2.8.17",
+    "@types/node-cron": "^3.0.11",
     "@types/ramda": "^0.30.2",
     "@types/ws": "^8.5.10",
     "autoprefixer": "^10.4.18",
