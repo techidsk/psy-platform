@@ -94,7 +94,7 @@ if (process.env.NODE_ENV !== 'test') {
     console.log('[定时任务 😴] 检测到测试环境 (NODE_ENV=test)，健康检查定时任务已跳过。');
 }
 
-export async function GET(request?: Request) {
+export async function GET(request: Request) {
     const currentPayload = { ...healthCheckTaskPayload, task_id: nanoid() };
 
     if (!CELERY_HOST) {
@@ -108,7 +108,7 @@ export async function GET(request?: Request) {
     }
 
     const celeryBaseUrl = CELERY_HOST.startsWith('http') ? CELERY_HOST : `http://${CELERY_HOST}`;
-    const isCronTriggered = request?.headers.get('X-Cron-Triggered') === 'true';
+    const isCronTriggered = request.headers.get('X-Cron-Triggered') === 'true';
     if (!isCronTriggered) {
         console.log(`[健康检查 🩺] 开始Celery服务 (${celeryBaseUrl}) 健康检查...`);
     }
