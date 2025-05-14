@@ -54,6 +54,7 @@ export function ExperimentEditor({
         []
     );
     const [activePolls, setActivePolls] = useState<Set<string>>(new Set());
+    const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
 
     function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
         // 检查 loading (短暂的文本提交状态) 或 activePolls 的大小
@@ -73,6 +74,15 @@ export function ExperimentEditor({
         // 如果是 Enter 键，并且不是 loading 且轮询任务少于2个，则正常提交
         if (event.key === 'Enter') {
             event.preventDefault(); // 阻止默认的换行行为
+            if (Date.now() - lastSubmitTime < 3000) {
+                toast({
+                    title: '操作过于频繁',
+                    description: '请等待3秒后再提交。',
+                    variant: 'destructive',
+                    duration: 3000,
+                });
+                return;
+            }
             setLoading(true); // 开始短暂的文本提交 loading
             submit();
         }
@@ -235,6 +245,17 @@ export function ExperimentEditor({
             return;
         }
 
+        if (Date.now() - lastSubmitTime < 3000) {
+            toast({
+                title: '操作过于频繁',
+                description: '请等待3秒后再提交。',
+                variant: 'destructive',
+                duration: 3000,
+            });
+            setLoading(false); // 如果因为频率限制而阻止，也需要重置loading状态
+            return;
+        }
+
         // 检查当前活动的轮询任务数量
         if (activePolls.size >= 2) {
             toast({
@@ -286,6 +307,7 @@ export function ExperimentEditor({
         ref.current!.value = '';
         setLoading(false);
         router.refresh();
+        setLastSubmitTime(Date.now()); // 更新最后提交时间
 
         // 发送请求，然后等待轮训刷新页面
         await generate(promptNanoId, data.nano_id);
