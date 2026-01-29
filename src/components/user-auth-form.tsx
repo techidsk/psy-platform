@@ -69,14 +69,17 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                 duration: 5000,
             });
         }
-        // 成功之后跳转登录之前页面或者dashboard
-        router.push(signInResult.url || '/dashboard');
 
-        return toast({
+        toast({
             title: '已成功登录',
             description: '登陆成功将会跳转至控制台',
             duration: 3000,
         });
+
+        // 成功之后跳转登录之前页面或者dashboard
+        const callbackUrl = searchParams?.get('from') || '/dashboard';
+        router.push(callbackUrl);
+        router.refresh();
     }
 
     return (

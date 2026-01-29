@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 
 import { getUser } from '@/lib/logic/user';
 import { getCurrentUser } from '@/lib/session';
@@ -89,7 +89,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
     const user = await getCurrentUser();
 
     if (!user) {
-        return notFound();
+        redirect('/');
     }
     const dbUser = await getUser(user.id);
 

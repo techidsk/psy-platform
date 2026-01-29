@@ -13,6 +13,7 @@ export default function Header({ user }: HeaderProps) {
     function logout() {
         signOut({
             callbackUrl: '/login',
+            redirect: true,
         });
     }
 

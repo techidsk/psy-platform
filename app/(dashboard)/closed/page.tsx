@@ -8,7 +8,7 @@ export default async function Closed() {
     const currentUser = await getCurrentUser();
     if (!currentUser?.id) {
         console.warn('未登录');
-        redirect('/login');
+        redirect('/');
     }
 
     const content = `已完成本次项目所有实验或者当前未开放实验`;

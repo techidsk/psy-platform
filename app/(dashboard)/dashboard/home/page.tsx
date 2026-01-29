@@ -89,7 +89,7 @@ export default async function DashboardHome({ searchParams }: DashboardProps) {
     // 未登录
     const currentUser = await getCurrentUser();
     if (!currentUser?.id) {
-        redirect('/login');
+        redirect('/');
     }
 
     // 用户错误跳转

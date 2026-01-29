@@ -25,7 +25,7 @@ export default async function MainInput({
     const user = await getCurrentUser();
     if (!user) {
         logger.error('当前用户未登录');
-        redirect('/login');
+        redirect('/');
     }
 
     // searchParams 部分

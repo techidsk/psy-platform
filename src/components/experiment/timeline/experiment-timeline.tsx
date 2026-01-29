@@ -83,12 +83,12 @@ export default async function ExperimentTimeline({
     const user = await getUserPrivacy(userId);
     if (!user) {
         logger.warn(`用户${userId}不存在`);
-        redirect('/login');
+        redirect('/');
     }
 
     if (!user.nano_id) {
         logger.warn(`用户${userId}没有绑定nano_id`);
-        redirect('/login');
+        redirect('/');
     }
 
     // 获取实验

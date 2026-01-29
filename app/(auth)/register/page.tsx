@@ -18,7 +18,7 @@ export default function RegisterPage({ searchParams }: RegisterPageProps) {
 
     return (
         <div className="container grid h-screen w-screen flex-col items-center justify-center lg:max-w-none lg:grid-cols-2 lg:px-0 bg-white">
-            <Link href="/login" className={'absolute top-4 right-4 md:top-8 md:right-8'}>
+            <Link href="/" className={'absolute top-4 right-4 md:top-8 md:right-8'}>
                 登录
             </Link>
             <div className="hidden h-full bg-slate-100 lg:block" />

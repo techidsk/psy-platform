@@ -13,7 +13,7 @@ export default async function Dashboard() {
     // 获取用户默认的实验
     const currentUser = await getCurrentUser();
     if (!currentUser?.id) {
-        redirect('/login');
+        redirect('/');
     }
     const needExperiment = currentUser.role === 'USER';
 
