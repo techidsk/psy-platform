@@ -10,9 +10,18 @@ interface TableProp {
     configs: TableConfig[];
     children?: React.ReactNode;
     searchNode?: React.ReactNode;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
 }
 
-export async function Table({ datas, configs, children, searchNode }: TableProp) {
+export async function Table({
+    datas,
+    configs,
+    children,
+    searchNode,
+    sortBy,
+    sortOrder,
+}: TableProp) {
     const currentUser = await getCurrentUser();
     const role = currentUser?.role as UserRole;
 
@@ -28,7 +37,12 @@ export async function Table({ datas, configs, children, searchNode }: TableProp)
             {searchNode && <div className="table-header p-2">{searchNode}</div>}
             <div className="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
                 <table className="table w-full">
-                    <TableHeader configs={filterConfigs} datas={datas} />
+                    <TableHeader
+                        configs={filterConfigs}
+                        datas={datas}
+                        sortBy={sortBy}
+                        sortOrder={sortOrder}
+                    />
                     {datas.length > 0 && (
                         <tbody>
                             {datas.map((data) => {

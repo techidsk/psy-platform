@@ -1,13 +1,16 @@
 import { TableConfig } from '@/types/table';
 import SelectAllCheckbox from './select-all-checkbox';
+import { TableSortButton } from './table-sort-button';
 
 interface TableHeaderProp {
     configs: TableConfig[];
     children?: React.ReactNode;
     datas?: any[];
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
 }
 
-export function TableHeader({ configs, children, datas }: TableHeaderProp) {
+export function TableHeader({ configs, children, datas, sortBy, sortOrder }: TableHeaderProp) {
     return (
         <>
             <thead>
@@ -33,13 +36,25 @@ export function TableHeader({ configs, children, datas }: TableHeaderProp) {
                             );
                         }
 
+                        const sortKey = config.sortKey || config.key;
+
                         return (
                             <th
                                 key={config.label}
                                 scope="col"
                                 className="px-4 py-2 text-left text-xs font-medium text-gray-500 tracking-wider"
                             >
-                                {config.label}
+                                {config.sortable ? (
+                                    <TableSortButton
+                                        sortKey={sortKey}
+                                        currentSortBy={sortBy}
+                                        currentSortOrder={sortOrder}
+                                    >
+                                        {config.label}
+                                    </TableSortButton>
+                                ) : (
+                                    config.label
+                                )}
                             </th>
                         );
                     })}

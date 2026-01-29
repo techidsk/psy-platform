@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { Icons } from './icons';
 
 interface PaginationProps extends React.HTMLAttributes<HTMLElement> {
     path?: string;
@@ -52,19 +53,19 @@ export default function Pagination({ current, pageSize = 10, end = 1 }: Paginati
             <div className="join">
                 <div className="join grid grid-cols-3 items-center">
                     <button
-                        className="join-item btn btn-outline"
+                        className="join-item btn"
                         data-page={Math.max(1, current - 1)}
                         onClick={() => jumpTo(Math.max(1, current - 1))}
                     >
-                        前一页
+                        <Icons.chevronLeft className="w-4 h-4" />
                     </button>
-                    <div className="join-item text-center text-sm"> 第 {current} 页</div>
+                    <div className="join-item btn text-center text-sm"> 第 {current} 页</div>
                     <button
-                        className="join-item btn btn-outline"
+                        className="join-item btn"
                         data-page={Math.max(1, current + 1)}
                         onClick={() => jumpTo(Math.min(end, current + 1))}
                     >
-                        下一页
+                        <Icons.chevronRight className="w-4 h-4" />
                     </button>
                 </div>
             </div>

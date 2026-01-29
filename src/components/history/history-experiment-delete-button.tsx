@@ -69,7 +69,6 @@ export function HistoryExperimentDeleteButton({
                 disabled={isLoading}
             >
                 <Icons.delete size={16} />
-                删除
             </button>
 
             <Modal

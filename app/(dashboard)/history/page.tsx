@@ -3,114 +3,16 @@ import { Table } from '@/components/table/table';
 import { TableConfig } from '@/types/table';
 import Image from 'next/image';
 
-import { db } from '@/lib/db';
-import { dateFormat, formatTime } from '@/lib/date';
+import { formatTime } from '@/lib/date';
 import TableActions from '@/components/table/table-action';
 import Pagination from '@/components/pagination';
-import { getCurrentUser } from '@/lib/session';
 import { TableSearch } from '@/components/table/table-search';
-import { Prisma } from '@prisma/client';
 import DownloadExperimentHistoryButton from '@/components/history/download-experiment-history-button';
 import CheckExperimentHistoryButton from '@/components/history/check-experiment-history-button';
 import TableCheckbox from '@/components/table/table-checkbox';
 import HistoryTableActionButtons from '@/components/history/history-table-action-buttons';
 import { HistoryExperimentDeleteButton } from '@/components/history/history-experiment-delete-button';
-
-interface ExperimentProps {
-    id: number;
-    user_id: number;
-    nano_id: string;
-    experiment_id: number;
-    type: string;
-    engine_id: number;
-    start_time: Date;
-    finish_time: Date;
-    username: string;
-    avatar?: string;
-    engine_name: string;
-    engine_image: string;
-    experiment_name?: string;
-}
-
-async function getHistory(
-    searchParams: { [key: string]: string | undefined },
-    page: number = 1,
-    pageSize: number = 10
-) {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) {
-        return [];
-    }
-    const role = currentUser.role;
-    if (role === 'GUEST') {
-        return [];
-    }
-    // TODO 判断角色
-    // ADMIN 查看所有
-    // ASSITANT 查看所属用户
-    // USER 查看自己
-    // GUEST 查看自己
-
-    const {
-        username,
-        qualtrics,
-        engine_name,
-        group_name,
-        experiment_name,
-        start_time,
-        finish_time,
-        state,
-    } = searchParams;
-
-    const experiments = await db.$queryRaw<ExperimentProps[]>`
-        SELECT e.*, u.username, u.avatar, u.qualtrics, n.engine_name, n.engine_image, 
-        eper.experiment_name, g.group_name, num, project_group_experiment_num, es.step_name
-        FROM user_experiments e
-        LEFT JOIN user u ON u.id = e.user_id
-        LEFT JOIN experiment eper ON eper.id = e.experiment_id
-        LEFT JOIN project_group g ON g.id = e.project_group_id
-        LEFT JOIN engine n ON n.id = e.engine_id
-        LEFT JOIN (
-            SELECT count(id) as num, user_id, project_group_id 
-            FROM user_experiments 
-            GROUP BY user_id, project_group_id
-            ) ue ON ue.user_id = u.id AND ue.project_group_id = g.id
-        LEFT JOIN (
-            SELECT count(id) as project_group_experiment_num, project_group_id
-            FROM project_group_experiments
-            GROUP BY project_group_id
-        ) pge ON pge.project_group_id = e.project_group_id
-        LEFT JOIN experiment_steps es ON es.experiment_id = e.experiment_id and es.order = e.part
-        WHERE 1 = 1 AND e.state = 'FINISHED' AND e.is_deleted = 0
-        ${role === 'USER' ? Prisma.sql`and e.user_id = ${currentUser.id}` : Prisma.empty}
-        ${role === 'ASSITANT' ? Prisma.sql`and e.manager_id = ${currentUser.id}` : Prisma.empty}
-        ${start_time ? Prisma.sql`and e.start_time >= ${start_time}` : Prisma.empty}
-        ${finish_time ? Prisma.sql`and e.finish_time <= ${finish_time}` : Prisma.empty}
-        ${username ? Prisma.sql`and u.username like ${`%${username}%`}` : Prisma.empty}
-        ${qualtrics ? Prisma.sql`and u.qualtrics like ${`%${qualtrics}%`}` : Prisma.empty}
-        ${engine_name ? Prisma.sql`and n.engine_name like ${`%${engine_name}%`}` : Prisma.empty}
-        ${group_name ? Prisma.sql`and g.group_name like ${`%${group_name}%`}` : Prisma.empty}
-        ${experiment_name ? Prisma.sql`and eper.experiment_name like ${`%${experiment_name}%`}` : Prisma.empty}
-        ORDER BY e.id DESC
-        LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
-    `;
-
-    let formatResult = experiments.map((experiment) => {
-        return {
-            ...experiment,
-            user_id: experiment?.user_id,
-            start_time: experiment?.start_time ? dateFormat(experiment?.start_time) : '',
-            finish_time: experiment?.finish_time ? dateFormat(experiment?.finish_time) : '',
-            start_timestamp: experiment?.start_time
-                ? new Date(experiment?.start_time).getTime()
-                : 0,
-            finish_timestamp: experiment?.finish_time
-                ? new Date(experiment?.finish_time).getTime()
-                : 0,
-        };
-    });
-    return formatResult;
-}
+import { getExperimentHistory, HistorySearchParams } from '@/lib/queries/history';
 
 /**实验管理 */
 export default async function ExperimentHistory({
@@ -121,7 +23,16 @@ export default async function ExperimentHistory({
     const params = await searchParams;
     const currentPage = params.page ? parseInt(params.page) || 1 : 1;
     const currentPageSize = params.pagesize ? parseInt(params.pagesize) || 10 : 10;
-    const datas = await getHistory(params, currentPage, currentPageSize);
+    const sortBy = params.sort_by || 'id';
+    const sortOrder = (params.sort_order as 'asc' | 'desc') || 'desc';
+
+    const historyParams: HistorySearchParams = {
+        ...params,
+        sort_by: sortBy,
+        sort_order: sortOrder,
+    };
+
+    const datas = await getExperimentHistory(historyParams, currentPage, currentPageSize);
     let end = currentPage;
     if (datas.length === currentPageSize) {
         end = currentPage + 1;
@@ -134,6 +45,8 @@ export default async function ExperimentHistory({
                     <Table
                         configs={experimentTableConfig}
                         datas={datas}
+                        sortBy={sortBy}
+                        sortOrder={sortOrder}
                         searchNode={
                             <TableSearch
                                 defaultParams={params}
@@ -169,6 +82,7 @@ const experimentTableConfig: TableConfig[] = [
     {
         key: 'experiment_name',
         label: '所属实验',
+        sortable: true,
         children: (data: any) => {
             return (
                 <div className="flex flex-col gap-2">
@@ -187,6 +101,8 @@ const experimentTableConfig: TableConfig[] = [
     {
         key: 'engine_id',
         label: '使用引擎',
+        sortable: true,
+        sortKey: 'engine_name',
         auth: ['ADMIN', 'ASSISTANT'],
         children: (data: any) => {
             return (
@@ -206,17 +122,12 @@ const experimentTableConfig: TableConfig[] = [
     {
         key: 'user_id',
         label: '实验对象',
+        sortable: true,
+        sortKey: 'username',
         auth: ['ADMIN', 'ASSISTANT'],
         children: (data: any) => {
             return (
                 <div className="flex flex-col gap-2 justify-center">
-                    {/* <Image
-                        className="rounded-full"
-                        src="https://techidsk.oss-cn-hangzhou.aliyuncs.com/project/_psy_/avatar.avif"
-                        alt=""
-                        width={48}
-                        height={48}
-                    /> */}
                     <div className="text-gray-700 text-sm">用户名：{data.username}</div>
                     {data.qualtrics && (
                         <div className="text-gray-700 text-sm">Qualtrics：{data.qualtrics}</div>
@@ -228,32 +139,12 @@ const experimentTableConfig: TableConfig[] = [
     {
         key: 'group_name',
         label: '所属分组',
+        sortable: true,
         auth: ['ADMIN', 'ASSISTANT'],
         children: (data: any) => {
-            // TODO bigint
-            const ratio = 0;
-            let progress_type = '';
-            if (ratio < 0.3) {
-                progress_type = 'progress-error';
-            } else if (ratio < 0.6) {
-                progress_type = 'progress-warning';
-            } else if (ratio < 0.9) {
-                progress_type = 'progress-info';
-            } else if (ratio < 1) {
-                progress_type = 'progress-success';
-            }
-
             return (
                 <div className="flex flex-col gap-2">
                     <span>{data.group_name}</span>
-                    {/* <div className="flex gap-2 items-center">
-                        <progress
-                            className={`progress w-12 ${progress_type}`}
-                            value={data.num}
-                            max={data.project_group_experiment_num}
-                        />
-                        <span>{`${data.num} / ${data.project_group_experiment_num}`}</span>
-                    </div> */}
                 </div>
             );
         },
@@ -261,6 +152,7 @@ const experimentTableConfig: TableConfig[] = [
     {
         key: 'start_time',
         label: '创建时间',
+        sortable: true,
         children: (data: any) => {
             return (
                 <div className="flex flex-col gap-2">
@@ -273,40 +165,29 @@ const experimentTableConfig: TableConfig[] = [
     {
         key: 'finish_time',
         label: '完成时间',
+        sortable: true,
         children: (data: any) => {
             let d = Math.floor((data.finish_timestamp - data.start_timestamp) / 1000);
             return (
                 <div className="flex flex-col items-center gap-2">
                     {d > 0 ? <span>{formatTime(d)}</span> : '项目未完成'}
-                    <TableActions>
-                        <CheckExperimentHistoryButton data={data} />
-                    </TableActions>
                 </div>
             );
         },
     },
     {
-        key: 'id',
-        label: '下载',
-        auth: ['ADMIN', 'ASSISTANT'],
+        key: 'actions',
+        label: '操作',
         hidden: true,
         children: (data: any) => {
             let d = Math.floor((data.finish_timestamp - data.start_timestamp) / 1000);
 
             return (
-                <TableActions>
-                    {d > 0 ? <DownloadExperimentHistoryButton data={data} /> : <>无可下载内容</>}
-                </TableActions>
-            );
-        },
-    },
-    {
-        key: 'id',
-        label: '操作',
-        hidden: true,
-        children: (data: any) => {
-            return (
-                <div className="flex gap-4 items-center">
+                <div className="flex gap-2">
+                    <TableActions>
+                        <CheckExperimentHistoryButton data={data} />
+                        {d > 0 && <DownloadExperimentHistoryButton data={data} />}
+                    </TableActions>
                     <HistoryExperimentDeleteButton userExperimentId={data.id} />
                 </div>
             );
@@ -320,17 +201,6 @@ const searchDatas = [
     { name: 'engine_name', type: 'input', placeholder: '请输入引擎名称' },
     { name: 'group_name', type: 'input', placeholder: '请输入分组名称' },
     { name: 'experiment_name', type: 'input', placeholder: '请输入实验名称' },
-    // {
-    //     name: 'state',
-    //     type: 'select',
-    //     placeholder: '请选择实验状态',
-    //     defaultValue: 'FINISHED',
-    //     values: [
-    //         { value: '', label: '全部' },
-    //         { value: 'FINISHED', label: '已完成' },
-    //         { value: 'IN_EXPERIMENT', label: '未完成' },
-    //     ],
-    // },
     { name: 'start_time', type: 'date', placeholder: '请选择开始时间' },
     { name: 'finish_time', type: 'date', placeholder: '请选择结束时间' },
 ];
