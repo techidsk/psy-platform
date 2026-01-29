@@ -97,11 +97,11 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
         user.role !== 'SUPERADMIN' ? authSidebar(sidebarNav, user.role as UserRole) : sidebarNav;
 
     return (
-        <div className="mx-auto flex flex-col space-y-4 items-center bg-white">
+        <div className="mx-auto flex flex-col space-y-4 items-center bg-white min-h-screen pb-8">
             <header className="container sticky top-0 w-full bg-white">
                 <Header user={dbUser} />
             </header>
-            <div className="container grid gap-12 md:grid-cols-[200px_1fr]">
+            <div className="container grid gap-6 md:grid-cols-[200px_1fr] flex-1">
                 <aside className="hidden w-[200px] flex-col md:flex">
                     <DashboardNav items={authedSidebar} />
                 </aside>

@@ -62,6 +62,7 @@ function NavItem({ item, path }: { item: SidebarNavItem; path: string }) {
                 <Link
                     href={item.disabled ? '/' : item.href}
                     className={cn(
+                        'py-2',
                         isActive && 'active',
                         item.disabled && 'pointer-events-none opacity-50'
                     )}
@@ -103,10 +104,10 @@ export function DashboardNav({ items }: DashboardNavProps) {
     }
 
     return (
-        <ul className="menu bg-base-200 rounded-box w-full">
+        <ul className="menu rounded-md w-full h-full gap-y-1">
             {groupedItems.map((group, groupIndex) => (
                 <React.Fragment key={groupIndex}>
-                    {group.category && <li className="menu-title">{group.category}</li>}
+                    {group.category && <li className="menu-title select-none">{group.category}</li>}
                     {group.items.map((item, itemIndex) => (
                         <NavItem key={itemIndex} item={item} path={path || ''} />
                     ))}

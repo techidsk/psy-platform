@@ -199,7 +199,7 @@ const projectTableConfig: TableConfig[] = [
         hidden: true,
         children: (data: any) => {
             return (
-                <div className="flex gap-4 items-center">
+                <div className="flex gap-1 items-center">
                     <ProjectGroupTableEditButtons groupId={data.id} />
                 </div>
             );

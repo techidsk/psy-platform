@@ -24,50 +24,58 @@ export async function Table({ datas, configs, children, searchNode }: TableProp)
     }
 
     return (
-        <>
+        <div className="flex flex-col gap-2">
             {searchNode && <div className="table-header p-2">{searchNode}</div>}
-            <table className="table w-full">
-                <TableHeader configs={filterConfigs} datas={datas} />
-                {datas.length > 0 && (
-                    <tbody>
-                        {datas.map((data) => {
-                            return <TableRow key={data.id} data={data} configs={filterConfigs} />;
-                        })}
-                    </tbody>
+            <div className="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
+                <table className="table w-full">
+                    <TableHeader configs={filterConfigs} datas={datas} />
+                    {datas.length > 0 && (
+                        <tbody>
+                            {datas.map((data) => {
+                                return (
+                                    <TableRow key={data.id} data={data} configs={filterConfigs} />
+                                );
+                            })}
+                        </tbody>
+                    )}
+                </table>
+                {datas.length === 0 && (
+                    <div className="w-full flex justify-center items-center h-[300px]">
+                        <div className="text-base-content/50">暂无数据</div>
+                    </div>
                 )}
-            </table>
-            {datas.length === 0 ? (
-                <div className="w-full flex justify-center items-center h-[300px]">
-                    <div>暂无数据</div>
-                </div>
-            ) : (
+            </div>
+            {datas.length > 0 && children && (
                 <div className="px-4 py-2 flex justify-end">{children}</div>
             )}
-        </>
+        </div>
     );
 }
 
 export function NoAuthTable({ datas, configs, children, searchNode }: TableProp) {
     return (
-        <>
+        <div className="flex flex-col gap-2">
             {searchNode && <div className="table-header p-2">{searchNode}</div>}
-            <table className="table w-full">
-                <TableHeader configs={configs} />
-                {datas.length > 0 && (
-                    <tbody>
-                        {datas.map((data) => {
-                            return <TableRow key={data.id} data={data} configs={configs} />;
-                        })}
-                    </tbody>
+            <div className="overflow-x-auto rounded-box border border-base-content/5 bg-base-100">
+                <table className="table w-full">
+                    <TableHeader configs={configs} />
+                    {datas.length > 0 && (
+                        <tbody>
+                            {datas.map((data) => {
+                                return <TableRow key={data.id} data={data} configs={configs} />;
+                            })}
+                        </tbody>
+                    )}
+                </table>
+                {datas.length === 0 && (
+                    <div className="w-full flex justify-center items-center h-[300px]">
+                        <div className="text-base-content/50">暂无数据</div>
+                    </div>
                 )}
-            </table>
-            {datas.length === 0 ? (
-                <div className="w-full flex justify-center items-center h-[300px]">
-                    <div>暂无数据</div>
-                </div>
-            ) : (
+            </div>
+            {datas.length > 0 && children && (
                 <div className="px-4 py-2 flex justify-end">{children}</div>
             )}
-        </>
+        </div>
     );
 }

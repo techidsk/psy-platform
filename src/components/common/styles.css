@@ -1,10 +1,5 @@
 @reference "tailwindcss";
 
-/* reset */
-button {
-    all: unset;
-}
-
 .ToastViewport {
     --viewport-padding: 25px;
     position: fixed;
