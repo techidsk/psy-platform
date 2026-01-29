@@ -104,6 +104,8 @@ export default async function MainInput({
                         part={parseInt(experimentStepIndex)}
                         isExperimentFinished={isExperimentFinished}
                         experimentImageList={experimentImageList}
+                        stepTitle={stepTitle}
+                        stepContent={stepContent}
                     />
                     <div className="flex gap-8 items-center justify-end mt-4">
                         {countDownTime > 0 && (

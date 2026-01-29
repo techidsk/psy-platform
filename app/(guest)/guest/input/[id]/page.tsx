@@ -108,6 +108,8 @@ export default async function GuestInput({
                         guest={true}
                         isExperimentFinished={isExperimentFinished}
                         experimentImageList={experimentImageList}
+                        stepTitle={stepTitle}
+                        stepContent={stepContent}
                     />
                     <div className="flex gap-8 items-center justify-end mt-4">
                         {!isExperimentFinished && countDownTime > 0 && (

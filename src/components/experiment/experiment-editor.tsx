@@ -19,6 +19,8 @@ interface ExperimentEditorProps {
     part?: number;
     isExperimentFinished?: boolean;
     experimentImageList: ImageResponse[];
+    stepTitle?: string;
+    stepContent?: string;
 }
 
 type FetchData = {
@@ -44,7 +46,10 @@ export function ExperimentEditor({
     guest = false,
     isExperimentFinished = false,
     experimentImageList,
+    stepTitle = '',
+    stepContent = '',
 }: ExperimentEditorProps) {
+    const [showTopic, setShowTopic] = useState<boolean>(true);
     const router = useRouter();
     const ref = useRef<HTMLTextAreaElement>(null);
     const [loading, setLoading] = useState<boolean>(false);
@@ -504,7 +509,44 @@ export function ExperimentEditor({
     }, [nanoId]);
 
     return (
-        <>
+        <div className="flex flex-col w-full h-full items-center">
+            {/* 写作题目/要求展示区域 */}
+            {(stepTitle || stepContent) && (
+                <div className="w-[90%] mb-3">
+                    <div className="collapse collapse-arrow bg-blue-50 border border-blue-200 rounded-lg">
+                        <input
+                            type="checkbox"
+                            checked={showTopic}
+                            onChange={() => setShowTopic(!showTopic)}
+                        />
+                        <div className="collapse-title font-medium text-blue-800 flex items-center gap-2">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                />
+                            </svg>
+                            {stepTitle ? `写作题目：${stepTitle}` : '写作要求'}
+                        </div>
+                        <div className="collapse-content text-gray-700">
+                            {stepContent && (
+                                <div
+                                    className="prose prose-sm max-w-none"
+                                    dangerouslySetInnerHTML={{ __html: stepContent }}
+                                />
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
             <textarea
                 ref={ref}
                 className={classNames('input-textarea text-3xl cursor-auto', {
@@ -515,6 +557,6 @@ export function ExperimentEditor({
                 readOnly={isExperimentFinished || loading}
                 placeholder=""
             />
-        </>
+        </div>
     );
 }
