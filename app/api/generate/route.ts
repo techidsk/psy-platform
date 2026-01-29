@@ -88,7 +88,7 @@ export async function POST(request: Request) {
     }
 
     const step = await getExperimentStep(parseInt(userExperiment.experiment_id), stepOrder);
-    const picMode = step === null ? true : step?.pic_mode ?? false;
+    const picMode = step === null ? true : (step?.pic_mode ?? false);
 
     logger.info(`图像模式：${picMode ? '生成图片' : '不生成图片'}`);
     if (!picMode) {
@@ -158,8 +158,17 @@ export async function POST(request: Request) {
             return NextResponse.json({ msg: '发布失败，生成服务未能响应' }, { status: 401 });
         }
     } catch (error) {
-        logger.error(error);
-        return NextResponse.json({ msg: '发布失败，服务端数据处理异常' }, { status: 401 });
+        logger.error(`生成任务异常 [${promptNanoId}]: ${error}`);
+        // 异常时更新 trail 状态为失败
+        try {
+            await db.trail.update({
+                where: { nano_id: promptNanoId },
+                data: { state: 'FAILED' },
+            });
+        } catch (updateError) {
+            logger.error(`更新 trail 状态失败 [${promptNanoId}]: ${updateError}`);
+        }
+        return NextResponse.json({ msg: '发布失败，服务端数据处理异常' }, { status: 500 });
     }
 }
 
