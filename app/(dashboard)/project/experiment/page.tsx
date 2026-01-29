@@ -40,10 +40,11 @@ const PROJECT_GROUP_ADD_EXPERIMENT_KEY = 'project-group-add-experiment';
 // const itemName = 'project-group-add-experiment';
 // 获取实验列表用于关联对应的项目
 export default async function ProjectAddExperiment({
-    searchParams,
+    searchParams: searchParamsPromise,
 }: {
-    searchParams: { [key: string]: string };
+    searchParams: Promise<{ [key: string]: string }>;
 }) {
+    const searchParams = await searchParamsPromise;
     const currentPage = searchParams.page ? parseInt(searchParams.page) || 1 : 1;
     const currentPageSize = searchParams.pagesize ? parseInt(searchParams.pagesize) || 10 : 10;
     const datas = await getExperiments(searchParams, currentPage, currentPageSize);

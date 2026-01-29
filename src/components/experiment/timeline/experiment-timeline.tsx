@@ -83,11 +83,17 @@ export default async function ExperimentTimeline({
     const user = await getUserPrivacy(userId);
     if (!user) {
         logger.warn(`用户${userId}不存在`);
+        if (guest) {
+            redirect('/guest/closed/30002');
+        }
         redirect('/');
     }
 
     if (!user.nano_id) {
         logger.warn(`用户${userId}没有绑定nano_id`);
+        if (guest) {
+            redirect('/guest/closed/30002');
+        }
         redirect('/');
     }
 
@@ -116,7 +122,10 @@ export default async function ExperimentTimeline({
             variant: 'destructive',
             duration: 5000,
         });
-        redirect('/guest');
+        if (guest) {
+            redirect('/guest/closed/30002');
+        }
+        redirect('/');
     }
 
     return (

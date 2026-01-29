@@ -12,6 +12,11 @@ export function getUrl(url: string) {
         return '';
     }
 
+    // 客户端直接使用相对路径，避免跨域问题
+    if (typeof window !== 'undefined') {
+        return url;
+    }
+
     if (isDev) {
         // console.log('url is: ', process.env.NEXT_PUBLIC_BASE_URL + url);
         return process.env.NEXT_PUBLIC_BASE_URL + url;

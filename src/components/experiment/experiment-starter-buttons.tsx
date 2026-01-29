@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getUrl } from '@/lib/url';
-import { redirect, usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import store from 'store2';
 import { Modal } from '../ui/modal';
 import { UserPrivacyForm } from '../user/user-privacy-modal';
@@ -32,28 +32,38 @@ export function ExperimentStarterButtons({
     userExperimentNanoId: prevUserExperimentNanoId,
 }: Buttons) {
     const [open, setOpen] = useState(false);
+    const [userUniqueKey, setUserUniqueKey] = useState('');
 
     const router = useRouter();
     const pathname = encodeURIComponent(usePathname() as string);
 
     const GUEST_UNIQUE_KEY = 'userUniqueKey';
-    let userUniqueKey = '';
-    if (guest) {
-        const itemStr = store.get(GUEST_UNIQUE_KEY);
-        if (!itemStr) {
-            redirect('/guest');
+
+    useEffect(() => {
+        if (guest) {
+            const itemStr = store.get(GUEST_UNIQUE_KEY);
+            if (!itemStr) {
+                router.push('/guest/closed/30002');
+                return;
+            }
+            try {
+                const item = JSON.parse(itemStr);
+                const now = new Date();
+                // 检查存储的用户ID是否过期
+                if (now.getTime() > item.expiry) {
+                    router.push('/guest/closed/30002');
+                    return;
+                }
+                if (!item.value) {
+                    router.push('/guest/closed/30002');
+                    return;
+                }
+                setUserUniqueKey(item.value);
+            } catch {
+                router.push('/guest/closed/30002');
+            }
         }
-        const item = JSON.parse(itemStr);
-        const now = new Date();
-        // 检查存储的用户ID是否过期
-        if (now.getTime() > item.expiry) {
-            redirect('/guest');
-        }
-        userUniqueKey = item.value;
-        if (!userUniqueKey) {
-            redirect('/guest');
-        }
-    }
+    }, [guest, router]);
 
     // 如果已经创建过userExperiment的 nanoId 则继续使用
     async function startExperiment() {

@@ -45,10 +45,11 @@ async function getProjectGroups(
 }
 
 export default async function ProjectGroup({
-    searchParams,
+    searchParams: searchParamsPromise,
 }: {
-    searchParams: { [key: string]: string };
+    searchParams: Promise<{ [key: string]: string }>;
 }) {
+    const searchParams = await searchParamsPromise;
     const currentPage = searchParams.page ? parseInt(searchParams.page) || 1 : 1;
     const currentPageSize = searchParams.pagesize ? parseInt(searchParams.pagesize) || 10 : 10;
     const datas = await getProjectGroups(searchParams, currentPage, currentPageSize);

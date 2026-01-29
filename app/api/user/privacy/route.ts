@@ -9,16 +9,16 @@ import { getCurrentUser } from '@/lib/session';
  *
  * @returns
  */
-export async function GET(request: Request, context: { params: any }) {
+export async function GET(request: Request) {
     const currentUser = await getCurrentUser();
     if (!currentUser) {
         return NextResponse.json({ msg: '出现异常,请重新登录进行操作' }, { status: 500 });
     }
 
     if (currentUser.role === 'USER' || currentUser.role === 'GUEST') {
-        // 判断是否有用户存在
+        // 使用当前登录用户的 ID
         const user = await db.user.findFirst({
-            where: { id: parseInt(context.params.id) },
+            where: { id: parseInt(currentUser.id) },
             select: {
                 username: true,
                 user_group_id: true,
