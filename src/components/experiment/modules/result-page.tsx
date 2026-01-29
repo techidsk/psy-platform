@@ -32,9 +32,11 @@ export function ResultPage({
         <div className="hero">
             <div className="hero-content text-center">
                 <div className={`max-w-${size} flex flex-col gap-2`}>
-                    {title && <h1 className="text-5xl font-bold mb-8">{title}</h1>}
+                    {title && <h1 className="text-5xl font-bold mb-8 w-full">{title}</h1>}
                     {/* 指导语 */}
-                    <StringHTML htmlString={content?.content as string} />
+                    <div className="w-full">
+                        <StringHTML htmlString={content?.content as string} />
+                    </div>
                     {historyMode && (
                         <>
                             <div className="divider"></div>

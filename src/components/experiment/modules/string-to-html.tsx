@@ -9,7 +9,7 @@ export default function StringHTML({ htmlString, margin = true }: StringHTMLProp
     return (
         <div
             className={classNames(
-                'prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-2xl focus:outline-hidden',
+                'prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-2xl max-w-none focus:outline-hidden',
                 {
                     'm-5': margin,
                 }

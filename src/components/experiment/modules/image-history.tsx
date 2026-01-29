@@ -52,25 +52,34 @@ export function ImageHistory({ userExperimentNanoId, userId, size = 'md' }: Comp
     }, []);
 
     return (
-        <div className="flex-col-cener gap-4 w-full">
-            {images.map((image, indext) => {
+        <div className="flex flex-col gap-8 w-full">
+            {images.map((image) => {
                 return (
                     <div key={image.nano_id} className="w-full">
                         <div className="text-2xl font-bold mb-4">{image.title}</div>
                         <div className="grid grid-cols-2 gap-4 items-start">
                             {image.stepImages.map((stepImage: any, index: number) => {
                                 return (
-                                    <div key={stepImage.nano_id} className="flex-col-center gap-2">
+                                    <div
+                                        key={stepImage.nano_id}
+                                        className="bg-base-200 rounded-2xl overflow-hidden shadow-md"
+                                    >
                                         {stepImage.image_url && (
-                                            <Image
-                                                src={stepImage.image_url}
-                                                alt="image"
-                                                width={512}
-                                                height={512}
-                                            />
+                                            <div className="overflow-hidden">
+                                                <Image
+                                                    src={stepImage.image_url}
+                                                    alt="image"
+                                                    width={512}
+                                                    height={512}
+                                                    className="w-full h-auto transition-transform duration-300 hover:scale-102"
+                                                />
+                                            </div>
                                         )}
-                                        <div>
-                                            {index + 1}, {stepImage.prompt}
+                                        <div className="p-4 text-sm text-base-content/80">
+                                            <span className="font-semibold text-base-content">
+                                                {index + 1}.
+                                            </span>{' '}
+                                            {stepImage.prompt}
                                         </div>
                                     </div>
                                 );
