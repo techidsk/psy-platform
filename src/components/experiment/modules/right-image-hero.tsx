@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import StringHTML from './string-to-html';
 
 interface RightImageHeroProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -18,7 +17,7 @@ export function RightImageHero({
     return (
         <div className="hero flex flex-col gap-4">
             <div className="hero-content flex-col lg:flex-row">
-                <Image
+                <img
                     src="https://daisyui.com/images/stock/photo-1635805737707-575885ab0820.jpg"
                     className="max-w-sm rounded-lg shadow-2xl"
                     width={300}

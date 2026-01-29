@@ -1,6 +1,5 @@
 import { logger } from '@/lib/logger';
 import { getAccessKey } from '@/lib/platform';
-import Image from 'next/image';
 
 /** 平台设置 */
 export default async function PlatformSetting() {
@@ -17,7 +16,7 @@ export default async function PlatformSetting() {
                     <h3 className="text-xl">用户基础设置</h3>
                     <div className="flex gap-4 items-center">
                         <span>用户头像</span>
-                        <Image
+                        <img
                             className="rounded-full"
                             width={48}
                             height={48}

@@ -7,7 +7,6 @@ import { db } from '@/lib/db';
 import { TableConfig } from '@/types/table';
 import { ExperimentDetailButton } from '@/components/experiment/experiment-detail-button';
 import { ExperimentCreateButton } from '@/components/experiment/experiment-create-button';
-import Image from 'next/image';
 import { TableSearch } from '@/components/table/table-search';
 import Pagination from '@/components/pagination';
 import { Prisma } from '@prisma/client';
@@ -174,7 +173,7 @@ const experimentTableConfig: TableConfig[] = [
                 <div className="flex flex-col gap-2">
                     {engines.map((engine) => (
                         <div key={engine.engine_id} className="flex gap-1 items-center">
-                            <Image
+                            <img
                                 src={engine.engine_image}
                                 alt={engine.engine_name}
                                 width={24}

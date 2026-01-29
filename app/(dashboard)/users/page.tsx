@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { db } from '@/lib/db';
 import { DashboardHeader } from '@/components/dashboard-header';
 import { Table } from '@/components/table/table';
@@ -137,7 +136,7 @@ const userTableConfig: TableConfig[] = [
                 <div className="flex flex-col gap-2 items-center">
                     <div className="avatar">
                         <div className="rounded-full">
-                            <Image
+                            <img
                                 src="https://techidsk.oss-cn-hangzhou.aliyuncs.com/project/_psy_/avatar.avif"
                                 alt={data.username}
                                 width={48}

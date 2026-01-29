@@ -1,6 +1,5 @@
 'use client';
 import LoadingSpin from '@/components/common/loading-spin';
-import Image from 'next/image';
 import { ImageResponse } from '@/types/experiment';
 import { useState, useEffect } from 'react';
 import { Icons } from '../icons';
@@ -89,7 +88,11 @@ export function ImageList({
                 {/* 图片区域 */}
                 <div className="flex-1 relative min-h-0 bg-gray-50">
                     {list.length === 0 ? (
-                        <Image className="object-contain" src={DEFAULT_IMAGE} alt="默认图片" fill />
+                        <img
+                            className="object-contain w-full h-full absolute inset-0"
+                            src={DEFAULT_IMAGE}
+                            alt="默认图片"
+                        />
                     ) : (
                         list.map((item) => (
                             <div key={item.id} className="w-full h-full relative">
@@ -98,11 +101,10 @@ export function ImageList({
                                         <LoadingSpin displayNum={displayNum} />
                                     </div>
                                 ) : (
-                                    <Image
-                                        className="object-contain"
+                                    <img
+                                        className="object-contain w-full h-full absolute inset-0"
                                         src={isPicMode ? item.image_url : DEFAULT_IMAGE}
                                         alt=""
-                                        fill
                                     />
                                 )}
                             </div>

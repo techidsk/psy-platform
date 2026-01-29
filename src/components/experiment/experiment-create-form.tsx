@@ -13,7 +13,6 @@ import { Icons } from '@/components/icons';
 import { getUrl } from '@/lib/url';
 
 import type { experiment, experiment_steps, engine as experimentEngine } from '@prisma/client';
-import Image from 'next/image';
 import { ExperimentStepTab } from './experiment-step-tab';
 
 interface ExperimentCreateFormProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -248,7 +247,7 @@ export function ExperimentCreateForm({
                                                 className="flex flex-col items-center justify-center gap-2 cursor-pointer"
                                                 onClick={() => selectEngine(engine.id)}
                                             >
-                                                <Image
+                                                <img
                                                     className="rounded-sm"
                                                     src={engine.engine_image}
                                                     alt={engine.engine_name}

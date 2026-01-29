@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { db } from '@/lib/db';
 import { DashboardHeader } from '@/components/dashboard-header';
 import { Table } from '@/components/table/table';

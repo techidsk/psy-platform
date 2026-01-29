@@ -1,5 +1,4 @@
 'use client';
-import Image from 'next/image';
 import { UserAvatarUploadButton } from '@/components/user/user-avatar-upload-button';
 import { useState } from 'react';
 import { getAvatarUrl } from '@/lib/logic/avatar';
@@ -25,7 +24,7 @@ export async function UserSetttingAvatar({ user }: UserSetttingAvatar) {
 
     return (
         <>
-            <Image
+            <img
                 src={resultAvatarUrl}
                 alt=""
                 height={96}
@@ -34,7 +33,6 @@ export async function UserSetttingAvatar({ user }: UserSetttingAvatar) {
                 // 默认height会是auto，导致计算结果不与width一致，导致图像未能呈圆框
                 style={{ height: 96 }}
                 loading="lazy"
-                unoptimized
             />
             <div
                 className="flex flex-col align-middle"

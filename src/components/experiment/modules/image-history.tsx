@@ -1,7 +1,6 @@
 'use client';
 
 import { getUrl } from '@/lib/url';
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
 interface ComponentProps extends React.HTMLAttributes<HTMLDivElement> {
     userExperimentNanoId: string;
@@ -66,12 +65,10 @@ export function ImageHistory({ userExperimentNanoId, userId, size = 'md' }: Comp
                                     >
                                         {stepImage.image_url && (
                                             <div className="overflow-hidden">
-                                                <Image
+                                                <img
                                                     src={stepImage.image_url}
                                                     alt="image"
-                                                    width={512}
-                                                    height={512}
-                                                    className="w-full h-auto transition-transform duration-300 hover:scale-102"
+                                                    className="w-full h-auto transition-transform duration-300 hover:scale-101"
                                                 />
                                             </div>
                                         )}

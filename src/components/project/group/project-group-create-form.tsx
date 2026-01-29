@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
-import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { cn } from '@/lib/utils';
@@ -423,7 +422,7 @@ const groupExperimentConfig: TableConfig[] = [
             <div className="flex flex-col gap-2">
                 {data.engine_name ? (
                     <div className="flex gap-2 items-center">
-                        <Image
+                        <img
                             className="rounded-sm"
                             src={data.engine_image}
                             alt={data.engine_name}

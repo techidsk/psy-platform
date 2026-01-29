@@ -1,7 +1,6 @@
 import { DashboardHeader } from '@/components/dashboard-header';
 import { Table } from '@/components/table/table';
 import { TableConfig } from '@/types/table';
-import Image from 'next/image';
 
 import { formatTime } from '@/lib/date';
 import TableActions from '@/components/table/table-action';
@@ -107,7 +106,7 @@ const experimentTableConfig: TableConfig[] = [
         children: (data: any) => {
             return (
                 <div className="flex flex-col gap-2 justify-center">
-                    <Image
+                    <img
                         className="rounded-sm"
                         src={data.engine_image}
                         alt={data.engine_name}

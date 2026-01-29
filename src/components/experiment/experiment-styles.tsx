@@ -1,6 +1,5 @@
 'use client';
 import { EngineStyle } from '@/types/engine';
-import Image from 'next/image';
 import { usePreExperimentState } from '@/state/_pre_atoms';
 interface ExperimentStylesProps {
     engines: EngineStyle[];
@@ -18,7 +17,7 @@ export function ExperimentStyles({ engines }: ExperimentStylesProps) {
             {engines.map((engine) => {
                 return (
                     <div className="flex flex-col gap-8 items-center" key={engine.id}>
-                        <Image
+                        <img
                             className={`image-holder cursor-pointer ${
                                 selectedEngine.id === engine.id
                                     ? 'border-2 border-solid border-blue-300'

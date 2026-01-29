@@ -1,6 +1,5 @@
 'use client';
 import Link from 'next/link';
-import Image from 'next/image';
 import { signOut } from 'next-auth/react';
 import { getAvatarUrl } from '@/lib/logic/avatar';
 import { type HeaderUserInfo } from '@/lib/logic/user';
@@ -25,7 +24,7 @@ export default function Header({ user }: HeaderProps) {
                 <div className="flex flex-row justify-between py-4">
                     <Link href="/dashboard">
                         <div className="flex gap-4 items-center">
-                            <Image src="/logo-xs.png" alt="" height={45} width={45} />
+                            <img src="/logo-xs.png" alt="" height={45} width={45} />
                             <div>EL PSY</div>
                         </div>
                     </Link>

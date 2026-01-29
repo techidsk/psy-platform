@@ -2,7 +2,6 @@ import { DashboardHeader } from '@/components/dashboard-header';
 import { State } from '@/components/state';
 import { Table } from '@/components/table/table';
 import { TableConfig } from '@/types/table';
-import Image from 'next/image';
 import { Icons } from '@/components/icons';
 import { db } from '@/lib/db';
 import { EngineTableEditButtons } from '@/components/engine/engine-table-edit-buttons';
@@ -54,7 +53,7 @@ const experimentTableConfig: TableConfig[] = [
         children: (data: any) => {
             return (
                 <div className="flex flex-col gap-2">
-                    <Image
+                    <img
                         className="rounded-sm"
                         src={data.engine_image}
                         alt={data.engine_name}

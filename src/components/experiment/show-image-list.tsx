@@ -1,6 +1,5 @@
 'use client';
 import LoadingSpin from '@/components/common/loading-spin';
-import Image from 'next/image';
 import { ImageResponse } from '@/types/experiment';
 import { useState, useEffect } from 'react';
 import { useSettingState } from '@/state/_setting-atoms';
@@ -143,7 +142,7 @@ export function ShowImageList({ experimentList }: ImageListProps) {
                                             <LoadingSpin />
                                         </div>
                                     ) : (
-                                        <Image
+                                        <img
                                             className="image-holder"
                                             src={item.image_url}
                                             alt=""
