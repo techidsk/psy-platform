@@ -15,12 +15,15 @@ import { redirect } from 'next/navigation';
 import { toast } from '@/hooks/use-toast';
 
 export default async function MainInput({
-    params: { id: userExperimentId },
-    searchParams,
+    params,
+    searchParams: searchParamsPromise,
 }: {
-    params: { id: string };
-    searchParams: { [key: string]: string };
+    params: Promise<{ id: string }>;
+    searchParams: Promise<{ [key: string]: string }>;
 }) {
+    const { id: userExperimentId } = await params;
+    const searchParams = await searchParamsPromise;
+
     // 获取用户实验prompt信息
     const user = await getCurrentUser();
     if (!user) {

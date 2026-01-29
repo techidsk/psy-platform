@@ -9,8 +9,8 @@ import { getCurrentUser } from '@/lib/session';
  *
  * @returns
  */
-export async function GET(request: Request, context: { params: any }) {
-    const experimentId = context.params.id;
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
+    const { id: experimentId } = await context.params;
 
     const user = await getCurrentUser();
     if (!user) {

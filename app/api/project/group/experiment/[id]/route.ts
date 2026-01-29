@@ -9,7 +9,8 @@ import { NextResponse } from 'next/server';
  * @param context
  * @returns
  */
-export async function DELETE(request: Request, context: { params: any }) {
+export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
+    const { id } = await context.params;
     const currentUser = await getCurrentUser();
     if (!currentUser) {
         return NextResponse.json({ msg: '出现异常,请重新登录进行操作' }, { status: 500 });
@@ -19,7 +20,7 @@ export async function DELETE(request: Request, context: { params: any }) {
         return NextResponse.json({ msg: '没有权限' }, { status: 403 });
     }
     try {
-        const experimentId = parseInt(context.params.id);
+        const experimentId = parseInt(id);
         await db.project_group_experiments.delete({
             where: { id: experimentId },
         });

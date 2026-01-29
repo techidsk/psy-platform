@@ -9,7 +9,7 @@ import { getCurrentUser } from '@/lib/session';
  *
  * @returns
  */
-export async function GET(request: Request, context: { params: any }) {}
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {}
 
 /**
  * 删除项目分组
@@ -17,7 +17,8 @@ export async function GET(request: Request, context: { params: any }) {}
  * @param context
  * @returns
  */
-export async function DELETE(request: Request, context: { params: any }) {
+export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
+    const { id } = await context.params;
     const currentUser = await getCurrentUser();
     if (!currentUser) {
         return NextResponse.json({ msg: '出现异常,请重新登录进行操作' }, { status: 500 });
@@ -29,7 +30,7 @@ export async function DELETE(request: Request, context: { params: any }) {
 
     // 1. 需要判断项目是否激活
     const projectGroup = await db.project_group.findFirst({
-        where: { id: parseInt(context.params.id) },
+        where: { id: parseInt(id) },
     });
     if (!projectGroup) {
         return NextResponse.json({ msg: '项目分组不存在' }, { status: 404 });
@@ -44,7 +45,7 @@ export async function DELETE(request: Request, context: { params: any }) {
     // 2. 判断是否有相关实验分组
     try {
         await db.project_group.delete({
-            where: { id: parseInt(context.params.id) },
+            where: { id: parseInt(id) },
         });
 
         return NextResponse.json({ msg: '已删除项目分组' });

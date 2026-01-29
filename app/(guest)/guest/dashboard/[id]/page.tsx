@@ -4,10 +4,10 @@ import ExperimentTimeline from '@/components/experiment/timeline/experiment-time
 import { logger } from '@/lib/logger';
 
 interface GuestDashboardProps {
-    params: {
+    params: Promise<{
         id: string; // 游客的nanoId 前16位是 游客的nanoId，后21位是游客的inviteCode
-    };
-    searchParams: { [key: string]: string };
+    }>;
+    searchParams: Promise<{ [key: string]: string }>;
 }
 
 async function getExperiment(userNanoId: string, inviteCode: string, userExperimentNanoId: string) {
@@ -53,9 +53,12 @@ async function getExperiment(userNanoId: string, inviteCode: string, userExperim
 }
 
 export default async function GuestDashboard({
-    params: { id },
-    searchParams,
+    params,
+    searchParams: searchParamsPromise,
 }: GuestDashboardProps) {
+    const { id } = await params;
+    const searchParams = await searchParamsPromise;
+
     // 获取用户默认的实验
     const userNanoId = id.slice(0, 16); // 游客的nanoId
     const inviteCode = id.slice(16, 37); // 游客实验的inviteCode

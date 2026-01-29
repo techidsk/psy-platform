@@ -42,9 +42,18 @@ async function getExperimentsByIds(id: number) {
 }
 
 // 获取项目分组详情
-export default async function ProjectGroupDetail({ params: { id }, searchParams }: any) {
+export default async function ProjectGroupDetail({
+    params,
+    searchParams: searchParamsPromise,
+}: {
+    params: Promise<{ id: string }>;
+    searchParams: Promise<{ [key: string]: string }>;
+}) {
+    const { id } = await params;
+    const searchParams = await searchParamsPromise;
+
     const projectGroup = await getProjectGroup(id);
-    const experiments = await getExperimentsByIds(id);
+    const experiments = await getExperimentsByIds(parseInt(id));
     const edit = searchParams.edit === 'true';
 
     return (

@@ -10,10 +10,13 @@ export const metadata: Metadata = {
 };
 
 interface RegisterPageProps {
-    searchParams: { [key: string]: string };
+    searchParams: Promise<{ [key: string]: string }>;
 }
 
-export default function RegisterPage({ searchParams }: RegisterPageProps) {
+export default async function RegisterPage({
+    searchParams: searchParamsPromise,
+}: RegisterPageProps) {
+    const searchParams = await searchParamsPromise;
     const qualtricsId = searchParams['qualtricsId'] || '';
 
     return (

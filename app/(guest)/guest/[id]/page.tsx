@@ -8,13 +8,19 @@ export const metadata: Metadata = {
     description: '欢迎来到测试平台',
 };
 interface GuestVerifyProps {
-    params: {
+    params: Promise<{
         id: string; // 游客的nanoId 前16位是 游客的nanoId，后21位是游客的inviteCode
-    };
-    searchParams: { [key: string]: string };
+    }>;
+    searchParams: Promise<{ [key: string]: string }>;
 }
 
-export default function VerifyPage({ params: { id }, searchParams }: GuestVerifyProps) {
+export default async function VerifyPage({
+    params,
+    searchParams: searchParamsPromise,
+}: GuestVerifyProps) {
+    const { id } = await params;
+    const searchParams = await searchParamsPromise;
+
     logger.debug(`[访客模式] 访问ID: ${id}`);
     const userUniqueKey = getId();
 

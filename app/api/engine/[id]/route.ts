@@ -9,7 +9,8 @@ import { getCurrentUser } from '@/lib/session';
  *
  * @returns
  */
-export async function GET(request: Request, context: { params: any }) {
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
+    const { id } = await context.params;
     const currentUser = await getCurrentUser();
     if (!currentUser) {
         return NextResponse.json({ msg: '出现异常,请重新登录进行操作' }, { status: 500 });
@@ -23,7 +24,7 @@ export async function GET(request: Request, context: { params: any }) {
     let engine;
     if (currentUser.role === 'ADMIN') {
         engine = await db.engine.findFirst({
-            where: { id: parseInt(context.params.id) },
+            where: { id: parseInt(id) },
             select: {
                 engine_name: true,
                 engine_description: true,
@@ -32,7 +33,7 @@ export async function GET(request: Request, context: { params: any }) {
         });
     } else if (currentUser.role === 'SUPERADMIN') {
         engine = await db.engine.findFirst({
-            where: { id: parseInt(context.params.id) },
+            where: { id: parseInt(id) },
             select: {
                 engine_name: true,
                 engine_description: true,
@@ -68,7 +69,8 @@ export async function GET(request: Request, context: { params: any }) {
  * @param context
  * @returns
  */
-export async function DELETE(request: Request, context: { params: any }) {
+export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
+    const { id } = await context.params;
     const currentUser = await getCurrentUser();
     if (!currentUser) {
         return NextResponse.json({ msg: '出现异常,请重新登录进行操作' }, { status: 500 });
@@ -79,7 +81,7 @@ export async function DELETE(request: Request, context: { params: any }) {
     }
     try {
         await db.engine.delete({
-            where: { id: parseInt(context.params.id) },
+            where: { id: parseInt(id) },
         });
 
         return NextResponse.json({ msg: '已删除用户' });

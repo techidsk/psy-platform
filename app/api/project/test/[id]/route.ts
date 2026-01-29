@@ -8,8 +8,9 @@ import { db } from '@/lib/db';
  *
  * @returns
  */
-export async function GET(request: Request, context: { params: any }) {
-    const projectId = parseInt(context.params.id);
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
+    const params = await context.params;
+    const projectId = parseInt(params.id);
 
     const projectGroups = await db.project_group.findMany({
         where: {
@@ -17,6 +18,7 @@ export async function GET(request: Request, context: { params: any }) {
             state: 'AVAILABLE',
         },
     });
+
     if (!projectGroups || projectGroups.length === 0) {
         return NextResponse.json({ msg: '项目未设置项目分组，请配置后重试' }, { status: 404 });
     }

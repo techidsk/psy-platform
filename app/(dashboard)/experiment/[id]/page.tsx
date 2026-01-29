@@ -44,7 +44,16 @@ async function getExperimentSteps(experimentId: number) {
     return steps;
 }
 
-export default async function ExperimentDetail({ params: { id }, searchParams }: any) {
+export default async function ExperimentDetail({
+    params,
+    searchParams: searchParamsPromise,
+}: {
+    params: Promise<{ id: string }>;
+    searchParams: Promise<{ [key: string]: string }>;
+}) {
+    const { id } = await params;
+    const searchParams = await searchParamsPromise;
+
     const experiment = await getExperiment(id);
     const engines = await getEngines();
     let steps = null;

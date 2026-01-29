@@ -22,7 +22,8 @@ async function getUser(nanoId: string) {
     return user;
 }
 
-export default async function UserForm({ params: { id } }: any) {
+export default async function UserForm({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     const user = await getUser(id);
 
     return (

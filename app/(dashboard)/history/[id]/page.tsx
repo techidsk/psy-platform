@@ -38,7 +38,8 @@ async function getExperimentInfos(experimentId: string) {
 }
 
 /**预实验输入测试 */
-export default async function ExperimentHistory({ params: { id } }: any) {
+export default async function ExperimentHistory({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     const list = await getExperimentInfos(id);
 
     return (

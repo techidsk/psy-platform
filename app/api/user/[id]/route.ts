@@ -9,7 +9,8 @@ import { getCurrentUser } from '@/lib/session';
  *
  * @returns
  */
-export async function GET(request: Request, context: { params: any }) {
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
+    const { id } = await context.params;
     const currentUser = await getCurrentUser();
     if (!currentUser) {
         return NextResponse.json({ msg: '出现异常,请重新登录进行操作' }, { status: 500 });
@@ -21,7 +22,7 @@ export async function GET(request: Request, context: { params: any }) {
 
     // 判断是否有用户存在
     const user = await db.user.findFirst({
-        where: { id: parseInt(context.params.id) },
+        where: { id: parseInt(id) },
         select: {
             username: true,
             user_group_id: true,
@@ -46,7 +47,8 @@ export async function GET(request: Request, context: { params: any }) {
  * @param context
  * @returns
  */
-export async function DELETE(request: Request, context: { params: any }) {
+export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
+    const { id } = await context.params;
     const currentUser = await getCurrentUser();
     if (!currentUser) {
         return NextResponse.json({ msg: '出现异常,请重新登录进行操作' }, { status: 500 });
@@ -57,7 +59,7 @@ export async function DELETE(request: Request, context: { params: any }) {
     }
     try {
         await db.user.update({
-            where: { id: parseInt(context.params.id) },
+            where: { id: parseInt(id) },
             data: { deleted: 1 },
         });
 

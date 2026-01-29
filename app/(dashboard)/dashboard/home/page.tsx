@@ -16,7 +16,7 @@ import { redirect } from 'next/navigation';
 // 3. 如果有项目分组，随机选择分组，并则查看是否有对应实验，如果没有则显示当前时间无可用实验
 // 4. 如果有对应实验，则返回实验内容
 interface DashboardProps {
-    searchParams: { [key: string]: string };
+    searchParams: Promise<{ [key: string]: string }>;
 }
 async function getExperiment(
     currentUserId: number,
@@ -85,7 +85,9 @@ async function getExperiment(
     return { nextExperimentId, userId };
 }
 
-export default async function DashboardHome({ searchParams }: DashboardProps) {
+export default async function DashboardHome({ searchParams: searchParamsPromise }: DashboardProps) {
+    const searchParams = await searchParamsPromise;
+
     // 未登录
     const currentUser = await getCurrentUser();
     if (!currentUser?.id) {

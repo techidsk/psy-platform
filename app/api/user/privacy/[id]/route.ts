@@ -7,10 +7,11 @@ import { db } from '@/lib/db';
  *
  * @returns
  */
-export async function GET(request: Request, context: { params: any }) {
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
+    const { id } = await context.params;
     // 判断是否有用户存在
     const user = await db.user.findFirst({
-        where: { id: parseInt(context.params.id) },
+        where: { id: parseInt(id) },
         select: {
             qualtrics: true,
             ages: true,

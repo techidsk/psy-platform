@@ -8,10 +8,10 @@ import { NextRequest, NextResponse } from 'next/server';
  *
  * @returns
  */
-export async function GET(request: NextRequest, context: { params: any }) {
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
     try {
         // 记录日志
-        const userExperimentNanoId = context.params.id;
+        const { id: userExperimentNanoId } = await context.params;
         const searchParams = request.nextUrl.searchParams;
         const part = searchParams.get('part') as string;
         const includeExperimentRecord = searchParams.get('includeExperimentRecord') === 'true';
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest, context: { params: any }) {
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         logger.error(
-            `获取实验记录失败 [ID: ${context.params.id}, Part: ${request.nextUrl.searchParams.get('part')}]: ${errorMessage}`
+            `获取实验记录失败 [Part: ${request.nextUrl.searchParams.get('part')}]: ${errorMessage}`
         );
         // Consider returning a more specific but safe message depending on the error type if possible
         return NextResponse.json(

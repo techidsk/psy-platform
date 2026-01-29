@@ -20,7 +20,8 @@ async function getEngine(id: string) {
     return engine;
 }
 
-export default async function EngineForm({ params: { id } }: any) {
+export default async function EngineForm({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     const engine = await getEngine(id);
 
     return (

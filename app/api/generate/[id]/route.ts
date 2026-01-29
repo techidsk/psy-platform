@@ -9,10 +9,12 @@ import { logger } from '@/lib/logger';
  *
  * @returns
  */
-export async function GET(request: Request, context: { params: any }) {
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
+    const { id } = await context.params;
+
     // 检查ID是否为undefined
-    if (!context.params.id || context.params.id === 'undefined') {
-        logger.error(`无效的生成任务ID: ${context.params.id}`);
+    if (!id || id === 'undefined') {
+        logger.error(`无效的生成任务ID: ${id}`);
         return NextResponse.json(
             { msg: '生成失败，无效的任务ID', status: 'error' },
             { status: 400 }
@@ -20,7 +22,7 @@ export async function GET(request: Request, context: { params: any }) {
     }
 
     // 首先请求
-    const response = await getGenerateResult(context.params.id);
+    const response = await getGenerateResult(id);
 
     if (response) {
         const status = response.status;

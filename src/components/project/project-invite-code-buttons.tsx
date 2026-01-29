@@ -21,25 +21,35 @@ export function ProjectInviteCodeButton({ data, url, className, ...props }: Invi
     const router = useRouter();
 
     async function copyInviteLink() {
-        // TODO 判断当前项目是否有分组，是否可以进行实验。
-        const result = await fetch(getUrl(`/api/project/test/${data.id}`));
-        const responseBody = await result.json();
-        if (!result.ok) {
-            return toast({
+        try {
+            const result = await fetch(`/api/project/test/${data.id}`);
+            const responseBody = await result.json();
+
+            if (!result.ok) {
+                return toast({
+                    title: '复制失败',
+                    description: responseBody.msg,
+                    variant: 'destructive',
+                    duration: 5000,
+                });
+            }
+
+            const navigateToUrl = `${window.location.origin}${url}`;
+            await navigator.clipboard.writeText(navigateToUrl);
+            toast({
+                title: '复制成功',
+                description: '已复制链接到剪切板',
+                duration: 5000,
+            });
+        } catch (err) {
+            console.error('[copyInviteLink] 错误:', err);
+            toast({
                 title: '复制失败',
-                description: responseBody.msg,
+                description: err instanceof Error ? err.message : '未知错误',
                 variant: 'destructive',
                 duration: 5000,
             });
         }
-
-        const navigateToUrl = `${window.location.origin}${url}`;
-        navigator.clipboard.writeText(navigateToUrl);
-        toast({
-            title: '复制成功',
-            description: '已复制链接到剪切板',
-            duration: 5000,
-        });
     }
 
     async function updateInviteCode() {

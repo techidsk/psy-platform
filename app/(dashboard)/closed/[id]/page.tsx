@@ -1,9 +1,9 @@
 import { CenteredHero } from '@/components/experiment/modules/centerd-hero';
 
 interface DashboardClosedProps {
-    params: {
+    params: Promise<{
         id: string; // 项目失败异常码
-    };
+    }>;
 }
 
 type ERR_CODES_TYPES = {
@@ -28,7 +28,8 @@ const ERR_CODES: ERR_CODES_TYPES = {
     },
 };
 
-export default async function DashboardClosed({ params: { id } }: DashboardClosedProps) {
+export default async function DashboardClosed({ params }: DashboardClosedProps) {
+    const { id } = await params;
     let content = `已完成本次项目所有实验或者当前未开放实验`;
     let title = '暂无实验';
 

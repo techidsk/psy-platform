@@ -11,8 +11,8 @@ import { logger } from '@/lib/logger';
  *
  * @returns
  */
-export async function GET(request: Request, context: { params: any }) {
-    const { id } = context.params;
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
+    const { id } = await context.params;
     const currentUser = await getCurrentUser();
     if (!currentUser) {
         return NextResponse.json({ msg: '出现异常,请重新登录进行操作' }, { status: 401 });

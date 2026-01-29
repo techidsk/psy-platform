@@ -9,7 +9,7 @@ import { getCurrentUser } from '@/lib/session';
  *
  * @returns
  */
-export async function GET(request: Request, context: { params: any }) {}
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {}
 
 /**
  * 删除实验
@@ -17,7 +17,8 @@ export async function GET(request: Request, context: { params: any }) {}
  * @param context
  * @returns
  */
-export async function DELETE(request: Request, context: { params: any }) {
+export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
+    const { id } = await context.params;
     const currentUser = await getCurrentUser();
     if (!currentUser) {
         return NextResponse.json({ msg: '出现异常,请重新登录进行操作' }, { status: 500 });
@@ -29,7 +30,7 @@ export async function DELETE(request: Request, context: { params: any }) {
 
     // 1. 需要判断实验是否激活
     const experiment = await db.experiment.findFirst({
-        where: { id: parseInt(context.params.id) },
+        where: { id: parseInt(id) },
     });
     if (!experiment) {
         return NextResponse.json({ msg: '实验不存在' }, { status: 404 });
@@ -38,7 +39,7 @@ export async function DELETE(request: Request, context: { params: any }) {
     // 2. 判断是否有相关实验分组
     try {
         const groupExperiments = await db.project_group_experiments.findMany({
-            where: { experiment_id: parseInt(context.params.id) },
+            where: { experiment_id: parseInt(id) },
         });
 
         if (groupExperiments.length > 0) {
@@ -52,7 +53,7 @@ export async function DELETE(request: Request, context: { params: any }) {
             }
         }
 
-        const experimentId = parseInt(context.params.id);
+        const experimentId = parseInt(id);
         await db.experiment.update({
             where: { id: experimentId },
             data: {

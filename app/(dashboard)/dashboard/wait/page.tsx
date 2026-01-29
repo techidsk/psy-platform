@@ -1,5 +1,10 @@
-export default async function Wait({ params: { id }, searchParams }: any) {
-    const timeStamp = Math.floor(searchParams.t / 1000 / 60);
+export default async function Wait({
+    searchParams: searchParamsPromise,
+}: {
+    searchParams: Promise<{ [key: string]: string }>;
+}) {
+    const searchParams = await searchParamsPromise;
+    const timeStamp = Math.floor(parseInt(searchParams.t || '0') / 1000 / 60);
     const days = Math.floor(timeStamp / 60 / 24);
     const hours = Math.floor((timeStamp - days * 24 * 60) / 60);
 

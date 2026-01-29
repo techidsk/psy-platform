@@ -38,7 +38,16 @@ async function getProjectGroupIds(id: string) {
     return projectGroups;
 }
 
-export default async function ProjectDetail({ params: { id }, searchParams }: any) {
+export default async function ProjectDetail({
+    params,
+    searchParams: searchParamsPromise,
+}: {
+    params: Promise<{ id: string }>;
+    searchParams: Promise<{ [key: string]: string }>;
+}) {
+    const { id } = await params;
+    const searchParams = await searchParamsPromise;
+
     // Validate the id parameter
     const parsedId = parseInt(id, 10);
     if (isNaN(parsedId) || parsedId <= 0 || String(parsedId) !== id) {

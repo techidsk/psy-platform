@@ -1,82 +1,23 @@
-import { db } from '@/lib/db';
 import { DashboardHeader } from '@/components/dashboard-header';
 import { Table } from '@/components/table/table';
 import { TableConfig } from '@/types/table';
 import { State } from '@/components/state';
-import { getCurrentUser } from '@/lib/session';
-import { dateFormat } from '@/lib/date';
 import Pagination from '@/components/pagination';
 import { ProjectTableEditButtons } from '@/components/project/project-table-edit-buttons';
 import { CreateProjectButton } from '@/components/project/project-create-button';
 import { TableSearch } from '@/components/table/table-search';
-import { Prisma } from '@prisma/client';
 import { ProjectInviteCodeButton } from '@/components/project/project-invite-code-buttons';
 import GuestModeChecker from '@/components/platform/guest-mode-checker';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import {
+    getProjects,
+    ProjectSearchParams,
+    ProjectState,
+    FormattedProjectRecord,
+} from '@/lib/queries/project';
 
 dayjs.extend(customParseFormat);
-
-type ProjectState = 'AVAILABLE' | 'DRAFT' | 'ACHIVED';
-type ProjectTableProps = {
-    id: string;
-    project_name: string;
-    project_description: string;
-    engines: JSON;
-    state: ProjectState;
-    settings: JSON;
-    start_time: Date;
-    end_time: Date;
-};
-
-const getProjects = async (
-    searchParams: { [key: string]: string | undefined },
-    page: number = 1,
-    pageSize: number = 10
-) => {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) {
-        return [];
-    }
-    const role = currentUser.role;
-    if (role === 'USER') {
-        return [];
-    }
-
-    const project_name = searchParams?.project_name || '';
-    const state = searchParams?.state || '';
-    const currentDate = new Date().toISOString().split('T')[0]; // 获取当前日期，格式为YYYY-MM-DD
-
-    // 判断当前用户角色
-    const projects = await db.$queryRaw<ProjectTableProps[]>`
-        SELECT * from projects p
-        WHERE 1 = 1
-        ${
-            project_name
-                ? Prisma.sql`AND p.project_name LIKE '%${Prisma.raw(project_name)}%'`
-                : Prisma.empty
-        }
-        ${
-            state === 'AVAILABLE'
-                ? Prisma.sql`AND p.state = 'AVAILABLE' AND p.end_time >= ${currentDate}`
-                : state === 'EXPIRED'
-                  ? Prisma.sql`AND p.state = 'AVAILABLE' AND p.end_time < ${currentDate}`
-                  : state
-                    ? Prisma.sql`AND p.state = '${Prisma.raw(state)}'`
-                    : Prisma.empty
-        }
-
-        LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
-    `;
-
-    return projects.map((project) => {
-        return {
-            ...project,
-            start_time: dateFormat(project.start_time).substring(0, 11),
-            end_time: dateFormat(project.end_time).substring(0, 11),
-        };
-    });
-};
 
 export default async function Projects({
     searchParams,
@@ -86,7 +27,16 @@ export default async function Projects({
     const params = await searchParams;
     const currentPage = params.page ? parseInt(params.page) || 1 : 1;
     const currentPageSize = params.pagesize ? parseInt(params.pagesize) || 10 : 10;
-    const datas = await getProjects(params, currentPage, currentPageSize);
+    const sortBy = params.sort_by || 'start_time';
+    const sortOrder = (params.sort_order as 'asc' | 'desc') || 'desc';
+
+    const projectParams: ProjectSearchParams = {
+        ...params,
+        sort_by: sortBy,
+        sort_order: sortOrder,
+    };
+
+    const datas = await getProjects(projectParams, currentPage, currentPageSize);
     let end = currentPage;
     if (datas.length === currentPageSize) {
         end = currentPage + 1;
@@ -104,6 +54,8 @@ export default async function Projects({
                     <Table
                         configs={projectTableConfig}
                         datas={datas}
+                        sortBy={sortBy}
+                        sortOrder={sortOrder}
                         searchNode={
                             <TableSearch defaultParams={params} searchDatas={searchDatas} />
                         }
@@ -120,28 +72,29 @@ const projectTableConfig: TableConfig[] = [
     {
         key: 'project_name',
         label: '项目名称',
-        children: (data: any) => {
+        sortable: true,
+        children: (data: FormattedProjectRecord) => {
             return <span>{data.project_name}</span>;
         },
     },
     {
         key: 'project_description',
         label: '项目描述',
-        children: (data: any) => {
+        children: (data: FormattedProjectRecord) => {
             return <article className="text-wrap">{data.project_description}</article>;
         },
     },
     {
         key: 'private',
         label: '游客模式',
-        children: (data: any) => {
+        children: (data: FormattedProjectRecord) => {
             return <GuestModeChecker data={data} />;
         },
     },
     {
         key: 'invite_code',
         label: '邀请码',
-        children: (data: any) => {
+        children: (data: FormattedProjectRecord) => {
             let url = `/register?invite_code=${data.invite_code}`;
             if (data.private) {
                 url = `/guest/${data.invite_code}`;
@@ -152,7 +105,8 @@ const projectTableConfig: TableConfig[] = [
     {
         key: 'state',
         label: '状态',
-        children: (data: ProjectTableProps) => {
+        sortable: true,
+        children: (data: FormattedProjectRecord) => {
             const projectState: Record<ProjectState, { text: string; state: string }> = {
                 AVAILABLE: {
                     text: '可用',
@@ -189,7 +143,8 @@ const projectTableConfig: TableConfig[] = [
         key: 'start_time',
         label: '项目时间',
         hidden: true,
-        children: (data: any) => {
+        sortable: true,
+        children: (data: FormattedProjectRecord) => {
             return (
                 <div className="flex flex-col gap-2 items-start">
                     <span className="text-xs">开始时间: {data.start_time}</span>
@@ -202,7 +157,7 @@ const projectTableConfig: TableConfig[] = [
         key: 'id',
         label: '操作',
         hidden: true,
-        children: (data: any) => {
+        children: (data: FormattedProjectRecord) => {
             return (
                 <div className="flex gap-4 items-center">
                     <ProjectTableEditButtons projectId={data.id} />

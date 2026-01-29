@@ -13,12 +13,15 @@ import { logger } from '@/lib/logger';
 import { toast } from '@/hooks/use-toast';
 
 export default async function GuestInput({
-    params: { id: guestNanoId },
-    searchParams,
+    params,
+    searchParams: searchParamsPromise,
 }: {
-    params: { id: string };
-    searchParams: { [key: string]: string };
+    params: Promise<{ id: string }>;
+    searchParams: Promise<{ [key: string]: string }>;
 }) {
+    const { id: guestNanoId } = await params;
+    const searchParams = await searchParamsPromise;
+
     // searchParams 部分
     // 实验 nanoId
     const userExperimentId = searchParams['e'];
