@@ -92,11 +92,12 @@ export const dynamic = 'force-dynamic';
 export default async function ExperimentList({
     searchParams,
 }: {
-    searchParams: { [key: string]: string };
+    searchParams: Promise<{ [key: string]: string }>;
 }) {
-    const currentPage = searchParams.page ? parseInt(searchParams.page) || 1 : 1;
-    const currentPageSize = searchParams.pagesize ? parseInt(searchParams.pagesize) || 10 : 10;
-    const datas = await getExperiments(searchParams, currentPage, currentPageSize);
+    const params = await searchParams;
+    const currentPage = params.page ? parseInt(params.page) || 1 : 1;
+    const currentPageSize = params.pagesize ? parseInt(params.pagesize) || 10 : 10;
+    const datas = await getExperiments(params, currentPage, currentPageSize);
     let end = currentPage;
     if (datas.length === currentPageSize) {
         end = currentPage + 1;
@@ -113,7 +114,7 @@ export default async function ExperimentList({
                         configs={experimentTableConfig}
                         datas={datas}
                         searchNode={
-                            <TableSearch defaultParams={searchParams} searchDatas={searchDatas} />
+                            <TableSearch defaultParams={params} searchDatas={searchDatas} />
                         }
                     >
                         <Pagination current={currentPage} pageSize={currentPageSize} end={end} />

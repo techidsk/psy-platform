@@ -73,11 +73,12 @@ async function getProjectGroups(
 export default async function ProjectGroups({
     searchParams,
 }: {
-    searchParams: { [key: string]: string };
+    searchParams: Promise<{ [key: string]: string }>;
 }) {
-    const currentPage = searchParams.page ? parseInt(searchParams.page) || 1 : 1;
-    const currentPageSize = searchParams.pagesize ? parseInt(searchParams.pagesize) || 10 : 10;
-    const datas = await getProjectGroups(searchParams, currentPage, currentPageSize);
+    const params = await searchParams;
+    const currentPage = params.page ? parseInt(params.page) || 1 : 1;
+    const currentPageSize = params.pagesize ? parseInt(params.pagesize) || 10 : 10;
+    const datas = await getProjectGroups(params, currentPage, currentPageSize);
     let end = currentPage;
     if (datas.length === currentPageSize) {
         end = currentPage + 1;
@@ -93,7 +94,7 @@ export default async function ProjectGroups({
                         configs={projectTableConfig}
                         datas={datas}
                         searchNode={
-                            <TableSearch defaultParams={searchParams} searchDatas={searchDatas} />
+                            <TableSearch defaultParams={params} searchDatas={searchDatas} />
                         }
                     >
                         <Pagination current={currentPage} pageSize={currentPageSize} end={end} />

@@ -91,10 +91,15 @@ async function getUsers(
     });
 }
 
-export default async function User({ searchParams }: { searchParams: { [key: string]: string } }) {
-    const currentPage = searchParams.page ? parseInt(searchParams.page) || 1 : 1;
-    const currentPageSize = searchParams.pagesize ? parseInt(searchParams.pagesize) || 10 : 10;
-    const datas = await getUsers(searchParams, currentPage, currentPageSize);
+export default async function User({
+    searchParams,
+}: {
+    searchParams: Promise<{ [key: string]: string }>;
+}) {
+    const params = await searchParams;
+    const currentPage = params.page ? parseInt(params.page) || 1 : 1;
+    const currentPageSize = params.pagesize ? parseInt(params.pagesize) || 10 : 10;
+    const datas = await getUsers(params, currentPage, currentPageSize);
 
     let end = currentPage;
     if (datas.length === currentPageSize) {
@@ -112,7 +117,7 @@ export default async function User({ searchParams }: { searchParams: { [key: str
                         configs={userTableConfig}
                         datas={datas}
                         searchNode={
-                            <TableSearch defaultParams={searchParams} searchDatas={searchDatas} />
+                            <TableSearch defaultParams={params} searchDatas={searchDatas} />
                         }
                     >
                         <Pagination current={currentPage} pageSize={currentPageSize} end={end} />

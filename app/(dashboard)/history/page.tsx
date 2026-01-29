@@ -116,11 +116,12 @@ async function getHistory(
 export default async function ExperimentHistory({
     searchParams,
 }: {
-    searchParams: { [key: string]: string };
+    searchParams: Promise<{ [key: string]: string }>;
 }) {
-    const currentPage = searchParams.page ? parseInt(searchParams.page) || 1 : 1;
-    const currentPageSize = searchParams.pagesize ? parseInt(searchParams.pagesize) || 10 : 10;
-    const datas = await getHistory(searchParams, currentPage, currentPageSize);
+    const params = await searchParams;
+    const currentPage = params.page ? parseInt(params.page) || 1 : 1;
+    const currentPageSize = params.pagesize ? parseInt(params.pagesize) || 10 : 10;
+    const datas = await getHistory(params, currentPage, currentPageSize);
     let end = currentPage;
     if (datas.length === currentPageSize) {
         end = currentPage + 1;
@@ -135,12 +136,12 @@ export default async function ExperimentHistory({
                         datas={datas}
                         searchNode={
                             <TableSearch
-                                defaultParams={searchParams}
+                                defaultParams={params}
                                 searchDatas={searchDatas}
                                 actionNode={
                                     <HistoryTableActionButtons
                                         datas={datas}
-                                        searchParams={searchParams}
+                                        searchParams={params}
                                     />
                                 }
                             />
