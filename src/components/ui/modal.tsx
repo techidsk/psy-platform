@@ -9,8 +9,8 @@ interface ModalProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export function Modal({ open, disableClickOutside, onClose, className, children }: ModalProps) {
-    const ref = useRef(null);
-    useOnClickOutside(ref, () => {
+    const ref = useRef<HTMLDivElement>(null);
+    useOnClickOutside(ref as React.RefObject<HTMLElement>, () => {
         if (!disableClickOutside) {
             onClose();
         }

@@ -12,6 +12,68 @@ interface DashboardNavProps {
     items: SidebarNavItem[];
 }
 
+function NavItem({ item, path }: { item: SidebarNavItem; path: string }) {
+    const Icon = Icons[item.icon || 'arrowRight'];
+    const isActive = item.href && path === item.href;
+    const hasSubItems = item.items && item.items.length > 0;
+
+    if (hasSubItems) {
+        return (
+            <li>
+                {item.href ? (
+                    <Link
+                        href={item.disabled ? '/' : item.href}
+                        className={cn(
+                            isActive && 'active',
+                            item.disabled && 'pointer-events-none opacity-50'
+                        )}
+                    >
+                        <Icon className="h-4 w-4" />
+                        {item.title}
+                    </Link>
+                ) : (
+                    <span className="menu-dropdown-toggle">
+                        <Icon className="h-4 w-4" />
+                        {item.title}
+                    </span>
+                )}
+                <ul>
+                    {item.items?.map((subItem, subIndex) => (
+                        <li key={subIndex}>
+                            <Link
+                                href={subItem.disabled ? '/' : subItem.href}
+                                className={cn(
+                                    path === subItem.href && 'active',
+                                    subItem.disabled && 'pointer-events-none opacity-50'
+                                )}
+                            >
+                                {subItem.title}
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
+            </li>
+        );
+    }
+
+    return (
+        <li>
+            {item.href && (
+                <Link
+                    href={item.disabled ? '/' : item.href}
+                    className={cn(
+                        isActive && 'active',
+                        item.disabled && 'pointer-events-none opacity-50'
+                    )}
+                >
+                    <Icon className="h-4 w-4" />
+                    {item.title}
+                </Link>
+            )}
+        </li>
+    );
+}
+
 export function DashboardNav({ items }: DashboardNavProps) {
     const path = usePathname();
 
@@ -19,32 +81,37 @@ export function DashboardNav({ items }: DashboardNavProps) {
         return null;
     }
 
+    // 按 category 分组
+    const groupedItems: { category?: string; items: SidebarNavItem[] }[] = [];
+    let currentGroup: { category?: string; items: SidebarNavItem[] } | null = null;
+
+    items.forEach((item) => {
+        if (item.category) {
+            if (currentGroup) {
+                groupedItems.push(currentGroup);
+            }
+            currentGroup = { category: item.category, items: [item] };
+        } else if (currentGroup) {
+            currentGroup.items.push(item);
+        } else {
+            currentGroup = { items: [item] };
+        }
+    });
+
+    if (currentGroup) {
+        groupedItems.push(currentGroup);
+    }
+
     return (
-        <nav className="grid items-start gap-1">
-            {items.map((item, index) => {
-                const Icon = Icons[item.icon || 'arrowRight'];
-                return (
-                    item.href && (
-                        <div key={item.title}>
-                            {item.category && (
-                                <div className="text-lg px-3 mt-2 select-none">{item.category}</div>
-                            )}
-                            <Link key={index} href={item.disabled ? '/' : item.href}>
-                                <div
-                                    className={cn(
-                                        'group flex items-center rounded-md px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-100',
-                                        path === item.href ? 'bg-slate-200' : 'transparent',
-                                        item.disabled && 'cursor-not-allowed opacity-80'
-                                    )}
-                                >
-                                    <Icon className="mr-2 h-4 w-4" />
-                                    <span>{item.title}</span>
-                                </div>
-                            </Link>
-                        </div>
-                    )
-                );
-            })}
-        </nav>
+        <ul className="menu bg-base-200 rounded-box w-full">
+            {groupedItems.map((group, groupIndex) => (
+                <React.Fragment key={groupIndex}>
+                    {group.category && <li className="menu-title">{group.category}</li>}
+                    {group.items.map((item, itemIndex) => (
+                        <NavItem key={itemIndex} item={item} path={path || ''} />
+                    ))}
+                </React.Fragment>
+            ))}
+        </ul>
     );
 }

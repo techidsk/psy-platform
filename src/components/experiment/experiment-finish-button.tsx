@@ -9,7 +9,7 @@ import StringHTML from './modules/string-to-html';
 import { Icons } from '../icons';
 import { toast } from '@/hooks/use-toast';
 
-interface ExperimentFinishProps extends React.HTMLAttributes<HTMLButtonElement> {
+interface ExperimentFinishProps extends Omit<React.HTMLAttributes<HTMLButtonElement>, 'part'> {
     nanoId: string; // user_experiment表中的nano_id
     disable?: boolean;
     experimentImageList: ImageResponse[];

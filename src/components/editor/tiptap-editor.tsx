@@ -1,10 +1,10 @@
 'use client';
 import './styles.css';
 
-import { useEditor, EditorContent, BubbleMenu, JSONContent } from '@tiptap/react';
+import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import debounce from 'lodash.debounce';
 
 interface TiptapEditorProps {
@@ -20,7 +20,7 @@ export default function TiptapEditor({
     onChange,
     editable = false,
 }: TiptapEditorProps) {
-    const handleUpdate = debounce((editor) => {
+    const handleUpdate = debounce((editor: { getHTML: () => string }) => {
         if (onChange) {
             onChange(editor.getHTML());
         }
@@ -49,36 +49,14 @@ export default function TiptapEditor({
         if (editable) {
             editor && editor.setEditable(editable);
         }
-    }, []);
+    }, [editable, editor]);
 
     useEffect(() => {
         return () => handleUpdate.cancel();
-    }, []);
+    }, [handleUpdate]);
 
     return (
         <div className="tiptap">
-            {editor && (
-                <BubbleMenu editor={editor} tippyOptions={{ duration: 100 }}>
-                    <button
-                        onClick={() => editor.chain().focus().toggleBold().run()}
-                        className={editor.isActive('bold') ? 'is-active' : ''}
-                    >
-                        bold
-                    </button>
-                    <button
-                        onClick={() => editor.chain().focus().toggleItalic().run()}
-                        className={editor.isActive('italic') ? 'is-active' : ''}
-                    >
-                        italic
-                    </button>
-                    <button
-                        onClick={() => editor.chain().focus().toggleStrike().run()}
-                        className={editor.isActive('strike') ? 'is-active' : ''}
-                    >
-                        strike
-                    </button>
-                </BubbleMenu>
-            )}
             <EditorContent editor={editor} />
         </div>
     );
