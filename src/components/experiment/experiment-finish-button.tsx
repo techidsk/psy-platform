@@ -5,8 +5,6 @@ import { ImageResponse } from '@/types/experiment';
 import { getUrl } from '@/lib/url';
 import { Modal } from '../ui/modal';
 import { logger } from '@/lib/logger';
-import StringHTML from './modules/string-to-html';
-import { Icons } from '../icons';
 import { toast } from '@/hooks/use-toast';
 
 interface ExperimentFinishProps extends Omit<React.HTMLAttributes<HTMLButtonElement>, 'part'> {
@@ -15,8 +13,6 @@ interface ExperimentFinishProps extends Omit<React.HTMLAttributes<HTMLButtonElem
     experimentImageList: ImageResponse[];
     callbackUrl: string;
     part: number;
-    stepTitle?: string;
-    stepContent?: string;
     isExperimentFinished?: boolean;
 }
 
@@ -25,13 +21,10 @@ export function ExperimentFinishButton({
     experimentImageList: experimentList,
     callbackUrl,
     part,
-    stepTitle,
-    stepContent,
     isExperimentFinished,
 }: ExperimentFinishProps) {
     const [disabled, setDisabled] = useState(true);
     const [open, setOpen] = useState(false);
-    const [openHint, setOpenHint] = useState(false);
 
     const router = useRouter();
 
@@ -78,10 +71,6 @@ export function ExperimentFinishButton({
         setOpen(false);
     }
 
-    function closeHint() {
-        setOpenHint(false);
-    }
-
     useEffect(() => {
         const handleBeforeUnload = (event: any) => {
             event.preventDefault();
@@ -115,16 +104,6 @@ export function ExperimentFinishButton({
                         完成写作
                     </button>
                 )}
-                {(stepTitle || stepContent) && (
-                    <div className="tooltip" data-tip="写作指导">
-                        <button
-                            className="btn btn-ghost btn-outline"
-                            onClick={() => setOpenHint(true)}
-                        >
-                            <Icons.help />
-                        </button>
-                    </div>
-                )}
             </div>
 
             {open && (
@@ -145,23 +124,6 @@ export function ExperimentFinishButton({
                         </button>
                         <button className="btn btn-ghost" onClick={close}>
                             取消
-                        </button>
-                    </div>
-                </Modal>
-            )}
-
-            {openHint && (
-                <Modal
-                    className="flex flex-col gap-4"
-                    open={openHint}
-                    onClose={closeHint}
-                    disableClickOutside={!openHint}
-                >
-                    <h1 className="text-xl">{stepTitle}</h1>
-                    <StringHTML htmlString={stepContent ?? ''} margin={false} />
-                    <div className="flex gap-4 flex-row-reverse">
-                        <button className="btn btn-ghost" onClick={closeHint}>
-                            确认
                         </button>
                     </div>
                 </Modal>

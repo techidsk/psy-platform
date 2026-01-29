@@ -9,6 +9,8 @@ import { getUrl } from '@/lib/url';
 import { useExperimentState } from '@/state/_experiment_atoms';
 import classNames from 'classnames';
 import { logger } from '@/lib/logger';
+import { Modal } from '@/components/ui/modal';
+import { Icons } from '@/components/icons';
 
 interface ExperimentEditorProps {
     nanoId: string;
@@ -49,7 +51,7 @@ export function ExperimentEditor({
     stepTitle = '',
     stepContent = '',
 }: ExperimentEditorProps) {
-    const [showTopic, setShowTopic] = useState<boolean>(true);
+    const [showTopicModal, setShowTopicModal] = useState<boolean>(false);
     const router = useRouter();
     const ref = useRef<HTMLTextAreaElement>(null);
     const [loading, setLoading] = useState<boolean>(false);
@@ -509,17 +511,29 @@ export function ExperimentEditor({
     }, [nanoId]);
 
     return (
-        <div className="flex flex-col w-full h-full items-center">
-            {/* 写作题目/要求展示区域 */}
+        <div className="flex flex-col w-full h-full">
+            {/* 写作题目/要求按钮 - 输入框右上角 */}
             {(stepTitle || stepContent) && (
-                <div className="w-[90%] mb-3">
-                    <div className="collapse collapse-arrow bg-blue-50 border border-blue-200 rounded-lg">
-                        <input
-                            type="checkbox"
-                            checked={showTopic}
-                            onChange={() => setShowTopic(!showTopic)}
-                        />
-                        <div className="collapse-title font-medium text-blue-800 flex items-center gap-2">
+                <div className="flex justify-end mb-2 flex-shrink-0">
+                    <button
+                        className="btn btn-sm bg-primary text-white border-none shadow-md gap-1.5"
+                        onClick={() => setShowTopicModal(true)}
+                    >
+                        <Icons.preview className="h-4 w-4" />
+                        查看指导语
+                    </button>
+                </div>
+            )}
+
+            {/* 写作题目/要求 Modal */}
+            {(stepTitle || stepContent) && (
+                <Modal
+                    open={showTopicModal}
+                    onClose={() => setShowTopicModal(false)}
+                    className="max-w-2xl"
+                >
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-bold text-lg text-blue-800 flex items-center gap-2">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 className="h-5 w-5"
@@ -534,25 +548,29 @@ export function ExperimentEditor({
                                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                                 />
                             </svg>
-                            {stepTitle ? `写作题目：${stepTitle}` : '写作要求'}
-                        </div>
-                        <div className="collapse-content text-gray-700">
-                            {stepContent && (
-                                <div
-                                    className="prose prose-sm max-w-none"
-                                    dangerouslySetInnerHTML={{ __html: stepContent }}
-                                />
-                            )}
-                        </div>
+                            {stepTitle ? `指导语：${stepTitle}` : '指导语'}
+                        </h3>
+                        <button
+                            className="btn btn-sm btn-ghost btn-circle"
+                            onClick={() => setShowTopicModal(false)}
+                        >
+                            <Icons.close className="h-4 w-4" />
+                        </button>
                     </div>
-                </div>
+                    {stepContent && (
+                        <div
+                            className="prose prose-sm max-w-none text-gray-700"
+                            dangerouslySetInnerHTML={{ __html: stepContent }}
+                        />
+                    )}
+                </Modal>
             )}
+
             <textarea
                 ref={ref}
-                className={classNames('input-textarea text-3xl cursor-auto', {
+                className={classNames('input-textarea text-3xl cursor-auto flex-1 min-h-0 w-full', {
                     'read-only': isExperimentFinished || loading,
                 })}
-                style={{ height: '80%', width: '90%' }}
                 onKeyDown={handleKeyDown}
                 readOnly={isExperimentFinished || loading}
                 placeholder=""

@@ -83,53 +83,57 @@ export function ImageList({
     }, []);
 
     return (
-        <div className="w-full h-full flex items-center justify-center">
-            <div className="cursor-pointer" onClick={prev}>
-                <Icons.chevronLeft className="h-8 w-8" />
-            </div>
-            <div className="flex-1 h-full flex justify-center items-center">
-                <div className="w-full h-full flex flex-col">
-                    <div className="flex-1 relative min-h-0">
-                        {list.length === 0 ? (
-                            <Image
-                                className="object-contain"
-                                src={DEFAULT_IMAGE}
-                                alt="默认图片"
-                                fill
-                            />
-                        ) : (
-                            list.map((item) => (
-                                <div key={item.id} className="w-full h-full relative">
-                                    {isPicMode && item.state === 'GENERATING' ? (
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <LoadingSpin displayNum={displayNum} />
-                                        </div>
-                                    ) : (
-                                        <Image
-                                            className="object-contain"
-                                            src={isPicMode ? item.image_url : DEFAULT_IMAGE}
-                                            alt=""
-                                            fill
-                                        />
-                                    )}
-                                </div>
-                            ))
-                        )}
-                    </div>
-                    <div className="p-2 bg-gray-50 text-lg text-gray-600 overflow-hidden text-ellipsis">
-                        {list.length === 0 ? (
-                            '暂无历史内容'
-                        ) : (
-                            <>
-                                <span className="font-semibold">{list[0].idx + 1}: </span>
-                                {list[0].prompt}
-                            </>
-                        )}
-                    </div>
+        <div className="w-full h-full relative">
+            {/* 图片和历史内容整体容器，带圆角边框 */}
+            <div className="w-full h-full flex flex-col rounded-2xl overflow-hidden border border-gray-200 shadow-sm bg-white">
+                {/* 图片区域 */}
+                <div className="flex-1 relative min-h-0 bg-gray-50">
+                    {list.length === 0 ? (
+                        <Image className="object-contain" src={DEFAULT_IMAGE} alt="默认图片" fill />
+                    ) : (
+                        list.map((item) => (
+                            <div key={item.id} className="w-full h-full relative">
+                                {isPicMode && item.state === 'GENERATING' ? (
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <LoadingSpin displayNum={displayNum} />
+                                    </div>
+                                ) : (
+                                    <Image
+                                        className="object-contain"
+                                        src={isPicMode ? item.image_url : DEFAULT_IMAGE}
+                                        alt=""
+                                        fill
+                                    />
+                                )}
+                            </div>
+                        ))
+                    )}
+                </div>
+                {/* 历史内容区域 */}
+                <div className="p-3 bg-gray-50 border-t border-gray-200 text-base text-gray-700 overflow-hidden text-ellipsis">
+                    {list.length === 0 ? (
+                        <span className="text-gray-400 italic">暂无历史内容</span>
+                    ) : (
+                        <div className="text-center">
+                            <span className="font-semibold text-gray-800">{list[0].idx + 1}:</span>{' '}
+                            {list[0].prompt}
+                        </div>
+                    )}
                 </div>
             </div>
-            <div className="cursor-pointer" onClick={next}>
-                <Icons.chevronRight className="h-8 w-8" />
+            {/* 左箭头 - 绝对定位在容器外部左侧 */}
+            <div
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full cursor-pointer p-2 hover:bg-gray-100 rounded-full transition-colors"
+                onClick={prev}
+            >
+                <Icons.chevronLeft className="h-8 w-8 text-gray-500" />
+            </div>
+            {/* 右箭头 - 绝对定位在容器外部右侧 */}
+            <div
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-full cursor-pointer p-2 hover:bg-gray-100 rounded-full transition-colors"
+                onClick={next}
+            >
+                <Icons.chevronRight className="h-8 w-8 text-gray-500" />
             </div>
         </div>
     );

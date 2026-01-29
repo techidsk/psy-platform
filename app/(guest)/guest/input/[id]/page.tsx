@@ -93,16 +93,18 @@ export default async function GuestInput({
     );
 
     return (
-        <div className="bg-white container max-w-[1024px] mx-auto h-screen py-4 flex flex-col">
-            <div className="flex flex-col h-full">
-                <div className="flex min-h-[50%] overflow-auto">
+        <div className="bg-white container max-w-[1024px] mx-auto h-screen py-4 px-16 flex flex-col">
+            <div className="flex flex-col h-full gap-4">
+                {/* 图片区域 */}
+                <div className="flex min-h-[45%] overflow-visible">
                     <ImageList
                         experimentImageList={experimentImageList}
                         displayNum={displayNum}
                         isPicMode={isPicMode}
                     />
                 </div>
-                <div className="flex-1 min-h-[50%] flex-col-center">
+                {/* 编辑器区域 */}
+                <div className="flex-1 min-h-[45%] flex flex-col">
                     <ExperimentEditor
                         nanoId={userExperimentId}
                         experimentNanoId={searchParams['e']}
@@ -114,7 +116,7 @@ export default async function GuestInput({
                         stepTitle={stepTitle}
                         stepContent={stepContent}
                     />
-                    <div className="flex gap-8 items-center justify-end mt-4">
+                    <div className="flex gap-8 items-center justify-end mt-4 flex-shrink-0">
                         {!isExperimentFinished && countDownTime > 0 && (
                             <CountDown
                                 start={startTime}
@@ -129,8 +131,6 @@ export default async function GuestInput({
                             experimentImageList={experimentImageList}
                             callbackUrl={encodedCallbackUrl}
                             part={parseInt(experimentStepIndex)}
-                            stepTitle={stepTitle}
-                            stepContent={stepContent}
                             isExperimentFinished={isExperimentFinished}
                         />
                     </div>
