@@ -182,7 +182,7 @@ export function TableSearch({
                         重置搜索
                     </button>
                     <button className="btn btn-primary btn-sm" onClick={() => search(false)}>
-                        <Icons.search />
+                        <Icons.search className="w-4 h-4" />
                         搜索
                     </button>
                 </div>
