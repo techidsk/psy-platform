@@ -31,14 +31,14 @@ export default function Header({ user }: HeaderProps) {
                     </Link>
                     <div className="flex gap-4 items-center">
                         <div className="avatar">
-                            <div className="rounded-full">
-                                <Image
-                                    //"https://techidsk.oss-cn-hangzhou.aliyuncs.com/project/_psy_/avatar.avif"
+                            <div className="rounded-full w-12 h-12">
+                                {/* 使用原生 img 标签，因为头像 URL 是动态 API 路由 */}
+                                <img
                                     src={resultAvatarUrl}
                                     alt=""
                                     width={48}
                                     height={48}
-                                    style={{ width: 48, height: 48 }}
+                                    className="w-12 h-12 rounded-full object-cover"
                                     loading="lazy"
                                 />
                             </div>
