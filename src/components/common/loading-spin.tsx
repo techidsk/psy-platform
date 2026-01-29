@@ -1,6 +1,24 @@
 import './styles.css';
 
-export default function LoadingSpin({ displayNum = 1 }: { displayNum?: number }) {
+type LoadingVariant = 'circle' | 'line-scale';
+
+interface LoadingSpinProps {
+    variant?: LoadingVariant;
+    displayNum?: number;
+}
+
+export default function LoadingSpin({ variant = 'line-scale', displayNum = 1 }: LoadingSpinProps) {
+    if (variant === 'circle') {
+        return (
+            <div className="circle-loading-container">
+                <div style={{ fontSize: 20, fontWeight: 'bold', marginBottom: '10px' }}>
+                    Loading...
+                </div>
+                <div className="circle" style={{ marginBottom: '65%' }}></div>
+            </div>
+        );
+    }
+
     return (
         <div
             className={`line-scale max-w-[512px] flex justify-center ${
@@ -17,3 +35,6 @@ export default function LoadingSpin({ displayNum = 1 }: { displayNum?: number })
         </div>
     );
 }
+
+// 向后兼容的命名导出
+export { LoadingSpin };

@@ -1,4 +1,3 @@
-import './styles.css';
 import { DashboardHeader } from '@/components/dashboard-header';
 import { getCurrentUser } from '@/lib/session';
 import { redirect } from 'next/navigation';

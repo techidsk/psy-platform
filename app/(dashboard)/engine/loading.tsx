@@ -1,5 +1,5 @@
-import { LoadingSpin } from '@/components/common/loading';
+import LoadingSpin from '@/components/common/loading-spin';
 
 export default function Loading() {
-    return <LoadingSpin></LoadingSpin>;
+    return <LoadingSpin variant="circle" />;
 }
