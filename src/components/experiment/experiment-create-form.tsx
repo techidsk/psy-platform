@@ -162,7 +162,7 @@ export function ExperimentCreateForm({
     return (
         <div className={cn('grid gap-6', className)} {...props}>
             {experiment?.id && (
-                <div role="tablist" className="tabs tabs-boxed">
+                <div role="tablist" className="tabs tabs-box">
                     <a
                         role="tab"
                         className={`tab ${tab === 'PROPERTY' ? 'tab-active' : ''}`}
@@ -195,7 +195,7 @@ export function ExperimentCreateForm({
                                     autoComplete="experiment_name"
                                     autoCorrect="off"
                                     disabled={isLoading || !edit}
-                                    className="input input-bordered w-full"
+                                    className="input w-full"
                                     {...register('experiment_name')}
                                 />
                                 {errors?.experiment_name && (
@@ -215,7 +215,7 @@ export function ExperimentCreateForm({
                                     autoComplete="description"
                                     autoCorrect="off"
                                     disabled={isLoading || !edit}
-                                    className="textarea textarea-bordered w-full"
+                                    className="textarea w-full"
                                     rows={2}
                                     {...register('description')}
                                 />
@@ -231,7 +231,7 @@ export function ExperimentCreateForm({
                                     autoComplete="intro"
                                     autoCorrect="off"
                                     disabled={isLoading || !edit}
-                                    className="textarea textarea-bordered w-full"
+                                    className="textarea w-full"
                                     rows={8}
                                     {...register('intro')}
                                 />
@@ -249,7 +249,7 @@ export function ExperimentCreateForm({
                                                 onClick={() => selectEngine(engine.id)}
                                             >
                                                 <Image
-                                                    className="rounded"
+                                                    className="rounded-sm"
                                                     src={engine.engine_image}
                                                     alt={engine.engine_name}
                                                     width={96}

@@ -64,7 +64,7 @@ export function TableSearch({
                         type="text"
                         placeholder={field.placeholder}
                         value={formValues[field.name] || ''} // 设置默认值
-                        className="input input-bordered w-full max-w-xs"
+                        className="input w-full max-w-xs"
                         onChange={(e) => handleChange(field.name, e.target.value)}
                     />
                 );
@@ -72,7 +72,7 @@ export function TableSearch({
                 if (field.values) {
                     return (
                         <select
-                            className="select select-bordered w-full max-w-xs"
+                            className="select w-full max-w-xs"
                             value={formValues[field.name] || ''}
                             onChange={(e) => handleChange(field.name, e.target.value)}
                         >
@@ -91,7 +91,7 @@ export function TableSearch({
                     <>
                         <input
                             type="text"
-                            className="input input-bordered w-full max-w-xs"
+                            className="input w-full max-w-xs"
                             placeholder={field.placeholder}
                             value={formValues[field.name] || ''}
                             onChange={(e) => handleChange(field.name, e.target.value)}
@@ -102,7 +102,7 @@ export function TableSearch({
                             </div>
                             <ul
                                 tabIndex={0}
-                                className="dropdown-content menu bg-base-100 rounded-box z-[1] p-2 shadow w-[320px]"
+                                className="dropdown-content menu bg-base-100 rounded-box z-1 p-2 shadow-sm w-[320px]"
                             >
                                 <DatePickerComponent
                                     selected={

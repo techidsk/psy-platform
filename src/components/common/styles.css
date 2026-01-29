@@ -1,3 +1,5 @@
+@reference "tailwindcss";
+
 /* reset */
 button {
     all: unset;
@@ -113,19 +115,19 @@ button {
 
 @keyframes line-scale {
     0% {
-        @apply bg-blue-500;
+        background-color: #3b82f6; /* blue-500 */
         -webkit-transform: scale(1, 1);
         transform: scale(1, 1);
     }
 
     50% {
-        @apply bg-blue-300;
+        background-color: #93c5fd; /* blue-300 */
         -webkit-transform: scale(0.4, 0.25);
         transform: scale(0.4, 0.25);
     }
 
     100% {
-        @apply bg-blue-500;
+        background-color: #3b82f6; /* blue-500 */
         -webkit-transform: scale(1, 1);
         transform: scale(1, 1);
     }

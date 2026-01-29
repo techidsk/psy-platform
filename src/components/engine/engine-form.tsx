@@ -122,7 +122,7 @@ export function EngineAddForm({
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('engine_name')}
                         />
                         {errors?.engine_name && (
@@ -142,7 +142,7 @@ export function EngineAddForm({
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('engine_description')}
                         />
                         {errors?.engine_description && (
@@ -162,7 +162,7 @@ export function EngineAddForm({
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('gpt_prompt')}
                         />
                         {errors?.gpt_prompt && (
@@ -182,7 +182,7 @@ export function EngineAddForm({
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('temperature')}
                         />
                         {errors?.temperature && (
@@ -204,7 +204,7 @@ export function EngineAddForm({
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('max_tokens')}
                         />
                         {errors?.max_tokens && (
@@ -221,7 +221,7 @@ export function EngineAddForm({
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="textarea textarea-bordered w-full"
+                            className="textarea w-full"
                             {...register('prompt')}
                         />
                         {errors?.prompt && (
@@ -238,7 +238,7 @@ export function EngineAddForm({
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="textarea textarea-bordered w-full"
+                            className="textarea w-full"
                             {...register('negative_prompt')}
                         />
                         {errors?.negative_prompt && (

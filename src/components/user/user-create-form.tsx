@@ -119,7 +119,7 @@ export function UserCreateForm({
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('username')}
                         />
                         {errors?.username && (
@@ -138,7 +138,7 @@ export function UserCreateForm({
                             autoComplete="password"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('password')}
                         />
                         {errors?.password && (
@@ -156,7 +156,7 @@ export function UserCreateForm({
                             autoComplete="email"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('email')}
                         />
                         {errors?.email && (
@@ -174,7 +174,7 @@ export function UserCreateForm({
                             autoComplete="tel"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('tel')}
                         />
                     </div>

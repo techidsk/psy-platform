@@ -140,7 +140,7 @@ export function EnginePatchForm({
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('engine_name')}
                         />
                         {errors?.engine_name && (
@@ -160,7 +160,7 @@ export function EnginePatchForm({
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('engine_description')}
                         />
                         {errors?.engine_description && (
@@ -179,7 +179,7 @@ export function EnginePatchForm({
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="textarea textarea-bordered w-full"
+                            className="textarea w-full"
                             rows={15}
                             {...register('gpt_prompt')}
                         />

@@ -141,7 +141,7 @@ export function UserPatchForm({
                             autoCorrect="off"
                             disabled={true}
                             value={userName}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                         />
                     </div>
                     <div className="grid gap-1">
@@ -156,7 +156,7 @@ export function UserPatchForm({
                             autoComplete="password"
                             autoCorrect="off"
                             disabled={Boolean(!nano_id) || isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('password')}
                         />
                         {errors?.password && (
@@ -174,7 +174,7 @@ export function UserPatchForm({
                             autoComplete="email"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('email')}
                         />
                         {errors?.email && (
@@ -192,7 +192,7 @@ export function UserPatchForm({
                             autoComplete="tel"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('tel')}
                         />
                     </div>

@@ -233,7 +233,7 @@ export function ProjectGroupCreateForm({
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading || !edit}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('group_name')}
                         />
                         {errors?.group_name && (
@@ -250,7 +250,7 @@ export function ProjectGroupCreateForm({
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading || !edit}
-                            className="textarea textarea-bordered w-full"
+                            className="textarea w-full"
                             {...register('description')}
                         />
                         {errors?.description && (
@@ -268,7 +268,7 @@ export function ProjectGroupCreateForm({
                             placeholder="请输入项目实验间隔（单位：小时）"
                             min={0}
                             disabled={isLoading || !edit}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('gap', { valueAsNumber: true })}
                         />
                         {errors?.gap && (
@@ -424,7 +424,7 @@ const groupExperimentConfig: TableConfig[] = [
                 {data.engine_name ? (
                     <div className="flex gap-2 items-center">
                         <Image
-                            className="rounded"
+                            className="rounded-sm"
                             src={data.engine_image}
                             alt={data.engine_name}
                             width={36}

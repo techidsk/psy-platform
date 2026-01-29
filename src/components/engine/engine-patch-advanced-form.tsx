@@ -146,7 +146,7 @@ export function EnginePatchAdvancedForm({
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('engine_name')}
                         />
                         {errors?.engine_name && (
@@ -166,7 +166,7 @@ export function EnginePatchAdvancedForm({
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('engine_description')}
                         />
                         {errors?.engine_description && (
@@ -185,7 +185,7 @@ export function EnginePatchAdvancedForm({
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="textarea textarea-bordered w-full"
+                            className="textarea w-full"
                             rows={15}
                             {...register('gpt_prompt')}
                         />
@@ -206,7 +206,7 @@ export function EnginePatchAdvancedForm({
                             max={1}
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('temperature')}
                         />
                         {errors?.temperature && (
@@ -228,7 +228,7 @@ export function EnginePatchAdvancedForm({
                             max={2048}
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('max_tokens')}
                         />
                         {errors?.max_tokens && (
@@ -245,7 +245,7 @@ export function EnginePatchAdvancedForm({
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="textarea textarea-bordered w-full"
+                            className="textarea w-full"
                             rows={6}
                             {...register('prompt')}
                         />
@@ -264,7 +264,7 @@ export function EnginePatchAdvancedForm({
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="textarea textarea-bordered w-full"
+                            className="textarea w-full"
                             rows={6}
                             {...register('negative_prompt')}
                         />

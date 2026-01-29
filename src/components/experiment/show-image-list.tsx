@@ -124,7 +124,7 @@ export function ShowImageList({ experimentList }: ImageListProps) {
                 <div className="flex flex-wrap w-full justify-center items-center">
                     {list.length === 0 && (
                         <div className="basis-1/2 xl:basis-1/4 p-2">
-                            <div className="flex flex-col justify-center items-center rounded border-2 border-slate-300">
+                            <div className="flex flex-col justify-center items-center rounded-sm border-2 border-slate-300">
                                 <div className="image-holder w-full flex justify-center items-center">
                                     <div className="w-full h-full flex flex-col gap-8 justify-center items-center">
                                         <Icons.folder className="mr-2 h-8 w-8" />
@@ -137,7 +137,7 @@ export function ShowImageList({ experimentList }: ImageListProps) {
                     {list.map((item) => {
                         return (
                             <div key={item.id} className="basis-1/2 xl:basis-1/4 p-2">
-                                <div className="flex flex-col justify-center items-center rounded border border-slate-300">
+                                <div className="flex flex-col justify-center items-center rounded-sm border border-slate-300">
                                     {item.state === 'GENERATING' ? (
                                         <div className="image-holder bg-gray-50 w-full flex justify-center items-center">
                                             <LoadingSpin />
@@ -192,13 +192,13 @@ export function ShowImageList({ experimentList }: ImageListProps) {
                             </>
                         )}
                     </button>
-                    <div className="flex gap-2 justify-center items-center border border-solid border-gray-800 rounded py-2 px-4">
+                    <div className="flex gap-2 justify-center items-center border border-solid border-gray-800 rounded-sm py-2 px-4">
                         <Icons.add className="cursor-pointer" onClick={increment} />
                         <h2 className="text-center select-none">速度 x {speed}</h2>
                         <Icons.minus className="cursor-pointer" onClick={decrement} />
                     </div>
                     <button
-                        className="btn btn-sm btn-outline btn-ghost border-solid rounded"
+                        className="btn btn-sm btn-outline btn-ghost border-solid rounded-sm"
                         onClick={() => setSeconds(0)}
                     >
                         <>

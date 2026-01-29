@@ -39,7 +39,7 @@ export function ExperimentSetting() {
     return (
         <div>
             <button
-                className="btn btn-outline rounded flex gap-2 items-center"
+                className="btn btn-outline rounded-sm flex gap-2 items-center"
                 onClick={handleToggle}
             >
                 <Icons.settings className="mx-auto h-6 w-6" />
@@ -69,7 +69,7 @@ export function ExperimentSetting() {
                                 autoCapitalize="none"
                                 autoComplete="display-num"
                                 autoCorrect="off"
-                                className="input input-bordered w-full"
+                                className="input w-full"
                                 {...register('display_num', { valueAsNumber: true })}
                             /> */}
                             <input

@@ -40,7 +40,7 @@ export default function Pagination({ current, pageSize = 10, end = 1 }: Paginati
         <div className="flex gap-2">
             <div>
                 <select
-                    className="select select-bordered w-full max-w-xs"
+                    className="select w-full max-w-xs"
                     onChange={(e) => handlePageSizeChange(e)}
                     value={pageSize}
                 >

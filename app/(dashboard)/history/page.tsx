@@ -191,7 +191,7 @@ const experimentTableConfig: TableConfig[] = [
             return (
                 <div className="flex flex-col gap-2 justify-center">
                     <Image
-                        className="rounded"
+                        className="rounded-sm"
                         src={data.engine_image}
                         alt={data.engine_name}
                         width={48}

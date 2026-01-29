@@ -159,7 +159,7 @@ export function UserPrivacyForm({
                         <select
                             data-name="gender"
                             disabled={isLoading}
-                            className="select select-bordered w-full max-w-xs"
+                            className="select w-full max-w-xs"
                             {...register('gender')}
                         >
                             {Object.entries(GENDER_MAP).map(([key, value]) => (
@@ -179,7 +179,7 @@ export function UserPrivacyForm({
                         <select
                             data-name="ages"
                             disabled={isLoading}
-                            className="select select-bordered w-full max-w-xs"
+                            className="select w-full max-w-xs"
                             {...register('ages')}
                         >
                             {Object.entries(AGES_MAP).map(([key, value]) => (
@@ -204,7 +204,7 @@ export function UserPrivacyForm({
                                 autoCapitalize="none"
                                 autoCorrect="off"
                                 disabled={isLoading || !isQualtricsEditable}
-                                className="input input-bordered w-full"
+                                className="input w-full"
                                 {...register('qualtrics')}
                             />
                         </div>

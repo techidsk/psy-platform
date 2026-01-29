@@ -36,7 +36,7 @@ export default function TiptapEditor({
         ],
         editorProps: {
             attributes: {
-                class: 'prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-none h-[360px]',
+                class: 'prose dark:prose-invert prose-sm sm:prose-base lg:prose-lg xl:prose-2xl m-5 focus:outline-hidden h-[360px]',
             },
         },
         content: content,

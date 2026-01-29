@@ -95,7 +95,7 @@ export function UserRegisterForm({ qualtricsId, className, ...props }: UserAuthF
                             autoComplete="username"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('username')}
                         />
                         {errors?.username && (
@@ -114,7 +114,7 @@ export function UserRegisterForm({ qualtricsId, className, ...props }: UserAuthF
                             autoComplete="password"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             /**
                              * 针对用户修改密码时，由于state不会实时更新以及refine/addIssue方法抛出错误后不会自动清除（并且zod似乎只有验证为false时，
                              * 才会让formState中的errors更新，这导致无法用Effect跟踪errors），故而更改了相关前端逻辑。
@@ -150,7 +150,7 @@ export function UserRegisterForm({ qualtricsId, className, ...props }: UserAuthF
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('invite_code')}
                         />
                         {errors?.invite_code && (

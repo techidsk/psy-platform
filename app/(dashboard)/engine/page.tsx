@@ -55,7 +55,7 @@ const experimentTableConfig: TableConfig[] = [
             return (
                 <div className="flex flex-col gap-2">
                     <Image
-                        className="rounded"
+                        className="rounded-sm"
                         src={data.engine_image}
                         alt={data.engine_name}
                         width={96}
@@ -80,7 +80,7 @@ const experimentTableConfig: TableConfig[] = [
         label: '提示词',
         children: (data: any) => {
             return (
-                <article className="whitespace-normal overflow-ellipsis line-clamp-4">
+                <article className="whitespace-normal text-ellipsis line-clamp-4">
                     {data.gpt_prompt}
                 </article>
             );

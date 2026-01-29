@@ -319,7 +319,7 @@ export function ProjectCreateForm({
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading || !edit}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('project_name')}
                         />
                         {errors?.project_name && (
@@ -338,7 +338,7 @@ export function ProjectCreateForm({
                             autoCapitalize="none"
                             autoCorrect="off"
                             disabled={isLoading || !edit}
-                            className="textarea textarea-bordered w-full"
+                            className="textarea w-full"
                             {...register('project_description')}
                         />
                         {errors?.project_description && (
@@ -352,7 +352,7 @@ export function ProjectCreateForm({
                             项目状态
                         </label>
                         <select
-                            className="select select-bordered w-full max-w-xs"
+                            className="select w-full max-w-xs"
                             defaultValue={project?.state || 'AVAILABLE'}
                             disabled={isLoading || !edit}
                             {...register('state')}
@@ -375,14 +375,14 @@ export function ProjectCreateForm({
                             </label>
                             <input
                                 disabled={true}
-                                className="input input-bordered input-sm"
+                                className="input input-sm"
                                 value={format(startDate, 'PP', { locale: zhCN })}
                                 onChange={(e) => {}}
                             />
                             {edit && (
                                 <details className="dropdown dropdown-end">
                                     <summary className="m-1 btn btn-sm">选择开始日期</summary>
-                                    <div className="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-[320px]">
+                                    <div className="p-2 shadow-sm menu dropdown-content z-1 bg-base-100 rounded-box w-[320px]">
                                         <DatePickerComponent
                                             selected={startDate}
                                             setSelected={(day: Date | undefined) =>
@@ -401,14 +401,14 @@ export function ProjectCreateForm({
                             </label>
                             <input
                                 disabled={true}
-                                className="input input-bordered input-sm"
+                                className="input input-sm"
                                 value={format(endDate, 'PP', { locale: zhCN })}
                                 onChange={() => {}}
                             />
                             {edit && (
                                 <details className="dropdown dropdown-end">
                                     <summary className="m-1 btn btn-sm">选择结束日期</summary>
-                                    <div className="p-2 shadow menu dropdown-content z-[1] bg-base-100 rounded-box w-[320px]">
+                                    <div className="p-2 shadow-sm menu dropdown-content z-1 bg-base-100 rounded-box w-[320px]">
                                         <DatePickerComponent
                                             selected={endDate}
                                             setSelected={(day: Date | undefined) =>

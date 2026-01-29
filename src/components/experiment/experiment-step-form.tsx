@@ -247,7 +247,7 @@ export function ExperimentStepForm({
                                 type="text"
                                 autoCapitalize="none"
                                 autoCorrect="off"
-                                className="input input-bordered w-full"
+                                className="input w-full"
                                 {...register('step_name')}
                             />
                             {stepErrors?.step_name && (
@@ -267,7 +267,7 @@ export function ExperimentStepForm({
                                     type="text"
                                     autoCapitalize="none"
                                     autoCorrect="off"
-                                    className="input input-bordered w-full"
+                                    className="input w-full"
                                     {...register('title')}
                                 />
                                 {stepErrors?.title && (
@@ -282,7 +282,7 @@ export function ExperimentStepForm({
                                 <label className="sr-only" htmlFor="step_content">
                                     内容
                                 </label>
-                                <div className="grid gap-1 border-[1px] border-solid border-neutral-200 rounded-md overflow-y-auto max-h-64">
+                                <div className="grid gap-1 border border-solid border-neutral-200 rounded-md overflow-y-auto max-h-64">
                                     <TiptapEditor
                                         placeholder="请输入显示内容（被试可见，详细内容，支持Markdown格式）"
                                         content={stepContent}
@@ -308,7 +308,7 @@ export function ExperimentStepForm({
                                         type="text"
                                         autoCapitalize="none"
                                         autoCorrect="off"
-                                        className="input input-bordered w-full"
+                                        className="input w-full"
                                         {...register('redirect_url')}
                                     />
                                 </div>
@@ -333,7 +333,7 @@ export function ExperimentStepForm({
                                         min={0}
                                         max={120}
                                         autoCorrect="off"
-                                        className="input input-bordered w-full"
+                                        className="input w-full"
                                         {...register('countdown', { valueAsNumber: true })}
                                     />
                                 </div>
@@ -392,7 +392,7 @@ export function ExperimentStepForm({
                                 <input
                                     type="file"
                                     accept=".png, .jpg, .jpeg"
-                                    className="file-input file-input-bordered w-full max-w-xs"
+                                    className="file-input w-full max-w-xs"
                                     placeholder="请上传图片"
                                     onChange={(e) => handleFileChange(e)}
                                 />

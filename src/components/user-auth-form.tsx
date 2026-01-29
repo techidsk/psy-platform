@@ -95,7 +95,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                             autoComplete="username"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('username')}
                         />
                         {errors?.username && (
@@ -114,7 +114,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                             autoComplete="password"
                             autoCorrect="off"
                             disabled={isLoading}
-                            className="input input-bordered w-full"
+                            className="input w-full"
                             {...register('password')}
                         />
                         {errors?.password && (

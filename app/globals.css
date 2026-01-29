@@ -1,6 +1,31 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@plugin '@tailwindcss/typography';
+@plugin "daisyui" {
+    themes: light --default;
+}
+
+@theme {
+    --height-screen-96px: calc(100vh - 96px);
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentcolor);
+    }
+}
 
 :root {
     --max-width: 1100px;
@@ -121,11 +146,11 @@ a {
 }
 
 .image-holder {
-    @apply aspect-square object-cover rounded;
+    @apply aspect-square object-cover rounded-sm;
 }
 
 .image-btn {
-    @apply bg-white text-blue-500 border border-blue-500 rounded px-6 py-2;
+    @apply bg-white text-blue-500 border border-blue-500 rounded-sm px-6 py-2;
 }
 
 .image-btn:hover {
@@ -214,7 +239,7 @@ a {
 }
 
 .primary-btn {
-    @apply bg-blue-500 text-white rounded flex justify-center items-center cursor-pointer;
+    @apply bg-blue-500 text-white rounded-sm flex justify-center items-center cursor-pointer;
 }
 
 .primary-btn:hover {
@@ -252,7 +277,7 @@ a {
 }
 
 .secondary-btn {
-    @apply bg-white text-blue-500 border border-solid border-blue-500 rounded flex justify-center items-center cursor-pointer;
+    @apply bg-white text-blue-500 border border-solid border-blue-500 rounded-sm flex justify-center items-center cursor-pointer;
 }
 
 .secondary-btn:hover {
@@ -260,7 +285,7 @@ a {
 }
 
 .input-textarea {
-    @apply w-full border border-gray-400 rounded h-48 px-4 py-2 bg-gray-50;
+    @apply w-full border border-gray-400 rounded-sm h-48 px-4 py-2 bg-gray-50;
 }
 
 .read-only {
