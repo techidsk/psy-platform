@@ -63,11 +63,11 @@ export function UserRegisterForm({ qualtricsId, className, ...props }: UserAuthF
                 duration: 5000,
             });
         }
-        // 成功之后跳转登录之前页面或者dashboard
-        router.push('/login');
+        // 成功之后跳转首页登录
+        router.push('/');
         return toast({
             title: '注册成功',
-            description: '请在登录页面登录',
+            description: '请在首页登录',
             duration: 3000,
         });
     }
