@@ -25,21 +25,45 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     const response = await getGenerateResult(id);
 
     if (response) {
+        logger.info(`[生成结果] task_id=${id}, response=${JSON.stringify(response)}`);
         const status = response.status;
-        if (status === 'pending') {
+        if (status === 'pending' || status === 'processing' || status === 'started') {
             // 继续等待结果
-            return NextResponse.json({ msg: '等待生成', status: 'pending' });
+            return NextResponse.json({ msg: '等待生成', status: 'pending' }, { status: 202 });
         } else if (status === 'completed') {
+            const resultStatus = response.result?.status;
+            const isNumericSuccess =
+                typeof resultStatus === 'number' && resultStatus >= 200 && resultStatus < 300;
+            const isStringSuccess = resultStatus === 'success' || resultStatus === 'completed';
+            if (resultStatus && !(isNumericSuccess || isStringSuccess)) {
+                const errorMessage =
+                    response.result?.error ||
+                    response.message ||
+                    response.error ||
+                    response.detail ||
+                    '无错误消息';
+                logger.error(`生成失败，状态: ${resultStatus}, 消息: ${errorMessage}`);
+                return NextResponse.json(
+                    {
+                        msg: '生成失败',
+                        status: 'error',
+                        error: errorMessage,
+                    },
+                    { status: 500 }
+                );
+            }
             // 生成成功
             return NextResponse.json({ msg: '生成成功', status: 'success', data: response.result });
         } else {
             // 生成失败
-            logger.error(`生成失败，状态: ${status}, 消息: ${response.message || '无错误消息'}`);
+            const errorMessage =
+                response.message || response.error || response.detail || '无错误消息';
+            logger.error(`生成失败，状态: ${status}, 消息: ${errorMessage}`);
             return NextResponse.json(
                 {
                     msg: '生成失败',
                     status: 'error',
-                    error: response.message,
+                    error: errorMessage,
                 },
                 { status: 500 }
             );

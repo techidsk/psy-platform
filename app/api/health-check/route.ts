@@ -112,7 +112,7 @@ export async function GET(request: Request) {
 
         operationStage = '任务状态轮询阶段 🔄';
         const startTime = Date.now();
-        let finalResultId: string | null = null;
+        let finalResult: any = null;
 
         while (Date.now() - startTime < LONG_TASK_TIMEOUT_MS) {
             console.log(`[健康检查 ⏳] 正在查询任务 ${taskIdToUse} 的状态...`);
@@ -135,15 +135,13 @@ export async function GET(request: Request) {
             console.log(`[健康检查 📊] 任务 ${taskIdToUse} 当前状态:`, taskStatusJson.status);
 
             if (taskStatusJson.status && taskStatusJson.status.toLowerCase() === 'completed') {
-                finalResultId = taskStatusJson.result;
-                if (!finalResultId) {
+                finalResult = taskStatusJson.result;
+                if (!finalResult) {
                     throw new Error(
-                        `任务 ${taskIdToUse} 初步完成，但响应中未找到最终结果ID (result)。状态: ${JSON.stringify(taskStatusJson).substring(0, 200)}...`
+                        `任务 ${taskIdToUse} 已完成，但响应中未找到结果 (result)。状态: ${JSON.stringify(taskStatusJson).substring(0, 200)}...`
                     );
                 }
-                console.log(
-                    `[健康检查 🎉] 任务 ${taskIdToUse} 初步处理完成。结果ID: ${finalResultId}`
-                );
+                console.log(`[健康检查 🎉] 任务 ${taskIdToUse} 完成，已获取结果。`);
                 break;
             }
 
@@ -160,7 +158,7 @@ export async function GET(request: Request) {
             await new Promise((resolve) => setTimeout(resolve, LONG_TASK_POLL_INTERVAL_MS));
         }
 
-        if (!finalResultId) {
+        if (!finalResult) {
             const lastStatusString =
                 JSON.stringify(taskStatusJson || '未知').substring(0, 100) + '...';
             if (Date.now() - startTime >= LONG_TASK_TIMEOUT_MS) {
@@ -169,33 +167,11 @@ export async function GET(request: Request) {
                 );
             }
             throw new Error(
-                `任务 ${taskIdToUse} 未能进入"已完成"状态以获取最终结果ID。最后状态: ${lastStatusString}`
+                `任务 ${taskIdToUse} 未能进入"已完成"状态以获取最终结果。最后状态: ${lastStatusString}`
             );
         }
 
-        operationStage = '最终结果获取阶段 📥';
-        console.log(
-            `[健康检查 🔎] 正在获取任务 ${taskIdToUse} (结果ID: ${finalResultId}) 的最终结果...`
-        );
-        const finalResultUrl = `${celeryBaseUrl}${GET_RESULT_PATH_PREFIX}${finalResultId}`;
-        const finalResultResponse = await fetch(finalResultUrl, {
-            method: 'GET',
-            headers: { 'User-Agent': 'HealthMonitor/1.0 (Celery Final Result)' },
-            signal: AbortSignal.timeout(10000),
-            cache: 'no-cache',
-        });
-
-        if (!finalResultResponse.ok) {
-            const errorBody = await finalResultResponse.text();
-            throw new Error(
-                `获取最终结果失败 (状态码: ${finalResultResponse.status})。内容: ${errorBody.substring(0, 200)}...`
-            );
-        }
-
-        const finalResultJson = await finalResultResponse.json();
-        console.log(
-            `[健康检查 ✅] Celery任务 ${taskIdToUse} (结果ID: ${finalResultId}) 成功完成，最终结果已获取。`
-        );
+        console.log(`[健康检查 ✅] Celery任务 ${taskIdToUse} 成功完成，结果已获取。`);
 
         const successSummary = '✅ 服务健康报告';
         const successDetails = `Celery服务 (${celeryBaseUrl}) 本次健康检查通过！测试任务 (ID: ${taskIdToUse}) 已成功执行并返回结果。一切看起来棒棒哒！🎉🚀`;
@@ -205,6 +181,7 @@ export async function GET(request: Request) {
             status: 'ok',
             check: 'celery_full_task',
             message: successDetails,
+            result: finalResult,
         });
     } catch (error: any) {
         const idForErrorReporting = taskIdToUse || clientGeneratedTaskId;

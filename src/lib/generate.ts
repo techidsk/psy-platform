@@ -63,36 +63,6 @@ async function getGenerateResult(task_id: string) {
             signal: AbortSignal.timeout(GET_RESULT_TIMEOUT),
         });
         const res = await response.json();
-        if (res.status === 'completed') {
-            try {
-                const result = await fetch(
-                    `http://${process.env.CELERY_HOST}/get_result/${res.result}`,
-                    {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        cache: 'no-cache',
-                        signal: AbortSignal.timeout(GET_RESULT_TIMEOUT),
-                    }
-                );
-                const result_data = await result.json();
-                return result_data;
-            } catch (fetchError) {
-                if (fetchError instanceof Error && fetchError.name === 'TimeoutError') {
-                    logger.error(`获取生成结果详情超时 (${GET_RESULT_TIMEOUT}ms)`);
-                    return {
-                        status: 'failed',
-                        message: '获取生成结果详情超时',
-                    };
-                }
-                logger.error(`Failed to get result data: ${fetchError}`);
-                return {
-                    status: 'failed',
-                    message: fetchError instanceof Error ? fetchError.message : String(fetchError),
-                };
-            }
-        }
         return res;
     } catch (error) {
         if (error instanceof Error && error.name === 'TimeoutError') {
