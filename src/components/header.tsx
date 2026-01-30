@@ -10,8 +10,11 @@ interface HeaderProps {
 
 export default function Header({ user }: HeaderProps) {
     function logout() {
+        // 使用当前页面的 origin 构建完整的回调 URL，避免端口不一致问题
+        const callbackUrl =
+            typeof window !== 'undefined' ? `${window.location.origin}/login` : '/login';
         signOut({
-            callbackUrl: '/login',
+            callbackUrl,
             redirect: true,
         });
     }
