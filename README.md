@@ -22,6 +22,9 @@
 
 使用 [prisma](https://www.prisma.io/) 作为 ORM 工具进行管理。
 
+prisma 国内难以下载的方案：
+`export PRISMA_ENGINES_MIRROR=https://npmmirror.com/mirrors/prisma`
+
 #### 使用
 
 1. `npx prisma db pull` 拉取最新的数据库
