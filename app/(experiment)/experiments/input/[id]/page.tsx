@@ -125,8 +125,6 @@ export default async function MainInput({
                             experimentImageList={experimentImageList}
                             callbackUrl={encodedCallbackUrl}
                             part={parseInt(experimentStepIndex)}
-                            stepTitle={stepTitle}
-                            stepContent={stepContent}
                             isExperimentFinished={isExperimentFinished}
                         />
                     </div>

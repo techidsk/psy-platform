@@ -1,10 +1,10 @@
 'use client';
+import { use } from 'react';
 import { CenteredHero } from '@/components/experiment/modules/centerd-hero';
 
 /**预实验输入测试 */
-export default function ArticleResult({ params }: { params: { id: string } }) {
-    // Note: This is a client component, params is not a Promise here
-    const { id } = params;
+export default function ArticleResult({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params);
     return (
         <div className="bg-white">
             <CenteredHero title={'回顾实验'} content={''}>

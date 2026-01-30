@@ -68,7 +68,7 @@ export default async function ProjectGroupDetail({
                     edit={Boolean(edit)}
                     projectGroup={projectGroup}
                     experiments={experiments}
-                    projectGroupId={id}
+                    projectGroupId={parseInt(id)}
                 />
             </div>
         </div>

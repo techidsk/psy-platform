@@ -152,8 +152,9 @@ async function checkStaleGeneratingTrails() {
                     logger.warn(`trail ${trail.nano_id} 外部服务返回失败: ${result.message}`);
                 } else if (result.status === 'pending') {
                     // 仍在处理中，检查是否超时过久（超过 10 分钟直接标记失败）
-                    const ageMinutes =
-                        (Date.now() - new Date(trail.create_time).getTime()) / 1000 / 60;
+                    const ageMinutes = trail.create_time
+                        ? (Date.now() - new Date(trail.create_time).getTime()) / 1000 / 60
+                        : 0;
                     if (ageMinutes > 10) {
                         await db.trail.update({
                             where: { id: trail.id },
