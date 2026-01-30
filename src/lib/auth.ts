@@ -6,6 +6,7 @@ const crypto = require('crypto');
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     secret: process.env.JWT_SECRET,
+    trustHost: true,
     session: {
         strategy: 'jwt',
     },
