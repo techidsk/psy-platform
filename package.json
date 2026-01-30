@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "NODE_OPTIONS='--max-old-space-size=3072' prisma generate && next build --webpack",
     "type-check": "tsc --noEmit",
     "start": "next start -p 4545",
     "lint": "next lint",

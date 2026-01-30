@@ -1,5 +1,4 @@
 /** @type {import('next').NextConfig} */
-const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const nextConfig = {
     images: {
@@ -31,6 +30,23 @@ const nextConfig = {
         NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     },
     serverExternalPackages: ['pino', 'pino-pretty', 'bull'],
+
+    // 生产环境优化
+    productionBrowserSourceMaps: false, // 禁用生产环境 source maps，减少内存
+
+    // 优化打包
+    experimental: {
+        // 优化包导入，减少打包体积
+        optimizePackageImports: ['lucide-react', 'date-fns', 'ramda'],
+        // Webpack 内存优化
+        webpackMemoryOptimizations: true,
+        // 使用单独工作进程编译，减少内存占用
+        webpackBuildWorker: true,
+    },
+
+    // Standalone 模式，减少部署体积
+    output: 'standalone',
+
     /**
      * 为所有API路由响应头添加允许跨域头，以支持本地开发时远程调用开发机的API。
      */
