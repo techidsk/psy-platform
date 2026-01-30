@@ -1,10 +1,10 @@
-import { NextAuthOptions } from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
+import NextAuth from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
 import { db } from './db';
 import { logger } from './logger';
 const crypto = require('crypto');
 
-export const authOptions: NextAuthOptions = {
+export const { handlers, signIn, signOut, auth } = NextAuth({
     secret: process.env.JWT_SECRET,
     session: {
         strategy: 'jwt',
@@ -13,16 +13,16 @@ export const authOptions: NextAuthOptions = {
         signIn: '/login',
     },
     providers: [
-        CredentialsProvider({
+        Credentials({
             credentials: {
                 username: { label: 'Username', type: 'text' },
                 password: { label: 'Password', type: 'password' },
             },
-            async authorize(credentials: any) {
+            async authorize(credentials) {
                 // 在这里进行登录判断
                 logger.debug('用户登录: ', credentials);
-                const username = credentials['username'];
-                const inputPassword = credentials['password'];
+                const username = credentials['username'] as string;
+                const inputPassword = credentials['password'] as string;
                 let dbUser = await db.user.findFirst({
                     where: {
                         username: username,
@@ -51,10 +51,10 @@ export const authOptions: NextAuthOptions = {
     callbacks: {
         async session({ session, token }) {
             if (token) {
-                session.user.id = token.id;
-                session.user.username = token.name || '';
-                session.user.role = token.role;
-                session.user.image = token.picture;
+                session.user.id = token.id as string;
+                session.user.username = (token.name as string) || '';
+                session.user.role = token.role as string;
+                session.user.image = token.picture as string;
             }
             return session;
         },
@@ -72,7 +72,7 @@ export const authOptions: NextAuthOptions = {
             return token;
         },
     },
-};
+});
 
 async function verify(password: string, salt: string, hash: string) {
     return new Promise((resolve, reject) => {
