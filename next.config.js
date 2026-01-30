@@ -44,9 +44,6 @@ const nextConfig = {
         webpackBuildWorker: true,
     },
 
-    // Standalone 模式，减少部署体积
-    output: 'standalone',
-
     /**
      * 为所有API路由响应头添加允许跨域头，以支持本地开发时远程调用开发机的API。
      */
