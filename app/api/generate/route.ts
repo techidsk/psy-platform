@@ -1,29 +1,26 @@
 import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
-import { generate } from '@/lib/generate';
+import { generateImage } from '@/lib/generate';
 import { getCurrentUser } from '@/lib/session';
-import { AGES_MAP, GENDER_MAP } from '@/common/user';
 import { logger } from '@/lib/logger';
-import { trail as dbTrail } from '@prisma/client';
 
-function getValueFromObj(key: number, map: Record<number, string>) {
-    return map[key] || '';
-}
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { uploadFile } = require('../../../src/lib/upload.js');
 
 /**
  * /api/generate
- * 翻译提示词并生成图片
+ * 生成图片（同步调用 Doubao API）
  *
  * @returns
  */
 export async function POST(request: Request) {
     const json = await request.json();
-    const { guest, id: promptNanoId, experimentId, experimentNanoId, part: stepOrder } = json;
+    const { guest, id: promptNanoId, experimentId, experimentNanoId, part: stepOrder, size } = json;
     const isGuest = Boolean(guest);
+    const startTime = Date.now();
 
-    // 检查关键参数是否为undefined
     if (!promptNanoId || promptNanoId === 'undefined') {
-        logger.error('promptNanoId为undefined或缺失');
+        logger.error({ promptNanoId }, 'promptNanoId 缺失或无效');
         return NextResponse.json({ msg: '发布失败，promptNanoId为undefined或缺失' });
     }
 
@@ -31,12 +28,12 @@ export async function POST(request: Request) {
         (isGuest && (!experimentNanoId || experimentNanoId === 'undefined')) ||
         (!isGuest && (!experimentId || experimentId === 'undefined'))
     ) {
-        logger.error('experiment ID为undefined或缺失');
+        logger.error({ isGuest, experimentId, experimentNanoId }, 'experiment ID 缺失或无效');
         return NextResponse.json({ msg: '发布失败，experiment ID为undefined或缺失' });
     }
 
     if (stepOrder === undefined || stepOrder === 'undefined') {
-        logger.error('stepOrder为undefined或缺失');
+        logger.error({ promptNanoId, stepOrder }, 'stepOrder 缺失或无效');
         return NextResponse.json({ msg: '发布失败，步骤参数为undefined或缺失' });
     }
 
@@ -45,36 +42,30 @@ export async function POST(request: Request) {
     });
 
     if (!trail || !trail.prompt) {
-        logger.error('未找到对应trail数据');
+        logger.error({ promptNanoId }, '未找到对应 trail 数据');
         return NextResponse.json({ msg: '发布失败，缺少参数' });
     }
 
     const currentUser = await getCurrentUser();
-    const user = currentUser?.id
-        ? await db.user.findFirst({ where: { id: parseInt(currentUser.id) } })
-        : await db.user.findFirst({ where: { id: trail?.user_id || 0 } });
-
     const userExperimentNanoId = isGuest ? experimentNanoId : experimentId;
 
-    // 再次检查userExperimentNanoId是否有效
     if (!userExperimentNanoId || userExperimentNanoId === 'undefined') {
-        logger.error('userExperimentNanoId无效或为undefined');
+        logger.error({ promptNanoId, userExperimentNanoId }, 'userExperimentNanoId 无效');
         return NextResponse.json({ msg: '发布失败，无效的实验ID' });
     }
 
-    let userExperiment = await db.user_experiments.findFirst({
+    const userExperiment = await db.user_experiments.findFirst({
         where: { nano_id: userExperimentNanoId },
     });
 
     if (!userExperiment || !userExperiment.experiment_id || !userExperiment.engine_id) {
-        logger.error('未找到对应userExperiment数据');
+        logger.error({ promptNanoId, userExperimentNanoId }, '未找到对应 userExperiment 数据');
         return NextResponse.json({ msg: '发布失败，缺少参数' });
     }
 
-    // 获取生成信息
     const engineId = userExperiment.engine_id;
     if (!engineId || isNaN(Number(engineId))) {
-        logger.error(`无效的引擎ID: ${engineId}`);
+        logger.error({ promptNanoId, engineId }, '引擎ID无效');
         return NextResponse.json({ msg: '发布失败，引擎ID无效' });
     }
 
@@ -83,14 +74,15 @@ export async function POST(request: Request) {
     });
 
     if (!engine) {
-        logger.error(`未找到对应engine数据 -- engineId: ${engineId}`);
+        logger.error({ promptNanoId, engineId }, '未找到对应 engine 数据');
         return NextResponse.json({ msg: '发布失败，缺少参数' });
     }
 
+    // 检查是否需要生成图片
     const step = await getExperimentStep(parseInt(userExperiment.experiment_id), stepOrder);
     const picMode = step === null ? true : (step?.pic_mode ?? false);
 
-    logger.info(`图像模式：${picMode ? '生成图片' : '不生成图片'}`);
+    logger.info({ promptNanoId, picMode }, '图像模式检查');
     if (!picMode) {
         await db.trail.update({
             where: { nano_id: promptNanoId },
@@ -99,81 +91,70 @@ export async function POST(request: Request) {
         return NextResponse.json({ msg: '不需要生成图片' });
     }
 
-    // 获取用户最近5条内容进行发送
-    const userPrompts = await fetchUserPrompts(trail);
+    // 组装结构化提示词：风格 + 内容
+    const templateContent = (engine.template as any)?.prompt || '';
+    const assembledPrompt = templateContent
+        ? `风格：${templateContent}，内容：${trail.prompt}`
+        : trail.prompt;
 
-    // 获取实验信息
-    if (
-        !userExperiment.experiment_id ||
-        userExperiment.experiment_id === undefined ||
-        isNaN(parseInt(userExperiment.experiment_id))
-    ) {
-        logger.error(`实验ID无效: ${userExperiment.experiment_id}`);
-        return NextResponse.json({ msg: '发布失败，无效的实验ID' });
-    }
+    logger.info({ promptNanoId, engineId, size }, '开始生成图片任务');
 
-    const experiment = await fetchExperiment(parseInt(userExperiment.experiment_id));
-    if (!experiment) {
-        logger.error('未找到对应experiment数据');
-        return NextResponse.json({ msg: '发布失败，缺少参数，未找到对应的实验数据' });
-    }
-
-    logger.info(`===== 生成任务：[${promptNanoId}] 准备发送请求 =====`);
     try {
-        const generateData = {
-            user_prompts: userPrompts,
-            engine_id: engine.id,
-            gpt: {
-                gpt_prompt: engine.gpt_prompt,
-                gpt_setting: engine.gpt_settings,
-            },
-            template: engine.template,
-            user: {
-                gender: GENDER_MAP[user?.gender || 0] || '',
-                ages: AGES_MAP[user?.ages || 0] || '',
-            },
-            task_id: promptNanoId,
-        };
-        logger.info(`用户性别: ${user?.gender} 用户年龄: ${user?.ages}`);
-        const response = await generate(generateData);
+        const imageUrl = await generateImage(assembledPrompt, size);
 
-        if (response?.status === 'Task enqueued') {
-            logger.info(`===== 生成任务：[${promptNanoId}] 成功发送生成请求 =====`);
-            await db.trail.update({
-                where: { nano_id: promptNanoId },
-                data: { request_id: response?.task_id },
-            });
-            return NextResponse.json({
-                msg: '发布成功',
-                request_id: response?.task_id,
-                url: response?.image_url,
-                prompt: response?.chat_result,
-            });
-        } else {
-            await db.trail.update({
-                where: { nano_id: promptNanoId },
-                data: { state: 'FAILED' },
-            });
-            logger.error(`算法生成图片失败`);
-            return NextResponse.json({ msg: '发布失败，生成服务未能响应' }, { status: 401 });
+        // 转存到 OSS，防止 Doubao 临时 URL 过期
+        let finalUrl: string = imageUrl;
+        try {
+            const ossPath = `trail/${promptNanoId}.png`;
+            const imgBuffer = Buffer.from(await fetch(imageUrl).then((r) => r.arrayBuffer()));
+            const ossUrl = await uploadFile(imgBuffer, ossPath);
+            if (ossUrl) {
+                finalUrl = ossUrl;
+                logger.info({ promptNanoId, ossPath }, 'OSS 转存成功');
+            } else {
+                logger.warn({ promptNanoId }, 'OSS 转存返回空 URL，使用 Doubao 原始 URL');
+            }
+        } catch (ossError) {
+            logger.warn(
+                { promptNanoId, error: String(ossError) },
+                'OSS 转存失败，使用 Doubao 原始 URL'
+            );
         }
+
+        const elapsed = Date.now() - startTime;
+
+        await db.trail.update({
+            where: { nano_id: promptNanoId },
+            data: {
+                state: 'SUCCESS',
+                image_url: finalUrl,
+                generate_prompt: assembledPrompt,
+                update_time: new Date(),
+            },
+        });
+
+        logger.info({ promptNanoId, elapsed }, '生成任务完成，图片 URL 已保存');
+        return NextResponse.json({
+            msg: '发布成功',
+            url: finalUrl,
+            prompt: assembledPrompt,
+        });
     } catch (error) {
-        logger.error(`生成任务异常 [${promptNanoId}]: ${error}`);
-        // 异常时更新 trail 状态为失败
+        const elapsed = Date.now() - startTime;
+        logger.error({ promptNanoId, error: String(error), elapsed }, '生成任务失败');
         try {
             await db.trail.update({
                 where: { nano_id: promptNanoId },
-                data: { state: 'FAILED' },
+                data: { state: 'FAILED', update_time: new Date() },
             });
         } catch (updateError) {
-            logger.error(`更新 trail 状态失败 [${promptNanoId}]: ${updateError}`);
+            logger.error({ promptNanoId, error: String(updateError) }, '更新 trail 状态失败');
         }
-        return NextResponse.json({ msg: '发布失败，服务端数据处理异常' }, { status: 500 });
+        return NextResponse.json({ msg: '发布失败，图片生成异常' }, { status: 500 });
     }
 }
 
 async function getExperimentStep(experimentId: number, step: number) {
-    // 检查参数是否有效
     if (experimentId === undefined || isNaN(experimentId) || step === undefined || isNaN(step)) {
         logger.error(`Invalid parameters: experimentId: ${experimentId}, step: ${step}`);
         return null;
@@ -200,23 +181,4 @@ async function getExperimentStep(experimentId: number, step: number) {
 
 function isValidContent(content: unknown): content is Record<string, unknown> {
     return typeof content === 'object' && content !== null && !Array.isArray(content);
-}
-
-/**
- * 获取用户最近5条内容
- * @param trail
- */
-async function fetchUserPrompts(trail: dbTrail) {
-    return await db.trail.findMany({
-        where: { user_id: trail.user_id, user_experiment_id: trail.user_experiment_id },
-        select: { prompt: true, generate_prompt: true },
-        orderBy: { create_time: 'desc' },
-        take: 5,
-    });
-}
-
-async function fetchExperiment(userExperimentId: number) {
-    return await db.experiment.findFirst({
-        where: { id: userExperimentId },
-    });
 }

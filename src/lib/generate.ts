@@ -1,83 +1,53 @@
+import OpenAI from 'openai';
 import { logger } from './logger';
 
 require('dotenv').config();
 
-const url = `http://${process.env.CELERY_HOST}/create_task`;
+const client = new OpenAI({
+    baseURL: 'https://ark.cn-beijing.volces.com/api/v3',
+    apiKey: process.env.ARK_API_KEY,
+});
 
-// 超时配置（毫秒）
-const CREATE_TASK_TIMEOUT = 30000; // 创建任务超时 30 秒
-const GET_RESULT_TIMEOUT = 10000; // 获取结果超时 10 秒
+const DOUBAO_MODEL = 'doubao-seedream-3-0-t2i-250415';
+const DEFAULT_SIZE = '1024x1024';
+const GENERATE_TIMEOUT = 60000; // 60 秒
 
 /**
- * 转发到ComfyUI生成接口
- * @param {any} data - The data to send to the generation service.
- * @returns {Promise<any>} - The response data from the service.
- * @throws {Error} - If an error occurs during the fetch request.
+ * 调用 Doubao 图片生成 API
+ * @param prompt 生成提示词
+ * @param size 图片尺寸，默认 1024x1024
+ * @returns 生成图片的 URL
  */
-async function generate(data: any) {
-    logger.debug(`Sending data to ComfyUI: ${JSON.stringify(data)}`);
+async function generateImage(prompt: string, size: string = DEFAULT_SIZE): Promise<string> {
+    const startTime = Date.now();
+    logger.info({ prompt: prompt.substring(0, 100), size }, '开始调用 Doubao 生成图片');
     try {
-        logger.info(`Sending data to ComfyUI: ${url}`);
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ payload: data }),
-            signal: AbortSignal.timeout(CREATE_TASK_TIMEOUT),
-        });
-        if (!response.ok) {
-            // 尝试获取更多错误信息
-            const errorBody = await response.text();
-            const message = `An error has occurred: ${response.status} ${errorBody}`;
-            throw new Error(message);
+        const response = await client.images.generate(
+            {
+                model: DOUBAO_MODEL,
+                prompt,
+                size: size as any,
+                response_format: 'url',
+                watermark: false,
+            } as any,
+            { signal: AbortSignal.timeout(GENERATE_TIMEOUT) }
+        );
+        const url = response.data?.[0]?.url;
+        if (!url) {
+            throw new Error('Doubao API 未返回图片 URL');
         }
-
-        return await response.json();
+        const elapsed = Date.now() - startTime;
+        logger.info({ url: url.substring(0, 80), elapsed }, 'Doubao 生成成功');
+        return url;
     } catch (error) {
+        const elapsed = Date.now() - startTime;
         if (error instanceof Error && error.name === 'TimeoutError') {
-            logger.error(`创建生成任务超时 (${CREATE_TASK_TIMEOUT}ms)`);
-            throw new Error(`创建生成任务超时`);
+            logger.error({ elapsed, timeout: GENERATE_TIMEOUT }, 'Doubao 生成超时');
+            throw new Error('图片生成超时');
         }
-        logger.error(`Failed to send data to ComfyUI: ${error}`);
+        logger.error({ error: String(error), elapsed }, 'Doubao 生成失败');
         throw error;
     }
 }
 
-async function getGenerateResult(task_id: string) {
-    if (!task_id || task_id === undefined) {
-        return {
-            status: 'failed',
-            message: 'task_id is empty or undefined',
-        };
-    }
-
-    try {
-        const result_url = `http://${process.env.CELERY_HOST}/get_result/${task_id}`;
-        const response = await fetch(result_url, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            cache: 'no-cache',
-            signal: AbortSignal.timeout(GET_RESULT_TIMEOUT),
-        });
-        const res = await response.json();
-        return res;
-    } catch (error) {
-        if (error instanceof Error && error.name === 'TimeoutError') {
-            logger.error(`获取生成结果超时 (${GET_RESULT_TIMEOUT}ms)`);
-            return {
-                status: 'failed',
-                message: '获取生成结果超时',
-            };
-        }
-        logger.error(`Failed to get data from ComfyUI: ${error}`);
-        return {
-            status: 'failed',
-            message: error instanceof Error ? error.message : String(error),
-        };
-    }
-}
-
-export { generate, getGenerateResult };
+export { generateImage };

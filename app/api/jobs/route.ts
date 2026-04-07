@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { logger } from '@/lib/logger';
-import { getGenerateResult } from '@/lib/generate';
 
 // 长时间 GENERATING 状态的超时时间（5分钟）
 const GENERATING_TIMEOUT_MINUTES = 5;
@@ -86,87 +85,22 @@ export async function GET(request: Request) {
 
 /**
  * 检查并处理长时间处于 GENERATING 状态的 trail
- * 对于超过指定时间仍为 GENERATING 的任务，重新查询外部服务状态并更新
+ * 由于图片生成已改为同步调用，超时的 GENERATING trail 直接标记为 FAILED
  */
 async function checkStaleGeneratingTrails() {
     try {
-        // 查找超过 5 分钟仍为 GENERATING 状态的 trail
-        const staleTrails = await db.trail.findMany({
+        const result = await db.trail.updateMany({
             where: {
                 state: 'GENERATING',
                 create_time: {
                     lt: new Date(Date.now() - GENERATING_TIMEOUT_MINUTES * 60 * 1000),
                 },
-                request_id: {
-                    not: null,
-                },
             },
-            select: {
-                id: true,
-                nano_id: true,
-                request_id: true,
-                create_time: true,
-            },
-            take: 20, // 每次最多处理 20 个，避免阻塞过长
+            data: { state: 'FAILED', update_time: new Date() },
         });
 
-        if (staleTrails.length === 0) {
-            return;
-        }
-
-        logger.info(`发现 ${staleTrails.length} 个长时间 GENERATING 的 trail，开始补偿检查`);
-
-        for (const trail of staleTrails) {
-            if (!trail.request_id) {
-                // 没有 request_id，直接标记为失败
-                await db.trail.update({
-                    where: { id: trail.id },
-                    data: { state: 'FAILED', update_time: new Date() },
-                });
-                logger.warn(`trail ${trail.nano_id} 无 request_id，标记为 FAILED`);
-                continue;
-            }
-
-            try {
-                // 查询外部服务状态
-                const result = await getGenerateResult(trail.request_id);
-
-                if (result.status === 'completed' && result.result) {
-                    // 任务已完成，更新状态
-                    await db.trail.update({
-                        where: { id: trail.id },
-                        data: {
-                            state: 'SUCCESS',
-                            image_url: result.result.image_url,
-                            generate_prompt: result.result.chat_result,
-                            update_time: new Date(),
-                        },
-                    });
-                    logger.info(`trail ${trail.nano_id} 补偿成功，任务已完成`);
-                } else if (result.status === 'failed') {
-                    // 任务失败
-                    await db.trail.update({
-                        where: { id: trail.id },
-                        data: { state: 'FAILED', update_time: new Date() },
-                    });
-                    logger.warn(`trail ${trail.nano_id} 外部服务返回失败: ${result.message}`);
-                } else if (result.status === 'pending') {
-                    // 仍在处理中，检查是否超时过久（超过 10 分钟直接标记失败）
-                    const ageMinutes = trail.create_time
-                        ? (Date.now() - new Date(trail.create_time).getTime()) / 1000 / 60
-                        : 0;
-                    if (ageMinutes > 10) {
-                        await db.trail.update({
-                            where: { id: trail.id },
-                            data: { state: 'TIMEOUT', update_time: new Date() },
-                        });
-                        logger.warn(`trail ${trail.nano_id} 超过 10 分钟仍在处理，标记为 TIMEOUT`);
-                    }
-                }
-            } catch (error) {
-                logger.error(`补偿检查 trail ${trail.nano_id} 时出错: ${error}`);
-                // 查询失败不立即标记为失败，等待下次检查
-            }
+        if (result.count > 0) {
+            logger.info(`已将 ${result.count} 个超时 GENERATING trail 标记为 FAILED`);
         }
     } catch (error) {
         logger.error(`检查长时间 GENERATING trail 失败: ${error}`);

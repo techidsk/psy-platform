@@ -8,6 +8,9 @@
     "type-check": "tsc --noEmit",
     "start": "next start -p 4545",
     "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:int": "vitest run tests/generate.integration.test.ts --reporter=verbose",
     "postinstall": "prisma generate",
     "prepare": "husky install"
   },
@@ -42,6 +45,7 @@
     "next-auth": "5.0.0-beta.30",
     "node-cron": "^4.0.4",
     "node-fetch": "^3.3.2",
+    "openai": "^6.33.0",
     "pino": "^8.19.0",
     "pino-pretty": "^10.3.1",
     "prettier": "^3.2.5",
@@ -79,7 +83,8 @@
     "postcss": "^8.4.37",
     "postcss-nesting": "^12.1.2",
     "prisma": "^5.13.0",
-    "tailwindcss": "^4.1.18"
+    "tailwindcss": "^4.1.18",
+    "vitest": "^4.1.2"
   },
   "prettier": {
     "printWidth": 100,
