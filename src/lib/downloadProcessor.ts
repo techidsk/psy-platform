@@ -9,14 +9,7 @@ import path from 'path';
 import { promises as fs } from 'fs';
 import os from 'os';
 
-// 方案1：使用系统临时目录（推荐）
 const tempDir = path.join(os.tmpdir(), 'psy-platform');
-
-// 方案2：使用环境变量
-// const tempDir = process.env.TEMP_DIR || '/tmp/psy-platform';
-
-// 方案3：使用固定的绝对路径
-// const tempDir = '/tmp/psy-platform';
 
 async function processDownload(job: Job) {
     const { searchParams, includeExperimentRecord, includeInputRecord, currentUser } = job.data;
@@ -80,61 +73,23 @@ async function processDownload(job: Job) {
         }
 
         logger.info(`Job ${job.id}: Total files added to zip: ${addedFiles}`);
-        logger.info(`Job ${job.id}: Generating final zip content`);
-        const zipContent = await zip.generateAsync({ type: 'blob' });
 
-        logger.info(`Job ${job.id}: Zip content size: ${zipContent.size} bytes`);
+        const zipBuffer = await zip.generateAsync({ type: 'nodebuffer' });
 
-        if (zipContent.size === 0) {
-            logger.error(`Job ${job.id}: Generated zip is empty`);
+        if (zipBuffer.length === 0) {
             throw new Error('Generated zip is empty');
         }
 
         const tempFilePath = path.join(tempDir, `${job.id}.zip`);
-        logger.info(`Preparing to write zip file to: ${tempFilePath}`);
 
-        // 确保临时目录存在
-        try {
-            await fs.mkdir(tempDir, { recursive: true });
-            logger.info(`Temporary directory ensured: ${tempDir}`);
-        } catch (mkdirError) {
-            logger.error(`Failed to create temporary directory: ${mkdirError}`);
-            throw mkdirError;
-        }
-
-        // 将 ZIP 内容保存到临时文件
-        try {
-            await fs.writeFile(tempFilePath, Buffer.from(await zipContent.arrayBuffer()));
-            logger.info(`Successfully wrote zip file to: ${tempFilePath}`);
-        } catch (writeError) {
-            logger.error(`Failed to write zip file: ${writeError}`);
-            throw writeError;
-        }
-
-        // 检查文件是否确实被创建
-        try {
-            const stats = await fs.stat(tempFilePath);
-            logger.info(`File created successfully. Size: ${stats.size} bytes`);
-        } catch (statError) {
-            logger.error(`Failed to verify file creation: ${statError}`);
-            throw statError;
-        }
-
-        // 设置任务状态为完成
-        await job.update({ state: 'completed' });
-        logger.info(`Job ${job.id} completed successfully`);
+        await fs.mkdir(tempDir, { recursive: true });
+        await fs.writeFile(tempFilePath, new Uint8Array(zipBuffer));
+        logger.info(`Job ${job.id}: Zip written to ${tempFilePath} (${zipBuffer.length} bytes)`);
 
         return { tempFilePath, completed: true };
     } catch (error) {
         logger.error(`Job ${job.id}: Error processing download: ${error}`);
-
-        // 设置任务状态为失败
-        await job.update({
-            state: 'failed',
-            failedReason: error instanceof Error ? error.message : String(error),
-        });
-
-        return { error: String(error), completed: false };
+        throw error;
     }
 }
 
@@ -200,8 +155,8 @@ const fetchZipFile = async (
         const arrayBuffer = await response.arrayBuffer();
         return arrayBuffer;
     } catch (error) {
-        console.error(`Failed to fetch or process the blob: ${error}`);
-        return null; // Return null to indicate failure
+        logger.error(`Failed to fetch zip for nano_id=${nano_id}: ${error}`);
+        return null;
     }
 };
 
