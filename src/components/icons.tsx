@@ -1,6 +1,8 @@
 import {
     ChevronLeft,
     ChevronRight,
+    ChevronsLeft,
+    ChevronsRight,
     Command,
     Loader2,
     Plus,
@@ -79,6 +81,8 @@ export const Icons = {
     spinner: Loader2,
     chevronLeft: ChevronLeft,
     chevronRight: ChevronRight,
+    chevronsLeft: ChevronsLeft,
+    chevronsRight: ChevronsRight,
     folder: FolderOpen,
     settings: Settings,
     add: Plus,
