@@ -2,6 +2,7 @@ import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import { getId } from '@/lib/nano-id';
 import { getUserGroupExperiments } from '@/lib/user_experiment';
+import { getCurrentUser } from '@/lib/session';
 import { logger } from '@/lib/logger';
 
 /**
@@ -12,28 +13,53 @@ import { logger } from '@/lib/logger';
 export async function POST(request: Request) {
     const data = await request.json();
     const guest = data['guest'] || false;
+    const test = data['test'] || false;
     const guestUserNanoId = data['guestUserNanoId'] || '';
     const prevUserExperimentNanoId = data['prevUserExperimentNanoId'] || '';
     const part: number = (data['part'] as any as number) || 0;
 
-    const {
-        status: status,
-        message: message,
-        project_group_id: projectGroupId,
-        experiment_id: experimentId,
-        user_id: userId,
-    } = await getUserGroupExperiments(guest, guestUserNanoId);
+    let projectGroupId: number;
+    let experimentId: number;
+    let userId: number;
 
-    if (status !== 200) {
-        return NextResponse.json({ msg: message });
-    }
+    if (test) {
+        // 测试模式：跳过 project/group 链路，直接使用当前登录用户
+        const currentUser = await getCurrentUser();
+        if (!currentUser) {
+            return NextResponse.json({ msg: '用户未登录' }, { status: 401 });
+        }
+        if (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPERADMIN') {
+            return NextResponse.json({ msg: '无权限使用测试模式' }, { status: 403 });
+        }
+        userId = parseInt(currentUser.id);
+        projectGroupId = 0; // 标记为测试数据
+        // 通过 experimentNanoId 查找实验获取 experimentId
+        const experiment = await db.experiment.findFirst({
+            where: { nano_id: data['experimentId'] },
+        });
+        if (!experiment) {
+            return NextResponse.json({ msg: '实验不存在' }, { status: 404 });
+        }
+        experimentId = experiment.id;
+        logger.info(`[测试模式] 用户 ${userId} 直接进入实验 ${experimentId}`);
+    } else {
+        const result = await getUserGroupExperiments(guest, guestUserNanoId);
 
-    if (!projectGroupId) {
-        return NextResponse.json({ msg: '项目分组不存在' });
-    }
+        if (result.status !== 200) {
+            return NextResponse.json({ msg: result.message });
+        }
 
-    if (!userId) {
-        return NextResponse.json({ msg: '未找到合法的用户ID' });
+        projectGroupId = result.project_group_id;
+        experimentId = result.experiment_id;
+        userId = result.user_id!;
+
+        if (!projectGroupId) {
+            return NextResponse.json({ msg: '项目分组不存在' });
+        }
+
+        if (!userId) {
+            return NextResponse.json({ msg: '未找到合法的用户ID' });
+        }
     }
 
     // 获取实验属性

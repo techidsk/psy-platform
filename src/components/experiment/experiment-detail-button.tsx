@@ -33,6 +33,10 @@ export function ExperimentDetailButton({ experiment }: ExperimentDetailProps) {
         router.push(`/experiment/${experiment.nano_id}`);
     }
 
+    function testExperiment() {
+        router.push(`/test/experiment/${experiment.nano_id}`);
+    }
+
     function editExperiment() {
         if (experiment.lock === 1) {
             toast({
@@ -132,6 +136,10 @@ export function ExperimentDetailButton({ experiment }: ExperimentDetailProps) {
                     {/* <button className="btn btn-ghost btn-sm" onClick={showDetail}>
                         查看详情
                     </button> */}
+                    <button className="btn btn-ghost btn-sm" onClick={testExperiment}>
+                        <Icons.play size={16} />
+                        测试
+                    </button>
                     <button className="btn btn-ghost btn-sm" onClick={editExperiment}>
                         <Icons.edit size={16} />
                         编辑

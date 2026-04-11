@@ -60,6 +60,8 @@ interface ExperimentTimelineProps {
     nextExperimentId: number; // 用户需要进行的下一组实验ID
     userId: number;
     guest?: boolean;
+    test?: boolean;
+    testExperimentNanoId?: string;
     guestUserNanoId?: string;
     stepIndex?: number; // 当前实验的步骤
     userExperimentNanoId: string; // 本次实验中的 实验nano_id
@@ -73,6 +75,8 @@ export default async function ExperimentTimeline({
     guestUserNanoId,
     stepIndex = 1,
     guest = false,
+    test = false,
+    testExperimentNanoId,
     userExperimentNanoId,
 }: ExperimentTimelineProps) {
     logger.info(
@@ -83,6 +87,9 @@ export default async function ExperimentTimeline({
     const user = await getUserPrivacy(userId);
     if (!user) {
         logger.warn(`用户${userId}不存在`);
+        if (test) {
+            redirect('/dashboard');
+        }
         if (guest) {
             redirect('/guest/closed/30002');
         }
@@ -91,6 +98,9 @@ export default async function ExperimentTimeline({
 
     if (!user.nano_id) {
         logger.warn(`用户${userId}没有绑定nano_id`);
+        if (test) {
+            redirect('/dashboard');
+        }
         if (guest) {
             redirect('/guest/closed/30002');
         }
@@ -122,6 +132,9 @@ export default async function ExperimentTimeline({
             variant: 'destructive',
             duration: 5000,
         });
+        if (test) {
+            redirect('/dashboard');
+        }
         if (guest) {
             redirect('/guest/closed/30002');
         }
@@ -136,6 +149,8 @@ export default async function ExperimentTimeline({
                 userId={userId}
                 guestUserNanoId={guestUserNanoId}
                 guest={guest}
+                test={test}
+                testExperimentNanoId={testExperimentNanoId}
                 userNanoId={userNanoId}
                 targetStepIndex={stepIndex}
                 userExperimentNanoId={userExperimentNanoId}

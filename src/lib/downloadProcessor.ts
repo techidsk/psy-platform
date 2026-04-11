@@ -123,7 +123,7 @@ async function getFilteredExperiments(searchParams: any, currentUser: any, role:
             GROUP BY project_group_id
         ) pge ON pge.project_group_id = e.project_group_id
         LEFT JOIN experiment_steps es ON es.experiment_id = e.experiment_id and es.order = e.part
-        WHERE 1 = 1 
+        WHERE 1 = 1 AND e.project_group_id > 0
         ${role === 'USER' ? Prisma.sql`and e.user_id = ${currentUser.id}` : Prisma.empty}
         ${role === 'ASSITANT' ? Prisma.sql`and e.manager_id = ${currentUser.id}` : Prisma.empty}
         ${start_time ? Prisma.sql`and e.start_time >= ${start_time}` : Prisma.empty}

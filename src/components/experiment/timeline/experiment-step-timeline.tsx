@@ -16,6 +16,8 @@ interface ExperimentTimelineProps {
     userId: number;
     guestUserNanoId?: string;
     guest?: boolean;
+    test?: boolean;
+    testExperimentNanoId?: string;
     userNanoId: string;
     targetStepIndex: number; // 默认是 1
     userExperimentNanoId: string;
@@ -28,6 +30,8 @@ export default function ExperimentStepTimeline({
     userId,
     guestUserNanoId,
     guest,
+    test,
+    testExperimentNanoId,
     userNanoId,
     targetStepIndex,
     userExperimentNanoId,
@@ -99,6 +103,8 @@ export default function ExperimentStepTimeline({
                 userId={userId}
                 experimentNanoId={experiment.nano_id || ''}
                 guest={guest}
+                test={test}
+                testExperimentNanoId={testExperimentNanoId}
                 guestUserNanoId={guestUserNanoId}
                 userNanoId={userNanoId}
                 experimentSteps={experimentSteps}
@@ -151,6 +157,8 @@ interface TemplateProps {
     userId: number;
     experimentNanoId: string;
     guest?: boolean;
+    test?: boolean;
+    testExperimentNanoId?: string;
     guestUserNanoId?: string;
     userNanoId: string;
     experimentSteps: experiment_steps[]; // 总实验步数
@@ -167,6 +175,8 @@ function Template({
     userId,
     experimentNanoId,
     guest,
+    test,
+    testExperimentNanoId,
     guestUserNanoId,
     userNanoId,
     experimentSteps,
@@ -219,6 +229,8 @@ function Template({
                                         showUserPrivacy={showUserPrivacy}
                                         userId={userId}
                                         guest={guest}
+                                        test={test}
+                                        testExperimentNanoId={testExperimentNanoId}
                                         guestUserNanoId={guestUserNanoId}
                                         action={nextStep}
                                         currentStepIndex={currentIndex + 1}
