@@ -1,4 +1,4 @@
-import { db } from '@/lib/db';
+import { db, joinConditions } from '@/lib/db';
 import { DashboardHeader } from '@/components/dashboard-header';
 import { Table } from '@/components/table/table';
 import { TableConfig } from '@/types/table';
@@ -80,7 +80,7 @@ async function getUsers(
     if (user_role) {
         conditions.push(Prisma.sql`u.user_role LIKE ${'%' + user_role + '%'}`);
     }
-    const whereClause = Prisma.join(conditions, ' AND ');
+    const whereClause = joinConditions(conditions);
 
     const users = await db.$queryRaw<UserTableProps[]>`
         SELECT u.id, u.username, u.email, u.tel, u.avatar, u.user_role, u.create_time, u.qualtrics, u.last_login_time, u.wechat_id,

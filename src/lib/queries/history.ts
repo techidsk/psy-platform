@@ -1,4 +1,4 @@
-import { db } from '@/lib/db';
+import { db, joinConditions } from '@/lib/db';
 import { Prisma } from '@/generated/prisma';
 import { getCurrentUser } from '@/lib/session';
 
@@ -113,7 +113,7 @@ export async function getExperimentHistory(
     if (experiment_name) {
         conditions.push(Prisma.sql`eper.experiment_name like ${'%' + experiment_name + '%'}`);
     }
-    const whereClause = Prisma.join(conditions, ' AND ');
+    const whereClause = joinConditions(conditions);
 
     const experiments = await db.$queryRaw<ExperimentHistoryRecord[]>`
         SELECT e.*, u.username, u.avatar, u.qualtrics, n.engine_name, n.engine_image,

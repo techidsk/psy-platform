@@ -1,5 +1,5 @@
 import { Job } from 'bull';
-import { db } from '@/lib/db';
+import { db, joinConditions } from '@/lib/db';
 import JSZip from 'jszip';
 import { Prisma } from '@/generated/prisma';
 import { logger } from '@/lib/logger';
@@ -132,7 +132,7 @@ async function getFilteredExperiments(searchParams: any, currentUser: any, role:
     if (experiment_name) {
         conditions.push(Prisma.sql`eper.experiment_name like ${'%' + experiment_name + '%'}`);
     }
-    const whereClause = Prisma.join(conditions, ' AND ');
+    const whereClause = joinConditions(conditions);
 
     return await db.$queryRaw<any[]>`
         SELECT e.*, u.username, u.avatar, u.qualtrics, n.engine_name, n.engine_image,

@@ -1,4 +1,4 @@
-import { db } from '@/lib/db';
+import { db, joinConditions } from '@/lib/db';
 import { DashboardHeader } from '@/components/dashboard-header';
 import { Table } from '@/components/table/table';
 import { TableConfig } from '@/types/table';
@@ -52,7 +52,7 @@ async function getProjectGroups(
     if (state) {
         conditions.push(Prisma.sql`g.state LIKE ${'%' + state + '%'}`);
     }
-    const whereClause = Prisma.join(conditions, ' AND ');
+    const whereClause = joinConditions(conditions);
 
     const projectGroups = await db.$queryRaw<ProjectGroupTableProps[]>`
         SELECT g.*, p.project_name,

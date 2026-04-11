@@ -3,7 +3,7 @@ import { State } from '@/components/state';
 import { Table } from '@/components/table/table';
 import { dateFormat } from '@/lib/date';
 import { getCurrentUser } from '@/lib/session';
-import { db } from '@/lib/db';
+import { db, joinConditions } from '@/lib/db';
 import { TableConfig } from '@/types/table';
 import { ExperimentDetailButton } from '@/components/experiment/experiment-detail-button';
 import { ExperimentCreateButton } from '@/components/experiment/experiment-create-button';
@@ -43,7 +43,7 @@ const getExperiments = cache(
         if (engine_name) {
             conditions.push(Prisma.sql`en.engine_name LIKE ${'%' + engine_name + '%'}`);
         }
-        const whereClause = Prisma.join(conditions, ' AND ');
+        const whereClause = joinConditions(conditions);
 
         const experiments = await db.$queryRaw<any[]>`
         SELECT

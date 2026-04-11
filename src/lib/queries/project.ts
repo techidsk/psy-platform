@@ -1,4 +1,4 @@
-import { db } from '@/lib/db';
+import { db, joinConditions } from '@/lib/db';
 import { Prisma } from '@/generated/prisma';
 import { getCurrentUser } from '@/lib/session';
 import { dateFormat } from '@/lib/date';
@@ -71,7 +71,7 @@ export async function getProjects(
     } else if (state) {
         conditions.push(Prisma.sql`p.state = ${state}`);
     }
-    const whereClause = Prisma.join(conditions, ' AND ');
+    const whereClause = joinConditions(conditions);
 
     const projects = await db.$queryRaw<ProjectRecord[]>`
         SELECT * from projects p
