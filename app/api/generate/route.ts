@@ -112,7 +112,8 @@ export async function POST(request: Request) {
         let finalUrl: string = imageUrl;
         try {
             const ossPath = `trail/${promptNanoId}.png`;
-            const imgBuffer = Buffer.from(await fetch(imageUrl).then((r) => r.arrayBuffer()));
+            const ab = await fetch(imageUrl).then((r) => r.arrayBuffer());
+            const imgBuffer = Buffer.from(ab as ArrayBuffer);
             const ossUrl = await uploadFile(imgBuffer, ossPath);
             if (ossUrl) {
                 finalUrl = ossUrl;
