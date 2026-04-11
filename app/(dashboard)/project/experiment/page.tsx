@@ -30,7 +30,7 @@ async function getExperiments(
         AND e.id NOT IN (
             SELECT experiment_id FROM project_group_experiments GROUP BY experiment_id
         )
-        LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
+        LIMIT ${Prisma.raw(String(Number(pageSize)))} OFFSET ${Prisma.raw(String(Number((page - 1) * pageSize)))}
     `;
 
     return experiments;

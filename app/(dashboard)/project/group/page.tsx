@@ -37,7 +37,7 @@ async function getProjectGroups(
     const projectGroups = await db.$queryRaw<ProjectGroupTableProps[]>`
         SELECT * from project_group
         WHERE state = 'UNASSIGNED'
-        LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
+        LIMIT ${Prisma.raw(String(Number(pageSize)))} OFFSET ${Prisma.raw(String(Number((page - 1) * pageSize)))}
     `;
 
     return projectGroups;

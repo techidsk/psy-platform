@@ -110,7 +110,7 @@ export async function getExperimentHistory(
         ${group_name ? Prisma.sql`and g.group_name like ${`%${group_name}%`}` : Prisma.empty}
         ${experiment_name ? Prisma.sql`and eper.experiment_name like ${`%${experiment_name}%`}` : Prisma.empty}
         ${orderBySql}
-        LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
+        LIMIT ${Prisma.raw(String(Number(pageSize)))} OFFSET ${Prisma.raw(String(Number((page - 1) * pageSize)))}
     `;
 
     return formatExperimentHistory(experiments);

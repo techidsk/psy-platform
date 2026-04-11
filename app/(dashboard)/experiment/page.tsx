@@ -66,8 +66,8 @@ const getExperiments = cache(
             e.id
         ORDER BY 
             e.id DESC
-        LIMIT 
-            ${pageSize} OFFSET ${(page - 1) * pageSize}
+        LIMIT
+            ${Prisma.raw(String(Number(pageSize)))} OFFSET ${Prisma.raw(String(Number((page - 1) * pageSize)))}
     `;
 
         return experiments.map((experiment) => {

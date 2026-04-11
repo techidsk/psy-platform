@@ -63,7 +63,7 @@ async function getProjectGroups(
         }
         ${state ? Prisma.sql`AND g.state LIKE '%${Prisma.raw(state)}%'` : Prisma.empty}
         GROUP BY g.id, p.project_name
-        LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
+        LIMIT ${Prisma.raw(String(Number(pageSize)))} OFFSET ${Prisma.raw(String(Number((page - 1) * pageSize)))}
     `;
 
     return projectGroups;

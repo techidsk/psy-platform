@@ -77,7 +77,7 @@ async function getUsers(
         }
         ${user_role ? Prisma.sql`AND u.user_role LIKE '%${Prisma.raw(user_role)}%'` : Prisma.empty}
         GROUP BY u.id, u.manager_id
-        LIMIT ${pageSize} OFFSET ${(page - 1) * pageSize}
+        LIMIT ${Prisma.raw(String(Number(pageSize)))} OFFSET ${Prisma.raw(String(Number((page - 1) * pageSize)))}
     `;
 
     return users.map((user) => {
