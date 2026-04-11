@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from '@/generated/prisma';
+import { PrismaClient } from '@/generated/prisma';
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 
 declare global {
@@ -24,17 +24,28 @@ if (process.env.NODE_ENV === 'production') {
 export const db = prisma;
 
 /**
- * 将多个 Prisma.Sql 条件用 AND 拼接，兼容 MariaDB 驱动适配器。
- * Prisma.join 在 adapter-mariadb 下对 Prisma.Sql 片段处理有问题，
- * 这里用 Prisma.sql 链式拼接保证参数正确传递。
+ * 构建动态 WHERE 子句，兼容 adapter-mariadb 驱动适配器。
+ *
+ * adapter-mariadb 下 Prisma.raw / Prisma.empty / Prisma.join 对 $queryRaw
+ * 标签模板的处理有已知问题，会把本应内联的 SQL 片段变成 `?` 占位符。
+ * 这里改用 $queryRawUnsafe + 手动参数数组的方式，确保：
+ * - 用户输入通过 `?` 参数化防止 SQL 注入
+ * - ORDER BY / LIMIT / OFFSET 等动态 SQL 直接拼入字符串（值来自白名单或 Number()）
  */
-export function joinConditions(conditions: Prisma.Sql[]): Prisma.Sql {
-    if (conditions.length === 0) return Prisma.sql`1 = 1`;
-    let result = conditions[0];
-    for (let i = 1; i < conditions.length; i++) {
-        result = Prisma.sql`${result} AND ${conditions[i]}`;
+export class QueryBuilder {
+    private parts: string[] = [];
+    private params: unknown[] = [];
+
+    where(sql: string, ...values: unknown[]): this {
+        this.parts.push(sql);
+        this.params.push(...values);
+        return this;
     }
-    return result;
+
+    build(): { sql: string; params: unknown[] } {
+        const whereSql = this.parts.length > 0 ? this.parts.join(' AND ') : '1 = 1';
+        return { sql: whereSql, params: this.params };
+    }
 }
 
 export function convertBigIntToString(obj: any) {

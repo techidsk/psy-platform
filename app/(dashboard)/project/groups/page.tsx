@@ -1,4 +1,4 @@
-import { db, joinConditions } from '@/lib/db';
+import { db, QueryBuilder } from '@/lib/db';
 import { DashboardHeader } from '@/components/dashboard-header';
 import { Table } from '@/components/table/table';
 import { TableConfig } from '@/types/table';
@@ -42,31 +42,32 @@ async function getProjectGroups(
     const state = searchParams?.state || null;
 
     // 判断当前用户角色
-    const conditions: Prisma.Sql[] = [Prisma.sql`1 = 1`];
+    const qb = new QueryBuilder();
+    qb.where('1 = 1');
     if (group_name) {
-        conditions.push(Prisma.sql`g.group_name LIKE ${'%' + group_name + '%'}`);
+        qb.where('g.group_name LIKE ?', '%' + group_name + '%');
     }
     if (project_name) {
-        conditions.push(Prisma.sql`p.project_name LIKE ${'%' + project_name + '%'}`);
+        qb.where('p.project_name LIKE ?', '%' + project_name + '%');
     }
     if (state) {
-        conditions.push(Prisma.sql`g.state LIKE ${'%' + state + '%'}`);
+        qb.where('g.state LIKE ?', '%' + state + '%');
     }
-    const whereClause = joinConditions(conditions);
+    const { sql: whereSql, params } = qb.build();
 
-    const projectGroups = await db.$queryRaw<ProjectGroupTableProps[]>`
-        SELECT g.*, p.project_name,
+    const projectGroups = await db.$queryRawUnsafe<ProjectGroupTableProps[]>(
+        `SELECT g.*, p.project_name,
         COUNT(DISTINCT ug.user_id) AS user_num,
         COUNT(DISTINCT ge.id) AS experiment_num
         FROM project_group g
         LEFT JOIN projects p ON g.project_id = p.id
         LEFT JOIN user_group ug ON ug.project_group_id = g.id AND ug.project_id = p.id
         LEFT JOIN project_group_experiments ge ON ge.project_group_id = g.id
-        WHERE
-            ${whereClause}
+        WHERE ${whereSql}
         GROUP BY g.id, p.project_name
-        LIMIT ${Prisma.raw(String(Number(pageSize)))} OFFSET ${Prisma.raw(String(Number((page - 1) * pageSize)))}
-    `;
+        LIMIT ${Number(pageSize)} OFFSET ${Number((page - 1) * pageSize)}`,
+        ...params
+    );
 
     return projectGroups;
 }

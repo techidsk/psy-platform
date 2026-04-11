@@ -1,4 +1,4 @@
-import { db, joinConditions } from '@/lib/db';
+import { db, QueryBuilder } from '@/lib/db';
 import { DashboardHeader } from '@/components/dashboard-header';
 import { Table } from '@/components/table/table';
 import { TableConfig } from '@/types/table';
@@ -52,48 +52,47 @@ async function getUsers(
     const group_name = searchParams?.group_name || '';
     const user_role = searchParams?.role || '';
     // 判断当前用户角色
-    const conditions: Prisma.Sql[] = [
-        Prisma.sql`u.deleted = 0`,
-        Prisma.sql`u.user_role != 'SUPERADMIN'`,
-    ];
+    const qb = new QueryBuilder();
+    qb.where('u.deleted = 0');
+    qb.where("u.user_role != 'SUPERADMIN'");
     if (role !== 'ADMIN') {
-        conditions.push(Prisma.sql`u.manager_id = ${currentUser.id}`);
+        qb.where('u.manager_id = ?', currentUser.id);
     }
     if (username) {
-        conditions.push(Prisma.sql`u.username LIKE ${'%' + username + '%'}`);
+        qb.where('u.username LIKE ?', '%' + username + '%');
     }
     if (email) {
-        conditions.push(Prisma.sql`u.email LIKE ${'%' + email + '%'}`);
+        qb.where('u.email LIKE ?', '%' + email + '%');
     }
     if (tel) {
-        conditions.push(Prisma.sql`u.tel LIKE ${'%' + tel + '%'}`);
+        qb.where('u.tel LIKE ?', '%' + tel + '%');
     }
     if (qualtrics) {
-        conditions.push(Prisma.sql`u.qualtrics LIKE ${'%' + qualtrics + '%'}`);
+        qb.where('u.qualtrics LIKE ?', '%' + qualtrics + '%');
     }
     if (wechat_id) {
-        conditions.push(Prisma.sql`u.wechat_id LIKE ${'%' + wechat_id + '%'}`);
+        qb.where('u.wechat_id LIKE ?', '%' + wechat_id + '%');
     }
     if (group_name) {
-        conditions.push(Prisma.sql`pg.group_name LIKE ${'%' + group_name + '%'}`);
+        qb.where('pg.group_name LIKE ?', '%' + group_name + '%');
     }
     if (user_role) {
-        conditions.push(Prisma.sql`u.user_role LIKE ${'%' + user_role + '%'}`);
+        qb.where('u.user_role LIKE ?', '%' + user_role + '%');
     }
-    const whereClause = joinConditions(conditions);
+    const { sql: whereSql, params } = qb.build();
 
-    const users = await db.$queryRaw<UserTableProps[]>`
-        SELECT u.id, u.username, u.email, u.tel, u.avatar, u.user_role, u.create_time, u.qualtrics, u.last_login_time, u.wechat_id,
+    const users = await db.$queryRawUnsafe<UserTableProps[]>(
+        `SELECT u.id, u.username, u.email, u.tel, u.avatar, u.user_role, u.create_time, u.qualtrics, u.last_login_time, u.wechat_id,
         count(m.id) as manager_count, pg.group_name as user_group_name
         FROM user u
         LEFT JOIN user m ON u.id = m.manager_id
         LEFT JOIN user_group g ON g.id = u.user_group_id
         LEFT JOIN project_group pg ON pg.id = g.project_group_id
-        WHERE
-            ${whereClause}
+        WHERE ${whereSql}
         GROUP BY u.id, u.manager_id
-        LIMIT ${Prisma.raw(String(Number(pageSize)))} OFFSET ${Prisma.raw(String(Number((page - 1) * pageSize)))}
-    `;
+        LIMIT ${Number(pageSize)} OFFSET ${Number((page - 1) * pageSize)}`,
+        ...params
+    );
 
     return users.map((user) => {
         return {

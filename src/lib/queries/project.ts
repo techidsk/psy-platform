@@ -1,5 +1,4 @@
-import { db, joinConditions } from '@/lib/db';
-import { Prisma } from '@/generated/prisma';
+import { db, QueryBuilder } from '@/lib/db';
 import { getCurrentUser } from '@/lib/session';
 import { dateFormat } from '@/lib/date';
 
@@ -57,40 +56,39 @@ export async function getProjects(
 
     const currentDate = new Date().toISOString().split('T')[0];
 
-    // 构建排序 SQL
-    const orderBySql = buildOrderBySql(sort_by, sort_order);
-
-    const conditions: Prisma.Sql[] = [Prisma.sql`1 = 1`];
+    const qb = new QueryBuilder();
+    qb.where('1 = 1');
     if (project_name) {
-        conditions.push(Prisma.sql`p.project_name LIKE ${'%' + project_name + '%'}`);
+        qb.where('p.project_name LIKE ?', '%' + project_name + '%');
     }
     if (state === 'AVAILABLE') {
-        conditions.push(Prisma.sql`p.state = 'AVAILABLE' AND p.end_time >= ${currentDate}`);
+        qb.where("p.state = 'AVAILABLE' AND p.end_time >= ?", currentDate);
     } else if (state === 'EXPIRED') {
-        conditions.push(Prisma.sql`p.state = 'AVAILABLE' AND p.end_time < ${currentDate}`);
+        qb.where("p.state = 'AVAILABLE' AND p.end_time < ?", currentDate);
     } else if (state) {
-        conditions.push(Prisma.sql`p.state = ${state}`);
+        qb.where('p.state = ?', state);
     }
-    const whereClause = joinConditions(conditions);
 
-    const projects = await db.$queryRaw<ProjectRecord[]>`
-        SELECT * from projects p
-        WHERE
-            ${whereClause}
+    const { sql: whereSql, params } = qb.build();
+    const orderBySql = buildOrderBySql(sort_by, sort_order);
+
+    const projects = await db.$queryRawUnsafe<ProjectRecord[]>(
+        `SELECT * from projects p
+        WHERE ${whereSql}
         ${orderBySql}
-        LIMIT ${Prisma.raw(String(Number(pageSize)))} OFFSET ${Prisma.raw(String(Number((page - 1) * pageSize)))}
-    `;
+        LIMIT ${Number(pageSize)} OFFSET ${Number((page - 1) * pageSize)}`,
+        ...params
+    );
 
     return formatProjects(projects);
 }
 
 /**
- * 构建排序 SQL 片段
+ * 构建排序 SQL 片段（字段来自白名单，安全拼接）
  */
-function buildOrderBySql(sortBy: string, sortOrder: string): Prisma.Sql {
+function buildOrderBySql(sortBy: string, sortOrder: string): string {
     const order = sortOrder.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
 
-    // 安全的排序字段白名单
     const allowedSortFields: Record<string, string> = {
         id: 'p.id',
         project_name: 'p.project_name',
@@ -100,11 +98,7 @@ function buildOrderBySql(sortBy: string, sortOrder: string): Prisma.Sql {
     };
 
     const field = allowedSortFields[sortBy] || 'p.start_time';
-
-    if (order === 'ASC') {
-        return Prisma.sql`ORDER BY ${Prisma.raw(field)} ASC`;
-    }
-    return Prisma.sql`ORDER BY ${Prisma.raw(field)} DESC`;
+    return `ORDER BY ${field} ${order}`;
 }
 
 /**

@@ -1,5 +1,4 @@
-import { db, joinConditions } from '@/lib/db';
-import { Prisma } from '@/generated/prisma';
+import { db, QueryBuilder } from '@/lib/db';
 import { getCurrentUser } from '@/lib/session';
 
 export interface ExperimentHistoryRecord {
@@ -77,46 +76,43 @@ export async function getExperimentHistory(
         sort_order = 'desc',
     } = searchParams;
 
-    // 构建排序 SQL
-    const orderBySql = buildOrderBySql(sort_by, sort_order);
-
-    const conditions: Prisma.Sql[] = [
-        Prisma.sql`1 = 1`,
-        Prisma.sql`e.state = 'FINISHED'`,
-        Prisma.sql`e.is_deleted = 0`,
-        Prisma.sql`e.project_group_id > 0`,
-    ];
+    const qb = new QueryBuilder();
+    qb.where("e.state = 'FINISHED'");
+    qb.where('e.is_deleted = 0');
+    qb.where('e.project_group_id > 0');
     if (role === 'USER') {
-        conditions.push(Prisma.sql`e.user_id = ${currentUser.id}`);
+        qb.where('e.user_id = ?', currentUser.id);
     }
     if (role === 'ASSITANT') {
-        conditions.push(Prisma.sql`e.manager_id = ${currentUser.id}`);
+        qb.where('e.manager_id = ?', currentUser.id);
     }
     if (start_time) {
-        conditions.push(Prisma.sql`e.start_time >= ${start_time}`);
+        qb.where('e.start_time >= ?', start_time);
     }
     if (finish_time) {
-        conditions.push(Prisma.sql`e.finish_time <= ${finish_time}`);
+        qb.where('e.finish_time <= ?', finish_time);
     }
     if (username) {
-        conditions.push(Prisma.sql`u.username like ${'%' + username + '%'}`);
+        qb.where('u.username like ?', '%' + username + '%');
     }
     if (qualtrics) {
-        conditions.push(Prisma.sql`u.qualtrics like ${'%' + qualtrics + '%'}`);
+        qb.where('u.qualtrics like ?', '%' + qualtrics + '%');
     }
     if (engine_name) {
-        conditions.push(Prisma.sql`n.engine_name like ${'%' + engine_name + '%'}`);
+        qb.where('n.engine_name like ?', '%' + engine_name + '%');
     }
     if (group_name) {
-        conditions.push(Prisma.sql`g.group_name like ${'%' + group_name + '%'}`);
+        qb.where('g.group_name like ?', '%' + group_name + '%');
     }
     if (experiment_name) {
-        conditions.push(Prisma.sql`eper.experiment_name like ${'%' + experiment_name + '%'}`);
+        qb.where('eper.experiment_name like ?', '%' + experiment_name + '%');
     }
-    const whereClause = joinConditions(conditions);
 
-    const experiments = await db.$queryRaw<ExperimentHistoryRecord[]>`
-        SELECT e.*, u.username, u.avatar, u.qualtrics, n.engine_name, n.engine_image,
+    const { sql: whereSql, params } = qb.build();
+    const orderBySql = buildOrderBySql(sort_by, sort_order);
+
+    const experiments = await db.$queryRawUnsafe<ExperimentHistoryRecord[]>(
+        `SELECT e.*, u.username, u.avatar, u.qualtrics, n.engine_name, n.engine_image,
         eper.experiment_name, g.group_name, num, project_group_experiment_num, es.step_name
         FROM user_experiments e
         LEFT JOIN user u ON u.id = e.user_id
@@ -134,22 +130,21 @@ export async function getExperimentHistory(
             GROUP BY project_group_id
         ) pge ON pge.project_group_id = e.project_group_id
         LEFT JOIN experiment_steps es ON es.experiment_id = e.experiment_id and es.order = e.part
-        WHERE
-            ${whereClause}
+        WHERE ${whereSql}
         ${orderBySql}
-        LIMIT ${Prisma.raw(String(Number(pageSize)))} OFFSET ${Prisma.raw(String(Number((page - 1) * pageSize)))}
-    `;
+        LIMIT ${Number(pageSize)} OFFSET ${Number((page - 1) * pageSize)}`,
+        ...params
+    );
 
     return formatExperimentHistory(experiments);
 }
 
 /**
- * 构建排序 SQL 片段
+ * 构建排序 SQL 片段（字段来自白名单，安全拼接）
  */
-function buildOrderBySql(sortBy: string, sortOrder: string): Prisma.Sql {
+function buildOrderBySql(sortBy: string, sortOrder: string): string {
     const order = sortOrder.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
 
-    // 安全的排序字段白名单
     const allowedSortFields: Record<string, string> = {
         id: 'e.id',
         start_time: 'e.start_time',
@@ -161,12 +156,7 @@ function buildOrderBySql(sortBy: string, sortOrder: string): Prisma.Sql {
     };
 
     const field = allowedSortFields[sortBy] || 'e.id';
-
-    // 由于 Prisma 不支持动态 ORDER BY，我们使用原始 SQL
-    if (order === 'ASC') {
-        return Prisma.sql`ORDER BY ${Prisma.raw(field)} ASC`;
-    }
-    return Prisma.sql`ORDER BY ${Prisma.raw(field)} DESC`;
+    return `ORDER BY ${field} ${order}`;
 }
 
 /**

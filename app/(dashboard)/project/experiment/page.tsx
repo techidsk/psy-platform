@@ -23,15 +23,16 @@ async function getExperiments(
     }
 
     const projectGroupId = searchParams.project_group_id;
-    const experiments = await db.$queryRaw<ExperimentTableProps[]>`
-        SELECT * from experiment e
-        WHERE creator = ${parseInt(currentUser?.id)}
+    const experiments = await db.$queryRawUnsafe<ExperimentTableProps[]>(
+        `SELECT * from experiment e
+        WHERE creator = ?
         AND available = 1
         AND e.id NOT IN (
             SELECT experiment_id FROM project_group_experiments GROUP BY experiment_id
         )
-        LIMIT ${Prisma.raw(String(Number(pageSize)))} OFFSET ${Prisma.raw(String(Number((page - 1) * pageSize)))}
-    `;
+        LIMIT ${Number(pageSize)} OFFSET ${Number((page - 1) * pageSize)}`,
+        parseInt(currentUser?.id)
+    );
 
     return experiments;
 }

@@ -3,7 +3,7 @@ import { State } from '@/components/state';
 import { Table } from '@/components/table/table';
 import { dateFormat } from '@/lib/date';
 import { getCurrentUser } from '@/lib/session';
-import { db, joinConditions } from '@/lib/db';
+import { db, QueryBuilder } from '@/lib/db';
 import { TableConfig } from '@/types/table';
 import { ExperimentDetailButton } from '@/components/experiment/experiment-detail-button';
 import { ExperimentCreateButton } from '@/components/experiment/experiment-create-button';
@@ -27,45 +27,43 @@ const getExperiments = cache(
         const experiment_name = searchParams?.experiment_name || '';
         const engine_name = searchParams?.engine_name || '';
 
-        const conditions: Prisma.Sql[] = [
-            Prisma.sql`e.creator = ${currentUser.id}`,
-            Prisma.sql`e.available = 1`,
-        ];
+        const qb = new QueryBuilder();
+        qb.where('e.creator = ?', currentUser.id);
+        qb.where('e.available = 1');
         if (project_name) {
-            conditions.push(Prisma.sql`p.project_name LIKE ${'%' + project_name + '%'}`);
+            qb.where('p.project_name LIKE ?', '%' + project_name + '%');
         }
         if (project_group_name) {
-            conditions.push(Prisma.sql`pg.group_name LIKE ${'%' + project_group_name + '%'}`);
+            qb.where('pg.group_name LIKE ?', '%' + project_group_name + '%');
         }
         if (experiment_name) {
-            conditions.push(Prisma.sql`e.experiment_name LIKE ${'%' + experiment_name + '%'}`);
+            qb.where('e.experiment_name LIKE ?', '%' + experiment_name + '%');
         }
         if (engine_name) {
-            conditions.push(Prisma.sql`en.engine_name LIKE ${'%' + engine_name + '%'}`);
+            qb.where('en.engine_name LIKE ?', '%' + engine_name + '%');
         }
-        const whereClause = joinConditions(conditions);
+        const { sql: whereSql, params } = qb.build();
 
-        const experiments = await db.$queryRaw<any[]>`
-        SELECT
-            e.*,
-            MAX(p.project_name) AS project_name,
-            MAX(pg.group_name) AS group_name,
-            GROUP_CONCAT(DISTINCT CONCAT(en.engine_name, '_', en.engine_image, '_', en.id)) AS engines
-        FROM
-            experiment e
-            LEFT JOIN engine en ON JSON_CONTAINS(e.engine_ids, CAST(en.id AS JSON), '$')
-            LEFT JOIN project_group_experiments pge ON e.id = pge.experiment_id
-            LEFT JOIN project_group pg ON pge.project_group_id = pg.id
-            LEFT JOIN projects p ON pg.project_id = p.id
-        WHERE
-            ${whereClause}
-        GROUP BY
-            e.id
-        ORDER BY
-            e.id DESC
-        LIMIT
-            ${Prisma.raw(String(Number(pageSize)))} OFFSET ${Prisma.raw(String(Number((page - 1) * pageSize)))}
-    `;
+        const experiments = await db.$queryRawUnsafe<any[]>(
+            `SELECT
+                e.*,
+                MAX(p.project_name) AS project_name,
+                MAX(pg.group_name) AS group_name,
+                GROUP_CONCAT(DISTINCT CONCAT(en.engine_name, '_', en.engine_image, '_', en.id)) AS engines
+            FROM
+                experiment e
+                LEFT JOIN engine en ON JSON_CONTAINS(e.engine_ids, CAST(en.id AS JSON), '$')
+                LEFT JOIN project_group_experiments pge ON e.id = pge.experiment_id
+                LEFT JOIN project_group pg ON pge.project_group_id = pg.id
+                LEFT JOIN projects p ON pg.project_id = p.id
+            WHERE ${whereSql}
+            GROUP BY
+                e.id
+            ORDER BY
+                e.id DESC
+            LIMIT ${Number(pageSize)} OFFSET ${Number((page - 1) * pageSize)}`,
+            ...params
+        );
 
         return experiments.map((experiment) => {
             const engineInfos = experiment.engines ? experiment.engines.split(',') : [];

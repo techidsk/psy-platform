@@ -34,11 +34,11 @@ async function getProjectGroups(
         return [];
     }
     // 判断当前用户角色
-    const projectGroups = await db.$queryRaw<ProjectGroupTableProps[]>`
-        SELECT * from project_group
+    const projectGroups = await db.$queryRawUnsafe<ProjectGroupTableProps[]>(
+        `SELECT * from project_group
         WHERE state = 'UNASSIGNED'
-        LIMIT ${Prisma.raw(String(Number(pageSize)))} OFFSET ${Prisma.raw(String(Number((page - 1) * pageSize)))}
-    `;
+        LIMIT ${Number(pageSize)} OFFSET ${Number((page - 1) * pageSize)}`
+    );
 
     return projectGroups;
 }

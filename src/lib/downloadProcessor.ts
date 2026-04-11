@@ -1,7 +1,7 @@
 import { Job } from 'bull';
-import { db, joinConditions } from '@/lib/db';
+import { db, QueryBuilder } from '@/lib/db';
 import JSZip from 'jszip';
-import { Prisma } from '@/generated/prisma';
+
 import { logger } from '@/lib/logger';
 import { getUserExperimentHistory } from '@/lib/user_experment_history';
 import * as R from 'ramda';
@@ -104,38 +104,39 @@ async function getFilteredExperiments(searchParams: any, currentUser: any, role:
         finish_time,
     } = searchParams;
 
-    const conditions: Prisma.Sql[] = [Prisma.sql`1 = 1`, Prisma.sql`e.project_group_id > 0`];
+    const qb = new QueryBuilder();
+    qb.where('e.project_group_id > 0');
     if (role === 'USER') {
-        conditions.push(Prisma.sql`e.user_id = ${currentUser.id}`);
+        qb.where('e.user_id = ?', currentUser.id);
     }
     if (role === 'ASSITANT') {
-        conditions.push(Prisma.sql`e.manager_id = ${currentUser.id}`);
+        qb.where('e.manager_id = ?', currentUser.id);
     }
     if (start_time) {
-        conditions.push(Prisma.sql`e.start_time >= ${start_time}`);
+        qb.where('e.start_time >= ?', start_time);
     }
     if (finish_time) {
-        conditions.push(Prisma.sql`e.finish_time <= ${finish_time}`);
+        qb.where('e.finish_time <= ?', finish_time);
     }
     if (username) {
-        conditions.push(Prisma.sql`u.username like ${'%' + username + '%'}`);
+        qb.where('u.username like ?', '%' + username + '%');
     }
     if (qualtrics) {
-        conditions.push(Prisma.sql`u.qualtrics like ${'%' + qualtrics + '%'}`);
+        qb.where('u.qualtrics like ?', '%' + qualtrics + '%');
     }
     if (engine_name) {
-        conditions.push(Prisma.sql`n.engine_name like ${'%' + engine_name + '%'}`);
+        qb.where('n.engine_name like ?', '%' + engine_name + '%');
     }
     if (group_name) {
-        conditions.push(Prisma.sql`g.group_name like ${'%' + group_name + '%'}`);
+        qb.where('g.group_name like ?', '%' + group_name + '%');
     }
     if (experiment_name) {
-        conditions.push(Prisma.sql`eper.experiment_name like ${'%' + experiment_name + '%'}`);
+        qb.where('eper.experiment_name like ?', '%' + experiment_name + '%');
     }
-    const whereClause = joinConditions(conditions);
+    const { sql: whereSql, params } = qb.build();
 
-    return await db.$queryRaw<any[]>`
-        SELECT e.*, u.username, u.avatar, u.qualtrics, n.engine_name, n.engine_image,
+    return await db.$queryRawUnsafe<any[]>(
+        `SELECT e.*, u.username, u.avatar, u.qualtrics, n.engine_name, n.engine_image,
         eper.experiment_name, g.group_name, num, project_group_experiment_num, es.step_name
         FROM user_experiments e
         LEFT JOIN user u ON u.id = e.user_id
@@ -153,10 +154,10 @@ async function getFilteredExperiments(searchParams: any, currentUser: any, role:
             GROUP BY project_group_id
         ) pge ON pge.project_group_id = e.project_group_id
         LEFT JOIN experiment_steps es ON es.experiment_id = e.experiment_id and es.order = e.part
-        WHERE
-            ${whereClause}
-        ORDER BY e.id DESC
-    `;
+        WHERE ${whereSql}
+        ORDER BY e.id DESC`,
+        ...params
+    );
 }
 
 const fetchZipFile = async (
