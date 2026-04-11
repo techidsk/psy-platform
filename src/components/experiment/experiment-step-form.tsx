@@ -8,7 +8,7 @@ import * as z from 'zod';
 import { exprimentStepSchema } from '@/lib/validations/experiment';
 import { Icons } from '@/components/icons';
 
-import type { experiment_steps } from '@prisma/client';
+import type { experiment_steps } from '@/generated/prisma';
 import { uploadPhotoWithFile } from '@/lib/api/post';
 import TiptapEditor from '../editor/tiptap-editor';
 import { getUrl } from '@/lib/url';

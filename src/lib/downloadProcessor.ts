@@ -1,7 +1,7 @@
 import { Job } from 'bull';
 import { db } from '@/lib/db';
 import JSZip from 'jszip';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@/generated/prisma';
 import { logger } from '@/lib/logger';
 import { getUserExperimentHistory } from '@/lib/user_experment_history';
 import * as R from 'ramda';

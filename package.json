@@ -16,7 +16,8 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
-    "@prisma/client": "^5.13.0",
+    "@prisma/adapter-mariadb": "^7.7.0",
+    "@prisma/client": "^7.7.0",
     "@radix-ui/react-toast": "^1.2.15",
     "@tiptap/extension-bubble-menu": "^3.18.0",
     "@tiptap/extension-placeholder": "^3.18.0",
@@ -80,7 +81,7 @@
     "mrm": "^4.1.22",
     "postcss": "^8.4.37",
     "postcss-nesting": "^12.1.2",
-    "prisma": "^5.13.0",
+    "prisma": "^7.7.0",
     "tailwindcss": "^4.1.18",
     "vitest": "^4.1.2"
   },

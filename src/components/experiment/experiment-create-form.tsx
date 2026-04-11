@@ -12,7 +12,7 @@ import { exprimentSchema } from '@/lib/validations/experiment';
 import { Icons } from '@/components/icons';
 import { getUrl } from '@/lib/url';
 
-import type { experiment, experiment_steps, engine as experimentEngine } from '@prisma/client';
+import type { experiment, experiment_steps, engine as experimentEngine } from '@/generated/prisma';
 import { ExperimentStepTab } from './experiment-step-tab';
 
 interface ExperimentCreateFormProps extends React.HTMLAttributes<HTMLDivElement> {

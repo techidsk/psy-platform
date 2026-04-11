@@ -9,7 +9,7 @@ import { ExperimentDetailButton } from '@/components/experiment/experiment-detai
 import { ExperimentCreateButton } from '@/components/experiment/experiment-create-button';
 import { TableSearch } from '@/components/table/table-search';
 import Pagination from '@/components/pagination';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@/generated/prisma';
 import { cache } from 'react';
 
 const getExperiments = cache(

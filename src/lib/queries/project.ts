@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@/generated/prisma';
 import { getCurrentUser } from '@/lib/session';
 import { dateFormat } from '@/lib/date';
 

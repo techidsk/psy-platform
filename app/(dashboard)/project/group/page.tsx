@@ -6,18 +6,17 @@ import { State } from '@/components/state';
 import { getCurrentUser } from '@/lib/session';
 import Pagination from '@/components/pagination';
 import { ProjectTableEditButtons } from '@/components/project/project-table-edit-buttons';
-import { JsonValue } from '@prisma/client/runtime/library';
+import { Prisma } from '@/generated/prisma';
 import SubpageHeader from '@/components/subpage-header';
 import TableCheckbox from '@/components/table/table-checkbox';
 import { ProjectBindGroupButton } from '@/components/project/project-bind-group-button';
-import { CLOSING } from 'ws';
 
 type ProjectGroupTableProps = {
     id: string;
     group_name: string;
     description: string;
     state: string;
-    experiments: JsonValue;
+    experiments: Prisma.JsonValue;
 };
 
 const PROJECT_GROUP_IDS_KEY = 'project-group-ids';

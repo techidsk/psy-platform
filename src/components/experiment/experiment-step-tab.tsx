@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { Icons } from '@/components/icons';
 
-import type { experiment, experiment_steps, engine as experimentEngine } from '@prisma/client';
+import type { experiment, experiment_steps, engine as experimentEngine } from '@/generated/prisma';
 import { Modal } from '../ui/modal';
 import { ExperimentStepForm } from './experiment-step-form';
 import { getUrl } from '@/lib/url';

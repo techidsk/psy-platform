@@ -9,7 +9,7 @@ import { CreateUserButton } from '@/components/user/user-create-button';
 import { UserTableEditButtons } from '@/components/user/user-table-edit-buttons';
 import Pagination from '@/components/pagination';
 import { TableSearch } from '@/components/table/table-search';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@/generated/prisma';
 import { UserRole } from '@/types/user';
 
 type UserTableProps = {

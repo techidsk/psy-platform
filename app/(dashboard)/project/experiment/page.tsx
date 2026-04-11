@@ -10,7 +10,7 @@ import SubpageHeader from '@/components/subpage-header';
 import TableCheckbox from '@/components/table/table-checkbox';
 import { ExperimentTableConfirmButton } from '@/components/experiment/experiment-table-comfirm-button';
 import Pagination from '@/components/pagination';
-import { experiment as ExperimentTableProps } from '@prisma/client';
+import { experiment as ExperimentTableProps } from '@/generated/prisma';
 
 async function getExperiments(
     searchParams: { [key: string]: string | undefined },

@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { usePreExperimentState } from '@/state/_pre_atoms';
-import type { experiment as Experiment, experiment_steps } from '@prisma/client';
+import type { experiment as Experiment, experiment_steps } from '@/generated/prisma';
 
 import { Modal } from '../ui/modal';
 import { dateFormat } from '@/lib/date';

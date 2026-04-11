@@ -1,7 +1,7 @@
 'use client';
 
 import { Icons } from '@/components/icons';
-import { experiment, experiment_steps, user } from '@prisma/client';
+import { experiment, experiment_steps, user } from '@/generated/prisma';
 import { LeftImageHero } from '../modules/left-image-hero';
 import { RightImageHero } from '../modules/right-image-hero';
 import { CenteredHero } from '../modules/centerd-hero';

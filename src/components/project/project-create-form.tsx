@@ -14,8 +14,7 @@ import { projectFormSchema } from '@/lib/validations/project';
 import { getUrl } from '@/lib/url';
 import { Icons } from '@/components/icons';
 import { DatePickerComponent } from '@/components/datepicker/datepicker';
-import { projects, project_group } from '@prisma/client';
-import { JsonValue } from '@prisma/client/runtime/library';
+import { projects, project_group, Prisma } from '@/generated/prisma';
 import { useTableState } from '@/state/_table_atom';
 import { useProjectState } from '@/state/_project_atoms';
 import { logger } from '@/lib/logger';
@@ -170,7 +169,7 @@ export function ProjectCreateForm({
     }
 
     // 添加项目分组
-    async function addProjectGroups(event: any, projectGroupsIds: JsonValue | undefined) {
+    async function addProjectGroups(event: any, projectGroupsIds: Prisma.JsonValue | undefined) {
         event.preventDefault();
         // TODO 判断是添加新项目还是编辑项目
         // 如果是编辑项目则继续，否则需要先提交创建新项目
