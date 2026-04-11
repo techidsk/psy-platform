@@ -1,8 +1,6 @@
 export async function register() {
-    // 修复 Windows 终端日志中文乱码：终端默认 GBK，Node.js 输出 UTF-8
-    // instrumentation.ts 仅在 Node.js 服务端运行，不进入 Edge Runtime
-    if (process.platform === 'win32') {
-        process.stdout.setEncoding('utf8');
-        process.stderr.setEncoding('utf8');
+    // 静态分析会扫描所有文件，Node.js 专用代码必须通过动态 import 隔离
+    if (process.env.NEXT_RUNTIME === 'nodejs') {
+        await import('./instrumentation.node');
     }
 }
