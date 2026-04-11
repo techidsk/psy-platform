@@ -16,8 +16,14 @@ export async function POST(request: Request) {
     });
 
     if (trails.length === 0) {
-        logger.warn(`[实验${data.id}] 未完成，已经删除`);
-        return NextResponse.json({ msg: '用户未输入内容，实验失败' }, { status: 400 });
+        logger.warn(`[实验${data.id}] 无任何输入内容，删除实验记录`);
+        await db.user_experiments.deleteMany({
+            where: {
+                nano_id: data.id,
+                part: data.part,
+            },
+        });
+        return NextResponse.json({ msg: '用户未输入内容，实验记录已删除' }, { status: 400 });
     }
 
     // 只允许从 IN_EXPERIMENT 状态转为 FINISHED，保证幂等性

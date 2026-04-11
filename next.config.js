@@ -29,7 +29,7 @@ const nextConfig = {
     env: {
         NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     },
-    serverExternalPackages: ['pino', 'pino-pretty', 'bull'],
+    serverExternalPackages: ['pino', 'pino-pretty', 'bull', 'node-cron'],
 
     // 生产环境优化
     productionBrowserSourceMaps: false, // 禁用生产环境 source maps，减少内存

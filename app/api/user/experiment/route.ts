@@ -11,69 +11,70 @@ import { logger } from '@/lib/logger';
  * @returns 返回 userExperimentNanoId
  */
 export async function POST(request: Request) {
-    const data = await request.json();
-    const guest = data['guest'] || false;
-    const test = data['test'] || false;
-    const guestUserNanoId = data['guestUserNanoId'] || '';
-    const prevUserExperimentNanoId = data['prevUserExperimentNanoId'] || '';
-    const part: number = (data['part'] as any as number) || 0;
+    try {
+        const data = await request.json();
+        const guest = data['guest'] || false;
+        const test = data['test'] || false;
+        const guestUserNanoId = data['guestUserNanoId'] || '';
+        const prevUserExperimentNanoId = data['prevUserExperimentNanoId'] || '';
+        const part: number = (data['part'] as any as number) || 0;
 
-    let projectGroupId: number;
-    let experimentId: number;
-    let userId: number;
+        let projectGroupId: number;
+        let experimentId: number;
+        let userId: number;
 
-    if (test) {
-        // 测试模式：跳过 project/group 链路，直接使用当前登录用户
-        const currentUser = await getCurrentUser();
-        if (!currentUser) {
-            return NextResponse.json({ msg: '用户未登录' }, { status: 401 });
+        if (test) {
+            // 测试模式：跳过 project/group 链路，直接使用当前登录用户
+            const currentUser = await getCurrentUser();
+            if (!currentUser) {
+                return NextResponse.json({ msg: '用户未登录' }, { status: 401 });
+            }
+            if (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPERADMIN') {
+                return NextResponse.json({ msg: '无权限使用测试模式' }, { status: 403 });
+            }
+            userId = parseInt(currentUser.id);
+            projectGroupId = 0; // 标记为测试数据
+            // 通过 experimentNanoId 查找实验获取 experimentId
+            const experiment = await db.experiment.findFirst({
+                where: { nano_id: data['experimentId'] },
+            });
+            if (!experiment) {
+                return NextResponse.json({ msg: '实验不存在' }, { status: 404 });
+            }
+            experimentId = experiment.id;
+            logger.info(`[测试模式] 用户 ${userId} 直接进入实验 ${experimentId}`);
+        } else {
+            const result = await getUserGroupExperiments(guest, guestUserNanoId);
+
+            if (result.status !== 200) {
+                return NextResponse.json({ msg: result.message });
+            }
+
+            projectGroupId = result.project_group_id;
+            experimentId = result.experiment_id;
+            userId = result.user_id!;
+
+            if (!projectGroupId) {
+                return NextResponse.json({ msg: '项目分组不存在' });
+            }
+
+            if (!userId) {
+                return NextResponse.json({ msg: '未找到合法的用户ID' });
+            }
         }
-        if (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPERADMIN') {
-            return NextResponse.json({ msg: '无权限使用测试模式' }, { status: 403 });
-        }
-        userId = parseInt(currentUser.id);
-        projectGroupId = 0; // 标记为测试数据
-        // 通过 experimentNanoId 查找实验获取 experimentId
+
+        // 获取实验属性
         const experiment = await db.experiment.findFirst({
-            where: { nano_id: data['experimentId'] },
+            where: {
+                nano_id: data['experimentId'],
+            },
         });
-        if (!experiment) {
-            return NextResponse.json({ msg: '实验不存在' }, { status: 404 });
-        }
-        experimentId = experiment.id;
-        logger.info(`[测试模式] 用户 ${userId} 直接进入实验 ${experimentId}`);
-    } else {
-        const result = await getUserGroupExperiments(guest, guestUserNanoId);
 
-        if (result.status !== 200) {
-            return NextResponse.json({ msg: result.message });
-        }
-
-        projectGroupId = result.project_group_id;
-        experimentId = result.experiment_id;
-        userId = result.user_id!;
-
-        if (!projectGroupId) {
-            return NextResponse.json({ msg: '项目分组不存在' });
-        }
-
-        if (!userId) {
-            return NextResponse.json({ msg: '未找到合法的用户ID' });
-        }
-    }
-
-    // 获取实验属性
-    const experiment = await db.experiment.findFirst({
-        where: {
-            nano_id: data['experimentId'],
-        },
-    });
-
-    // TODO engineid异常
-    if (experiment) {
-        // 创建用户实验 user_experiments
-        // 平均分配
-        let randomEngineIds = await db.$queryRaw<any[]>`
+        // TODO engineid异常
+        if (experiment) {
+            // 创建用户实验 user_experiments
+            // 平均分配
+            let randomEngineIds = await db.$queryRaw<any[]>`
             WITH Experiment AS (
                 SELECT jt.engine_id
                 FROM experiment,
@@ -111,53 +112,57 @@ export async function POST(request: Request) {
             LIMIT 1;
         `;
 
-        if (randomEngineIds.length === 0) {
-            logger.error('没有可用的engineId');
-            return NextResponse.json({
-                msg: '没有有效的生成引擎',
+            if (randomEngineIds.length === 0) {
+                logger.error('没有可用的engineId');
+                return NextResponse.json({
+                    msg: '没有有效的生成引擎',
+                });
+            }
+
+            let engineId = randomEngineIds[0].engine_id;
+
+            const userExperimentNanoId =
+                prevUserExperimentNanoId === '' ? getId() : prevUserExperimentNanoId;
+
+            const dbUserExperiment = await db.user_experiments.findFirst({
+                where: {
+                    nano_id: userExperimentNanoId,
+                    part: part,
+                },
             });
-        }
+            if (dbUserExperiment) {
+                return NextResponse.json({
+                    msg: '实验已存在',
+                    data: {
+                        userExperimentNanoId: userExperimentNanoId,
+                    },
+                });
+            }
 
-        let engineId = randomEngineIds[0].engine_id;
+            await db.user_experiments.create({
+                data: {
+                    nano_id: userExperimentNanoId,
+                    type: 'EXPERIMENT',
+                    engine_id: engineId,
+                    user_id: userId,
+                    experiment_id: `${experimentId}`,
+                    project_group_id: projectGroupId,
+                    part: part,
+                },
+            });
+            // 更新用户实验次数
 
-        const userExperimentNanoId =
-            prevUserExperimentNanoId === '' ? getId() : prevUserExperimentNanoId;
-
-        const dbUserExperiment = await db.user_experiments.findFirst({
-            where: {
-                nano_id: userExperimentNanoId,
-                part: part,
-            },
-        });
-        if (dbUserExperiment) {
             return NextResponse.json({
-                msg: '实验已存在',
+                msg: '发布成功',
                 data: {
                     userExperimentNanoId: userExperimentNanoId,
                 },
             });
         }
 
-        await db.user_experiments.create({
-            data: {
-                nano_id: userExperimentNanoId,
-                type: 'EXPERIMENT',
-                engine_id: engineId,
-                user_id: userId,
-                experiment_id: `${experimentId}`,
-                project_group_id: projectGroupId,
-                part: part,
-            },
-        });
-        // 更新用户实验次数
-
-        return NextResponse.json({
-            msg: '发布成功',
-            data: {
-                userExperimentNanoId: userExperimentNanoId,
-            },
-        });
+        return NextResponse.json({ msg: '实验不存在' }, { status: 404 });
+    } catch (error) {
+        logger.error(`创建用户实验异常: ${error}`);
+        return NextResponse.json({ msg: '创建实验失败，服务器内部错误' }, { status: 500 });
     }
-
-    return NextResponse.json({ msg: '发布成功' });
 }

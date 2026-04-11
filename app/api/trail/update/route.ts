@@ -21,7 +21,15 @@ export async function POST(request: Request) {
         }
 
         const imageUrl = data['imageUrl'];
-        const state = data['state'] || 'SUCCESS';
+        const state = data['state'];
+
+        if (!state) {
+            logger.error('更新trail失败: state为空');
+            return NextResponse.json(
+                { msg: '更新失败，缺少状态参数', error: 'MISSING_STATE' },
+                { status: 400 }
+            );
+        }
 
         // 验证 state 是有效值
         const validStates = ['GENERATING', 'SUCCESS', 'FAILED', 'TIMEOUT'];
