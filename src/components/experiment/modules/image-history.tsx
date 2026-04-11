@@ -54,7 +54,7 @@ export function ImageHistory({ userExperimentNanoId, userId, size = 'md' }: Comp
         <div className="flex flex-col gap-8 w-full">
             {images.map((image) => {
                 return (
-                    <div key={image.nano_id} className="w-full">
+                    <div key={image.part} className="w-full">
                         <div className="text-2xl font-bold mb-4">{image.title}</div>
                         <div className="grid grid-cols-2 gap-4 items-start">
                             {image.stepImages.map((stepImage: any, index: number) => {
