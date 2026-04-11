@@ -7,6 +7,17 @@ const crypto = require('crypto');
 export const { handlers, signIn, signOut, auth } = NextAuth({
     secret: process.env.JWT_SECRET,
     trustHost: true,
+    logger: {
+        error(error) {
+            logger.error(error.message, error);
+        },
+        warn(code) {
+            logger.warn(code);
+        },
+        debug(code) {
+            logger.debug(code);
+        },
+    },
     session: {
         strategy: 'jwt',
     },
@@ -30,14 +41,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     },
                 });
                 if (!dbUser) {
-                    logger.error(`用户${username}不存在`);
+                    logger.debug(`用户${username}不存在`);
                     return null;
                 }
                 const password = dbUser['password'] || '';
                 const salt = dbUser['salt'] || '';
                 const r = await verify(inputPassword, salt, password);
                 if (!r) {
-                    logger.error(`用户${username}密码错误`);
+                    logger.debug(`用户${username}密码错误`);
                     return null;
                 }
                 // 更新用户最后登录时间

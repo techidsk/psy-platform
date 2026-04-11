@@ -60,7 +60,7 @@ export function HomeLoginForm() {
         });
         setIsLoading(false);
 
-        if (!signInResult?.ok) {
+        if (!signInResult?.ok || signInResult?.error) {
             return toast({
                 title: '登陆失败',
                 description: '用户名或者密码错误',
