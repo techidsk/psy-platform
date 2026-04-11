@@ -27,44 +27,41 @@ const getExperiments = cache(
         const experiment_name = searchParams?.experiment_name || '';
         const engine_name = searchParams?.engine_name || '';
 
+        const conditions: Prisma.Sql[] = [
+            Prisma.sql`e.creator = ${currentUser.id}`,
+            Prisma.sql`e.available = 1`,
+        ];
+        if (project_name) {
+            conditions.push(Prisma.sql`p.project_name LIKE ${'%' + project_name + '%'}`);
+        }
+        if (project_group_name) {
+            conditions.push(Prisma.sql`pg.group_name LIKE ${'%' + project_group_name + '%'}`);
+        }
+        if (experiment_name) {
+            conditions.push(Prisma.sql`e.experiment_name LIKE ${'%' + experiment_name + '%'}`);
+        }
+        if (engine_name) {
+            conditions.push(Prisma.sql`en.engine_name LIKE ${'%' + engine_name + '%'}`);
+        }
+        const whereClause = Prisma.join(conditions, ' AND ');
+
         const experiments = await db.$queryRaw<any[]>`
-        SELECT 
-            e.*, 
+        SELECT
+            e.*,
             MAX(p.project_name) AS project_name,
             MAX(pg.group_name) AS group_name,
             GROUP_CONCAT(DISTINCT CONCAT(en.engine_name, '_', en.engine_image, '_', en.id)) AS engines
-        FROM 
-            experiment e 
+        FROM
+            experiment e
             LEFT JOIN engine en ON JSON_CONTAINS(e.engine_ids, CAST(en.id AS JSON), '$')
             LEFT JOIN project_group_experiments pge ON e.id = pge.experiment_id
             LEFT JOIN project_group pg ON pge.project_group_id = pg.id
             LEFT JOIN projects p ON pg.project_id = p.id
-        WHERE 
-            e.creator = ${currentUser.id}
-            AND e.available = 1
-            ${
-                project_name
-                    ? Prisma.sql`AND p.project_name LIKE '%${Prisma.raw(project_name)}%'`
-                    : Prisma.empty
-            }
-            ${
-                project_group_name
-                    ? Prisma.sql`AND pg.group_name LIKE '%${Prisma.raw(project_group_name)}%'`
-                    : Prisma.empty
-            }
-            ${
-                experiment_name
-                    ? Prisma.sql`AND e.experiment_name LIKE '%${Prisma.raw(experiment_name)}%'`
-                    : Prisma.empty
-            }
-            ${
-                engine_name
-                    ? Prisma.sql`AND en.engine_name LIKE '%${Prisma.raw(engine_name)}%'`
-                    : Prisma.empty
-            }
-        GROUP BY 
+        WHERE
+            ${whereClause}
+        GROUP BY
             e.id
-        ORDER BY 
+        ORDER BY
             e.id DESC
         LIMIT
             ${Prisma.raw(String(Number(pageSize)))} OFFSET ${Prisma.raw(String(Number((page - 1) * pageSize)))}
