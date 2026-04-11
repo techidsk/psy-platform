@@ -1,6 +1,5 @@
 import { ExperimentCreateForm } from '@/components/experiment/experiment-create-form';
 import SubpageHeader, { SubpageContentHeader } from '@/components/subpage-header';
-import { ExperimentEditButton } from '@/components/experiment/experiment-edit-button';
 import { getId } from '@/lib/nano-id';
 import { db } from '@/lib/db';
 
@@ -18,9 +17,7 @@ export default async function CreateExperiment({ searchParams }: any) {
 
     return (
         <div className="container lg:max-w-none bg-white">
-            <SubpageHeader>
-                <ExperimentEditButton className="btn btn-primary btn-sm" edit={true} />
-            </SubpageHeader>
+            <SubpageHeader />
             <div className="flex flex-col gap-4">
                 <SubpageContentHeader heading="创建新实验" />
                 <ExperimentCreateForm

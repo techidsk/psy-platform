@@ -1,7 +1,7 @@
 import { db } from '@/lib/db';
-import { ProjectCreateForm } from '@/components/project/project-create-form';
-import SubpageHeader, { SubpageContentHeader } from '@/components/subpage-header';
-import { ProjectEditButton } from '@/components/project/project-edit-button';
+import { ProjectDetailView } from '@/components/project/project-detail-view';
+import { getCurrentUser } from '@/lib/session';
+import { canEdit } from '@/lib/permissions';
 import { notFound } from 'next/navigation';
 
 /**
@@ -38,15 +38,8 @@ async function getProjectGroupIds(id: string) {
     return projectGroups;
 }
 
-export default async function ProjectDetail({
-    params,
-    searchParams: searchParamsPromise,
-}: {
-    params: Promise<{ id: string }>;
-    searchParams: Promise<{ [key: string]: string }>;
-}) {
+export default async function ProjectDetail({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const searchParams = await searchParamsPromise;
 
     // Validate the id parameter
     const parsedId = parseInt(id, 10);
@@ -54,32 +47,21 @@ export default async function ProjectDetail({
         notFound(); // Show 404 if id is not a valid positive integer string
     }
 
-    // Initiate both requests in parallel
-    const projectData = getProject(id);
-    const projectGroupData = getProjectGroupIds(id);
-    const edit = searchParams.edit === 'true'; // 从url中获取edit参数,如果为true则进入编辑模式
-    const [project, projectGroups] = await Promise.all([projectData, projectGroupData]);
+    // Fetch data and check permissions in parallel
+    const [project, projectGroups, user] = await Promise.all([
+        getProject(id),
+        getProjectGroupIds(id),
+        getCurrentUser(),
+    ]);
+
+    const canUserEdit = canEdit(user?.role);
 
     return (
-        <div className="container lg:max-w-none bg-white">
-            <SubpageHeader>
-                <ProjectEditButton
-                    className="btn btn-primary btn-sm"
-                    nano_id={id}
-                    edit={Boolean(edit)}
-                />
-            </SubpageHeader>
-            <div className="flex flex-col gap-4">
-                <SubpageContentHeader heading="项目详情" />
-                <ProjectCreateForm
-                    className="w-full p-2 h-[800px]"
-                    edit={Boolean(edit)}
-                    project={project}
-                    projectGroups={projectGroups}
-                    projectGroupsIds={projectGroups?.map((item) => item.id)}
-                    add={false}
-                />
-            </div>
-        </div>
+        <ProjectDetailView
+            canEdit={canUserEdit}
+            project={project}
+            projectGroups={projectGroups}
+            projectGroupsIds={projectGroups?.map((item) => item.id)}
+        />
     );
 }

@@ -1,7 +1,7 @@
 import { db } from '@/lib/db';
-import SubpageHeader, { SubpageContentHeader } from '@/components/subpage-header';
-import { ProjectGroupCreateForm } from '@/components/project/group/project-group-create-form';
-import { EditProjectGroupButton } from '@/components/project/group/project-group-edit-button';
+import { ProjectGroupDetailView } from '@/components/project/group/project-group-detail-view';
+import { getCurrentUser } from '@/lib/session';
+import { canEdit } from '@/lib/permissions';
 
 /**
  * 判断数据库中项目分组
@@ -24,8 +24,8 @@ async function getProjectGroup(id: string) {
 
 async function getExperimentsByIds(id: number) {
     const experiments = await db.$queryRaw<any[]>`
-        SELECT e.*, 
-        en.engine_name, en.engine_image, en.gpt_prompt, en.gpt_settings, en.template, 
+        SELECT e.*,
+        en.engine_name, en.engine_image, en.gpt_prompt, en.gpt_settings, en.template,
         pge.experiment_index, pge.id as project_group_unique_id
         FROM experiment e
         LEFT JOIN engine en ON en.id = e.engine_id
@@ -42,35 +42,24 @@ async function getExperimentsByIds(id: number) {
 }
 
 // 获取项目分组详情
-export default async function ProjectGroupDetail({
-    params,
-    searchParams: searchParamsPromise,
-}: {
-    params: Promise<{ id: string }>;
-    searchParams: Promise<{ [key: string]: string }>;
-}) {
+export default async function ProjectGroupDetail({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const searchParams = await searchParamsPromise;
 
-    const projectGroup = await getProjectGroup(id);
-    const experiments = await getExperimentsByIds(parseInt(id));
-    const edit = searchParams.edit === 'true';
+    // Fetch data and check permissions in parallel
+    const [projectGroup, experiments, user] = await Promise.all([
+        getProjectGroup(id),
+        getExperimentsByIds(parseInt(id)),
+        getCurrentUser(),
+    ]);
+
+    const canUserEdit = canEdit(user?.role);
 
     return (
-        <div className="container lg:max-w-none bg-white">
-            <SubpageHeader>
-                <EditProjectGroupButton className="btn btn-primary btn-sm" edit={Boolean(edit)} />
-            </SubpageHeader>
-            <div className="flex flex-col gap-4">
-                <SubpageContentHeader heading="项目分组详情" />
-                <ProjectGroupCreateForm
-                    className="w-full p-2"
-                    edit={Boolean(edit)}
-                    projectGroup={projectGroup}
-                    experiments={experiments}
-                    projectGroupId={parseInt(id)}
-                />
-            </div>
-        </div>
+        <ProjectGroupDetailView
+            canEdit={canUserEdit}
+            projectGroup={projectGroup}
+            experiments={experiments}
+            projectGroupId={parseInt(id)}
+        />
     );
 }

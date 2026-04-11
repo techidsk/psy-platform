@@ -32,7 +32,7 @@ export function ProjectTableEditButtons({
     }
 
     function editProject() {
-        router.push(`/project/${projectId}?edit=true`);
+        router.push(`/project/${projectId}`);
     }
 
     function deleteUser() {

@@ -32,7 +32,7 @@ export function ProjectGroupTableEditButtons({
     }
 
     async function editProject() {
-        router.push(`/project/group/${groupId}?edit=true`);
+        router.push(`/project/group/${groupId}`);
     }
 
     function deleteUser() {

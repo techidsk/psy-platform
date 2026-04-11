@@ -1,8 +1,7 @@
-import { ExperimentCreateForm } from '@/components/experiment/experiment-create-form';
-
 import { db } from '@/lib/db';
-import SubpageHeader, { SubpageContentHeader } from '@/components/subpage-header';
-import { ExperimentEditButton } from '@/components/experiment/experiment-edit-button';
+import { ExperimentDetailView } from '@/components/experiment/experiment-detail-view';
+import { getCurrentUser } from '@/lib/session';
+import { canEdit } from '@/lib/permissions';
 import { logger } from '@/lib/logger';
 
 /**
@@ -44,18 +43,15 @@ async function getExperimentSteps(experimentId: number) {
     return steps;
 }
 
-export default async function ExperimentDetail({
-    params,
-    searchParams: searchParamsPromise,
-}: {
-    params: Promise<{ id: string }>;
-    searchParams: Promise<{ [key: string]: string }>;
-}) {
+export default async function ExperimentDetail({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const searchParams = await searchParamsPromise;
 
-    const experiment = await getExperiment(id);
-    const engines = await getEngines();
+    const [experiment, engines, user] = await Promise.all([
+        getExperiment(id),
+        getEngines(),
+        getCurrentUser(),
+    ]);
+
     let steps = null;
     if (experiment && experiment.id) {
         steps = await getExperimentSteps(experiment.id);
@@ -63,28 +59,16 @@ export default async function ExperimentDetail({
         logger.error('未找到实验{}', id);
     }
 
-    const edit = searchParams.edit === 'true';
+    const canUserEdit = canEdit(user?.role);
 
     return (
-        <div className="container lg:max-w-none bg-white">
-            <SubpageHeader>
-                <ExperimentEditButton
-                    className="btn btn-primary btn-sm"
-                    edit={Boolean(edit)}
-                    lock={experiment?.lock === 1}
-                />
-            </SubpageHeader>
-            <div className="flex flex-col gap-4">
-                <SubpageContentHeader heading={`${experiment?.id ? '编辑实验' : '创建新实验'}`} />
-                <ExperimentCreateForm
-                    className="w-full px-2"
-                    edit={Boolean(edit)}
-                    experiment={experiment}
-                    nano_id={id}
-                    engines={engines}
-                    steps={steps}
-                />
-            </div>
-        </div>
+        <ExperimentDetailView
+            canEdit={canUserEdit}
+            lock={experiment?.lock === 1}
+            experiment={experiment}
+            nano_id={id}
+            engines={engines}
+            steps={steps}
+        />
     );
 }

@@ -47,7 +47,7 @@ export function ExperimentDetailButton({ experiment }: ExperimentDetailProps) {
             });
             return;
         }
-        router.push(`/experiment/${experiment.nano_id}?edit=true`);
+        router.push(`/experiment/${experiment.nano_id}`);
     }
 
     function handleDeleteToggle() {
