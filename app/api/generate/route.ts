@@ -21,7 +21,10 @@ export async function POST(request: Request) {
 
     if (!promptNanoId || promptNanoId === 'undefined') {
         logger.error({ promptNanoId }, 'promptNanoId 缺失或无效');
-        return NextResponse.json({ msg: '发布失败，promptNanoId为undefined或缺失' });
+        return NextResponse.json(
+            { msg: '发布失败，promptNanoId为undefined或缺失' },
+            { status: 400 }
+        );
     }
 
     if (
@@ -29,12 +32,15 @@ export async function POST(request: Request) {
         (!isGuest && (!experimentId || experimentId === 'undefined'))
     ) {
         logger.error({ isGuest, experimentId, experimentNanoId }, 'experiment ID 缺失或无效');
-        return NextResponse.json({ msg: '发布失败，experiment ID为undefined或缺失' });
+        return NextResponse.json(
+            { msg: '发布失败，experiment ID为undefined或缺失' },
+            { status: 400 }
+        );
     }
 
     if (stepOrder === undefined || stepOrder === 'undefined') {
         logger.error({ promptNanoId, stepOrder }, 'stepOrder 缺失或无效');
-        return NextResponse.json({ msg: '发布失败，步骤参数为undefined或缺失' });
+        return NextResponse.json({ msg: '发布失败，步骤参数为undefined或缺失' }, { status: 400 });
     }
 
     const trail = await db.trail.findFirst({
@@ -43,7 +49,7 @@ export async function POST(request: Request) {
 
     if (!trail || !trail.prompt) {
         logger.error({ promptNanoId }, '未找到对应 trail 数据');
-        return NextResponse.json({ msg: '发布失败，缺少参数' });
+        return NextResponse.json({ msg: '发布失败，缺少参数' }, { status: 400 });
     }
 
     const currentUser = await getCurrentUser();
@@ -51,7 +57,7 @@ export async function POST(request: Request) {
 
     if (!userExperimentNanoId || userExperimentNanoId === 'undefined') {
         logger.error({ promptNanoId, userExperimentNanoId }, 'userExperimentNanoId 无效');
-        return NextResponse.json({ msg: '发布失败，无效的实验ID' });
+        return NextResponse.json({ msg: '发布失败，无效的实验ID' }, { status: 400 });
     }
 
     const userExperiment = await db.user_experiments.findFirst({
@@ -60,13 +66,13 @@ export async function POST(request: Request) {
 
     if (!userExperiment || !userExperiment.experiment_id || !userExperiment.engine_id) {
         logger.error({ promptNanoId, userExperimentNanoId }, '未找到对应 userExperiment 数据');
-        return NextResponse.json({ msg: '发布失败，缺少参数' });
+        return NextResponse.json({ msg: '发布失败，缺少参数' }, { status: 400 });
     }
 
     const engineId = userExperiment.engine_id;
     if (!engineId || isNaN(Number(engineId))) {
         logger.error({ promptNanoId, engineId }, '引擎ID无效');
-        return NextResponse.json({ msg: '发布失败，引擎ID无效' });
+        return NextResponse.json({ msg: '发布失败，引擎ID无效' }, { status: 400 });
     }
 
     const engine = await db.engine.findFirst({
@@ -75,7 +81,7 @@ export async function POST(request: Request) {
 
     if (!engine) {
         logger.error({ promptNanoId, engineId }, '未找到对应 engine 数据');
-        return NextResponse.json({ msg: '发布失败，缺少参数' });
+        return NextResponse.json({ msg: '发布失败，缺少参数' }, { status: 400 });
     }
 
     // 检查是否需要生成图片

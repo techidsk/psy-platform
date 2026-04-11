@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ImageResponse } from '@/types/experiment';
 import { getUrl } from '@/lib/url';
+import { useExperimentState } from '@/state/_experiment_atoms';
 import { Modal } from '../ui/modal';
 import { logger } from '@/lib/logger';
 import { toast } from '@/hooks/use-toast';
@@ -38,6 +39,9 @@ export function ExperimentFinishButton({
     }, [experimentList]);
 
     async function finishExperimentStep() {
+        const won = useExperimentState.getState().setIsFinishing();
+        if (!won) return;
+
         // 完成写作
         const result = await fetch(getUrl('/api/experiment/finish'), {
             method: 'POST',

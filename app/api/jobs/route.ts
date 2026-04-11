@@ -48,13 +48,18 @@ export async function GET(request: Request) {
             });
         }
 
-        // 检查生成失败的实验
+        // 检查生成失败的实验：只在所有 trail 都失败时才标记实验 FAILED
         const failedExperiments = await db.$queryRaw<any[]>`
         SELECT DISTINCT ue.id
         FROM user_experiments ue
         JOIN trail t ON t.user_experiment_id = ue.nano_id
         WHERE ue.state = 'IN_EXPERIMENT'
         AND (t.state = 'FAILED' OR t.state = 'TIMEOUT')
+        AND NOT EXISTS (
+            SELECT 1 FROM trail t2
+            WHERE t2.user_experiment_id = ue.nano_id
+            AND t2.state NOT IN ('FAILED', 'TIMEOUT')
+        )
         `;
 
         // 更新生成失败的实验状态

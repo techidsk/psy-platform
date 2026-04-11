@@ -3,8 +3,9 @@
 import { toast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import { getUrl } from '@/lib/url';
+import { useExperimentState } from '@/state/_experiment_atoms';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface CountDownProp {
     start: number; // 开始的时间戳
@@ -18,20 +19,28 @@ interface CountDownProp {
 export function CountDown({ start, limit, nanoId, part, callbackUrl, mini = true }: CountDownProp) {
     const router = useRouter();
 
-    // 询问用户是否离开页面
-    usePageLeave();
-
     const calculateTimeLeft = () => {
-        const currentTime = Math.floor(Date.now() / 1000); // 当前时间戳（秒）
-        const endTime = start + limit * 60; // 结束时间戳（秒）
-        const timeLeft = endTime - currentTime; // 剩余时间（秒）
-        return timeLeft > 0 ? timeLeft : 0; // 如果时间已过，返回0
+        const currentTime = Math.floor(Date.now() / 1000);
+        const endTime = start + limit * 60;
+        const timeLeft = endTime - currentTime;
+        return timeLeft > 0 ? timeLeft : 0;
     };
 
-    // 设置初始剩余时间
     const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+    const fiveMinWarningShown = useRef(false);
+    const tenSecWarningShown = useRef(false);
+    const finishCalled = useRef(false);
 
     async function finishExperimentStep() {
+        if (finishCalled.current) return;
+        finishCalled.current = true;
+
+        const won = useExperimentState.getState().setIsFinishing();
+        if (!won) {
+            logger.info('另一个完成请求已经在进行中，跳过');
+            return;
+        }
+
         const result = await fetch(getUrl('/api/experiment/finish'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -54,75 +63,79 @@ export function CountDown({ start, limit, nanoId, part, callbackUrl, mini = true
         router.push(decodeUrl);
     }
 
+    // 单一 interval 处理倒计时和 toast 提醒
     useEffect(() => {
-        // 如果时间已过，就不再设置定时器
-        if (timeLeft < 300 && timeLeft > 290) {
-            // 弹窗说明项目已经结束
-            toast({
-                title: '写作倒计时',
-                description: '还剩5分钟结束',
-                variant: 'destructive',
-                duration: 10000,
-            });
-        }
-        if (timeLeft < 10) {
-            // 弹窗说明项目已经结束
-            toast({
-                title: '完成任务倒计时',
-                description: `还剩${timeLeft}秒钟结束`,
-                variant: 'destructive',
-                duration: 3000,
-            });
-        }
-        if (timeLeft === 0) {
-            // 弹窗说明项目已经结束
-            logger.info('倒计时结束，结束实验');
-            finishExperimentStep();
-            return;
-        }
-
-        // 更新剩余时间的定时器
         const timer = setInterval(() => {
             const newTimeLeft = calculateTimeLeft();
-            if (newTimeLeft === 0) {
-                clearInterval(timer); // 如果时间到，清除定时器
+            setTimeLeft(newTimeLeft);
+
+            if (newTimeLeft <= 300 && newTimeLeft > 0 && !fiveMinWarningShown.current) {
+                fiveMinWarningShown.current = true;
+                toast({
+                    title: '写作倒计时',
+                    description: '还剩5分钟结束',
+                    variant: 'destructive',
+                    duration: 10000,
+                });
             }
-            setTimeLeft(newTimeLeft); // 更新状态
-        }, 1000); // 每秒更新一次
 
-        // 清理函数：组件卸载时清除定时器
-        return () => clearInterval(timer);
-    }, [timeLeft]);
+            if (newTimeLeft <= 10 && newTimeLeft > 0 && !tenSecWarningShown.current) {
+                tenSecWarningShown.current = true;
+                toast({
+                    title: '完成任务倒计时',
+                    description: `还剩不到10秒钟结束`,
+                    variant: 'destructive',
+                    duration: 3000,
+                });
+            }
 
-    function usePageLeave() {
-        useEffect(() => {
-            const handleBeforeUnload = (event: any) => {
-                logger.info('离开倒计时页面，结束实验');
+            if (newTimeLeft === 0) {
+                clearInterval(timer);
+                logger.info('倒计时结束，结束实验');
                 finishExperimentStep();
+            }
+        }, 1000);
 
-                // 在这里，我们不设置任何阻止用户离开的逻辑，
-                // 如需询问用户是否真的想要离开，可以设置 event.returnValue
-                // event.returnValue = '你确定要离开吗？';
-            };
+        return () => clearInterval(timer);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-            // 添加事件监听器
-            window.addEventListener('beforeunload', handleBeforeUnload);
+    // 页面关闭时通过 sendBeacon 发送完成请求
+    useEffect(() => {
+        const handleBeforeUnload = () => {
+            const won = useExperimentState.getState().setIsFinishing();
+            if (!won) return;
 
-            // 返回一个清理函数，在组件卸载时执行
-            return () => {
-                // 移除事件监听器
-                window.removeEventListener('beforeunload', handleBeforeUnload);
-            };
-        }, []); // 确保依赖项正确，以便正确地响应变化
-    }
+            const url = getUrl('/api/experiment/finish');
+            const body = JSON.stringify({ id: nanoId, part: part });
+            const blob = new Blob([body], { type: 'application/json' });
+            navigator.sendBeacon(url, blob);
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, [nanoId, part]);
+
+    // 询问用户是否离开页面
+    useEffect(() => {
+        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+            event.preventDefault();
+            event.returnValue = '';
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, []);
 
     const formatTime = (time: number) => time.toString().padStart(2, '0');
 
-    // 将剩余时间转换为时分秒
     const hours = formatTime(Math.floor(timeLeft / 3600));
     const minutes = formatTime(Math.floor((timeLeft % 3600) / 60));
-    const seconds = formatTime(Math.round(timeLeft) % 60); // 取余数，保证数字始终是两位数，例如：59秒转换为“59timeLeft % 60;
-    // 格式化时间显示，保证数字始终是两位数
+    const seconds = formatTime(Math.round(timeLeft) % 60);
 
     return mini ? (
         <span className="countdown font-mono text-2xl">
