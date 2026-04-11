@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "chcp 65001 && next dev",
     "build": "NODE_OPTIONS='--max-old-space-size=3072' prisma generate && next build --webpack",
     "type-check": "tsc --noEmit",
     "start": "next start -p 4545",
