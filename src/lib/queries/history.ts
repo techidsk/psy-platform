@@ -80,8 +80,43 @@ export async function getExperimentHistory(
     // 构建排序 SQL
     const orderBySql = buildOrderBySql(sort_by, sort_order);
 
+    const conditions: Prisma.Sql[] = [
+        Prisma.sql`1 = 1`,
+        Prisma.sql`e.state = 'FINISHED'`,
+        Prisma.sql`e.is_deleted = 0`,
+        Prisma.sql`e.project_group_id > 0`,
+    ];
+    if (role === 'USER') {
+        conditions.push(Prisma.sql`e.user_id = ${currentUser.id}`);
+    }
+    if (role === 'ASSITANT') {
+        conditions.push(Prisma.sql`e.manager_id = ${currentUser.id}`);
+    }
+    if (start_time) {
+        conditions.push(Prisma.sql`e.start_time >= ${start_time}`);
+    }
+    if (finish_time) {
+        conditions.push(Prisma.sql`e.finish_time <= ${finish_time}`);
+    }
+    if (username) {
+        conditions.push(Prisma.sql`u.username like ${'%' + username + '%'}`);
+    }
+    if (qualtrics) {
+        conditions.push(Prisma.sql`u.qualtrics like ${'%' + qualtrics + '%'}`);
+    }
+    if (engine_name) {
+        conditions.push(Prisma.sql`n.engine_name like ${'%' + engine_name + '%'}`);
+    }
+    if (group_name) {
+        conditions.push(Prisma.sql`g.group_name like ${'%' + group_name + '%'}`);
+    }
+    if (experiment_name) {
+        conditions.push(Prisma.sql`eper.experiment_name like ${'%' + experiment_name + '%'}`);
+    }
+    const whereClause = Prisma.join(conditions, ' AND ');
+
     const experiments = await db.$queryRaw<ExperimentHistoryRecord[]>`
-        SELECT e.*, u.username, u.avatar, u.qualtrics, n.engine_name, n.engine_image, 
+        SELECT e.*, u.username, u.avatar, u.qualtrics, n.engine_name, n.engine_image,
         eper.experiment_name, g.group_name, num, project_group_experiment_num, es.step_name
         FROM user_experiments e
         LEFT JOIN user u ON u.id = e.user_id
@@ -89,8 +124,8 @@ export async function getExperimentHistory(
         LEFT JOIN project_group g ON g.id = e.project_group_id
         LEFT JOIN engine n ON n.id = e.engine_id
         LEFT JOIN (
-            SELECT count(id) as num, user_id, project_group_id 
-            FROM user_experiments 
+            SELECT count(id) as num, user_id, project_group_id
+            FROM user_experiments
             GROUP BY user_id, project_group_id
             ) ue ON ue.user_id = u.id AND ue.project_group_id = g.id
         LEFT JOIN (
@@ -99,16 +134,8 @@ export async function getExperimentHistory(
             GROUP BY project_group_id
         ) pge ON pge.project_group_id = e.project_group_id
         LEFT JOIN experiment_steps es ON es.experiment_id = e.experiment_id and es.order = e.part
-        WHERE 1 = 1 AND e.state = 'FINISHED' AND e.is_deleted = 0 AND e.project_group_id > 0
-        ${role === 'USER' ? Prisma.sql`and e.user_id = ${currentUser.id}` : Prisma.empty}
-        ${role === 'ASSITANT' ? Prisma.sql`and e.manager_id = ${currentUser.id}` : Prisma.empty}
-        ${start_time ? Prisma.sql`and e.start_time >= ${start_time}` : Prisma.empty}
-        ${finish_time ? Prisma.sql`and e.finish_time <= ${finish_time}` : Prisma.empty}
-        ${username ? Prisma.sql`and u.username like ${`%${username}%`}` : Prisma.empty}
-        ${qualtrics ? Prisma.sql`and u.qualtrics like ${`%${qualtrics}%`}` : Prisma.empty}
-        ${engine_name ? Prisma.sql`and n.engine_name like ${`%${engine_name}%`}` : Prisma.empty}
-        ${group_name ? Prisma.sql`and g.group_name like ${`%${group_name}%`}` : Prisma.empty}
-        ${experiment_name ? Prisma.sql`and eper.experiment_name like ${`%${experiment_name}%`}` : Prisma.empty}
+        WHERE
+            ${whereClause}
         ${orderBySql}
         LIMIT ${Prisma.raw(String(Number(pageSize)))} OFFSET ${Prisma.raw(String(Number((page - 1) * pageSize)))}
     `;

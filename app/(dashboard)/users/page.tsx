@@ -52,30 +52,45 @@ async function getUsers(
     const group_name = searchParams?.group_name || '';
     const user_role = searchParams?.role || '';
     // 判断当前用户角色
+    const conditions: Prisma.Sql[] = [
+        Prisma.sql`u.deleted = 0`,
+        Prisma.sql`u.user_role != 'SUPERADMIN'`,
+    ];
+    if (role !== 'ADMIN') {
+        conditions.push(Prisma.sql`u.manager_id = ${currentUser.id}`);
+    }
+    if (username) {
+        conditions.push(Prisma.sql`u.username LIKE ${'%' + username + '%'}`);
+    }
+    if (email) {
+        conditions.push(Prisma.sql`u.email LIKE ${'%' + email + '%'}`);
+    }
+    if (tel) {
+        conditions.push(Prisma.sql`u.tel LIKE ${'%' + tel + '%'}`);
+    }
+    if (qualtrics) {
+        conditions.push(Prisma.sql`u.qualtrics LIKE ${'%' + qualtrics + '%'}`);
+    }
+    if (wechat_id) {
+        conditions.push(Prisma.sql`u.wechat_id LIKE ${'%' + wechat_id + '%'}`);
+    }
+    if (group_name) {
+        conditions.push(Prisma.sql`pg.group_name LIKE ${'%' + group_name + '%'}`);
+    }
+    if (user_role) {
+        conditions.push(Prisma.sql`u.user_role LIKE ${'%' + user_role + '%'}`);
+    }
+    const whereClause = Prisma.join(conditions, ' AND ');
+
     const users = await db.$queryRaw<UserTableProps[]>`
         SELECT u.id, u.username, u.email, u.tel, u.avatar, u.user_role, u.create_time, u.qualtrics, u.last_login_time, u.wechat_id,
         count(m.id) as manager_count, pg.group_name as user_group_name
-        FROM user u 
+        FROM user u
         LEFT JOIN user m ON u.id = m.manager_id
         LEFT JOIN user_group g ON g.id = u.user_group_id
         LEFT JOIN project_group pg ON pg.id = g.project_group_id
-        WHERE u.deleted = 0 and u.user_role != 'SUPERADMIN'
-        ${
-            role !== 'ADMIN'
-                ? Prisma.sql`AND u.manager_id = ${Prisma.raw(currentUser.id)}`
-                : Prisma.empty
-        }
-        ${username ? Prisma.sql`AND u.username LIKE '%${Prisma.raw(username)}%'` : Prisma.empty}
-        ${email ? Prisma.sql`AND u.email LIKE '%${Prisma.raw(email)}%'` : Prisma.empty}
-        ${tel ? Prisma.sql`AND u.tel LIKE '%${Prisma.raw(tel)}%'` : Prisma.empty}
-        ${qualtrics ? Prisma.sql`AND u.qualtrics LIKE '%${Prisma.raw(qualtrics)}%'` : Prisma.empty}
-        ${wechat_id ? Prisma.sql`AND u.wechat_id LIKE '%${Prisma.raw(wechat_id)}%'` : Prisma.empty}
-        ${
-            group_name
-                ? Prisma.sql`AND g.group_name LIKE '%${Prisma.raw(group_name)}%'`
-                : Prisma.empty
-        }
-        ${user_role ? Prisma.sql`AND u.user_role LIKE '%${Prisma.raw(user_role)}%'` : Prisma.empty}
+        WHERE
+            ${whereClause}
         GROUP BY u.id, u.manager_id
         LIMIT ${Prisma.raw(String(Number(pageSize)))} OFFSET ${Prisma.raw(String(Number((page - 1) * pageSize)))}
     `;

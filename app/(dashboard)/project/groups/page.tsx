@@ -42,26 +42,28 @@ async function getProjectGroups(
     const state = searchParams?.state || null;
 
     // 判断当前用户角色
+    const conditions: Prisma.Sql[] = [Prisma.sql`1 = 1`];
+    if (group_name) {
+        conditions.push(Prisma.sql`g.group_name LIKE ${'%' + group_name + '%'}`);
+    }
+    if (project_name) {
+        conditions.push(Prisma.sql`p.project_name LIKE ${'%' + project_name + '%'}`);
+    }
+    if (state) {
+        conditions.push(Prisma.sql`g.state LIKE ${'%' + state + '%'}`);
+    }
+    const whereClause = Prisma.join(conditions, ' AND ');
+
     const projectGroups = await db.$queryRaw<ProjectGroupTableProps[]>`
         SELECT g.*, p.project_name,
-        COUNT(DISTINCT ug.user_id) AS user_num, 
+        COUNT(DISTINCT ug.user_id) AS user_num,
         COUNT(DISTINCT ge.id) AS experiment_num
         FROM project_group g
-        LEFT JOIN projects p ON g.project_id = p.id 
+        LEFT JOIN projects p ON g.project_id = p.id
         LEFT JOIN user_group ug ON ug.project_group_id = g.id AND ug.project_id = p.id
         LEFT JOIN project_group_experiments ge ON ge.project_group_id = g.id
-        WHERE 1 = 1
-        ${
-            group_name
-                ? Prisma.sql`AND g.group_name LIKE '%${Prisma.raw(group_name)}%'`
-                : Prisma.empty
-        }
-        ${
-            project_name
-                ? Prisma.sql`AND p.project_name LIKE '%${Prisma.raw(project_name)}%'`
-                : Prisma.empty
-        }
-        ${state ? Prisma.sql`AND g.state LIKE '%${Prisma.raw(state)}%'` : Prisma.empty}
+        WHERE
+            ${whereClause}
         GROUP BY g.id, p.project_name
         LIMIT ${Prisma.raw(String(Number(pageSize)))} OFFSET ${Prisma.raw(String(Number((page - 1) * pageSize)))}
     `;

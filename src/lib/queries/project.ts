@@ -60,19 +60,23 @@ export async function getProjects(
     // 构建排序 SQL
     const orderBySql = buildOrderBySql(sort_by, sort_order);
 
+    const conditions: Prisma.Sql[] = [Prisma.sql`1 = 1`];
+    if (project_name) {
+        conditions.push(Prisma.sql`p.project_name LIKE ${'%' + project_name + '%'}`);
+    }
+    if (state === 'AVAILABLE') {
+        conditions.push(Prisma.sql`p.state = 'AVAILABLE' AND p.end_time >= ${currentDate}`);
+    } else if (state === 'EXPIRED') {
+        conditions.push(Prisma.sql`p.state = 'AVAILABLE' AND p.end_time < ${currentDate}`);
+    } else if (state) {
+        conditions.push(Prisma.sql`p.state = ${state}`);
+    }
+    const whereClause = Prisma.join(conditions, ' AND ');
+
     const projects = await db.$queryRaw<ProjectRecord[]>`
         SELECT * from projects p
-        WHERE 1 = 1
-        ${project_name ? Prisma.sql`AND p.project_name LIKE ${`%${project_name}%`}` : Prisma.empty}
-        ${
-            state === 'AVAILABLE'
-                ? Prisma.sql`AND p.state = 'AVAILABLE' AND p.end_time >= ${currentDate}`
-                : state === 'EXPIRED'
-                  ? Prisma.sql`AND p.state = 'AVAILABLE' AND p.end_time < ${currentDate}`
-                  : state
-                    ? Prisma.sql`AND p.state = ${state}`
-                    : Prisma.empty
-        }
+        WHERE
+            ${whereClause}
         ${orderBySql}
         LIMIT ${Prisma.raw(String(Number(pageSize)))} OFFSET ${Prisma.raw(String(Number((page - 1) * pageSize)))}
     `;
