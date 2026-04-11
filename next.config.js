@@ -38,10 +38,6 @@ const nextConfig = {
     experimental: {
         // 优化包导入，减少打包体积
         optimizePackageImports: ['lucide-react', 'date-fns', 'ramda'],
-        // Webpack 内存优化
-        webpackMemoryOptimizations: true,
-        // 使用单独工作进程编译，减少内存占用
-        webpackBuildWorker: true,
     },
 
     /**
