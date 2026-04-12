@@ -26,7 +26,7 @@ export function CountDown({ start, limit, nanoId, part, callbackUrl, mini = true
         return timeLeft > 0 ? timeLeft : 0;
     };
 
-    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+    const [timeLeft, setTimeLeft] = useState<number | null>(null);
     const fiveMinWarningShown = useRef(false);
     const tenSecWarningShown = useRef(false);
     const finishCalled = useRef(false);
@@ -65,6 +65,8 @@ export function CountDown({ start, limit, nanoId, part, callbackUrl, mini = true
 
     // 单一 interval 处理倒计时和 toast 提醒
     useEffect(() => {
+        setTimeLeft(calculateTimeLeft());
+
         const timer = setInterval(() => {
             const newTimeLeft = calculateTimeLeft();
             setTimeLeft(newTimeLeft);
@@ -133,9 +135,10 @@ export function CountDown({ start, limit, nanoId, part, callbackUrl, mini = true
 
     const formatTime = (time: number) => time.toString().padStart(2, '0');
 
-    const hours = formatTime(Math.floor(timeLeft / 3600));
-    const minutes = formatTime(Math.floor((timeLeft % 3600) / 60));
-    const seconds = formatTime(Math.round(timeLeft) % 60);
+    const t = timeLeft ?? 0;
+    const hours = formatTime(Math.floor(t / 3600));
+    const minutes = formatTime(Math.floor((t % 3600) / 60));
+    const seconds = formatTime(Math.round(t) % 60);
 
     return mini ? (
         <span className="countdown font-mono text-2xl">
