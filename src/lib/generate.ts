@@ -20,7 +20,7 @@ const GENERATE_TIMEOUT = 60000; // 60 秒
  */
 async function generateImage(prompt: string, size: string = DEFAULT_SIZE): Promise<string> {
     const startTime = Date.now();
-    logger.info({ prompt: prompt.substring(0, 100), size }, '开始调用 Doubao 生成图片');
+    logger.info({ promptLength: prompt.length, prompt, size }, '开始调用 Doubao 生成图片');
     try {
         const response = await client.images.generate(
             {

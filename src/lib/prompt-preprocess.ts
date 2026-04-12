@@ -182,6 +182,9 @@ export async function updateContextSummary(
  * 拼接顺序：风格 + 当前用户输入 + 上下文摘要
  * 意图画像作为隐式指导融入风格和上下文中，不单独暴露
  */
+// Doubao seedream 提示词最大长度（字符数），超出会被截断
+const MAX_PROMPT_LENGTH = 800;
+
 export function assemblePrompt(params: {
     userInput: string;
     intentProfile: string | null;
@@ -204,16 +207,47 @@ export function assemblePrompt(params: {
     }
 
     // 4. 实验意图指导（从预分析中提取 image_guidance，作为补充）
+    let imageGuidance: string | null = null;
     if (params.intentProfile) {
         try {
             const profile = JSON.parse(params.intentProfile) as ExperimentIntentProfile;
             if (profile.image_guidance) {
-                parts.push(`指导：${profile.image_guidance}`);
+                imageGuidance = profile.image_guidance;
+                parts.push(`指导：${imageGuidance}`);
             }
         } catch {
             // ignore parse errors, skip intent guidance
         }
     }
 
-    return parts.join('，');
+    const assembled = parts.join('，');
+
+    // 记录各组成部分，方便调试
+    logger.info(
+        {
+            style: params.styleTemplate || '(空)',
+            userInput: params.userInput,
+            contextSummary: params.contextSummary || '(空)',
+            imageGuidance: imageGuidance || '(空)',
+            assembledLength: assembled.length,
+            assembled,
+        },
+        '提示词组装详情'
+    );
+
+    // 超长截断，保留完整的最后一个中文句子
+    if (assembled.length > MAX_PROMPT_LENGTH) {
+        const truncated = assembled.substring(0, MAX_PROMPT_LENGTH);
+        logger.warn(
+            {
+                originalLength: assembled.length,
+                truncatedLength: truncated.length,
+                maxLength: MAX_PROMPT_LENGTH,
+            },
+            `提示词超长，已截断 (${assembled.length} → ${truncated.length})`
+        );
+        return truncated;
+    }
+
+    return assembled;
 }

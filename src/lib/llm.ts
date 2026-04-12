@@ -56,7 +56,7 @@ async function callModel(
                     { role: 'user', content: userMessage },
                 ],
                 temperature: options?.temperature ?? 0.3,
-                max_tokens: options?.maxTokens ?? 500,
+                max_completion_tokens: options?.maxTokens ?? 500,
             },
             { signal: AbortSignal.timeout(TEXT_TIMEOUT) }
         );

@@ -119,7 +119,22 @@ export async function POST(request: Request) {
         styleTemplate: templateContent,
     });
 
-    logger.info({ promptNanoId, engineId, size }, '开始生成图片任务');
+    logger.info(
+        {
+            promptNanoId,
+            engineId,
+            size,
+            userInput: trail.prompt,
+            intentProfile: experiment?.intent_profile
+                ? experiment.intent_profile.substring(0, 200)
+                : '(空)',
+            contextSummary: userExpContext?.context_summary || '(空)',
+            styleTemplate: templateContent || '(空)',
+            assembledPrompt,
+            assembledPromptLength: assembledPrompt.length,
+        },
+        '开始生成图片任务'
+    );
 
     try {
         const imageUrl = await generateImage(assembledPrompt, size);
