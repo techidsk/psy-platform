@@ -1,46 +1,30 @@
+const AVATAR_COLORS = [
+    '#94A3B8', // 石板灰
+    '#7DD3FC', // 天空蓝
+    '#86EFAC', // 薄荷绿
+    '#FDE68A', // 琥珀黄
+    '#C4B5FD', // 薰衣草紫
+    '#FDA4AF', // 玫瑰粉
+    '#67E8F9', // 青碧
+    '#A5B4FC', // 靛蓝
+    '#6EE7B7', // 翡翠绿
+    '#FBBF24', // 暖金
+] as const;
+
+function hashToColor(str: string): string {
+    const hash = str.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return AVATAR_COLORS[hash % AVATAR_COLORS.length];
+}
+
 /**
- * 生成默认用户头像的工具函数。
- * 可把与用户头像相关的函数放在这里
+ * 获取默认头像，纯色背景 + 用户名首字母的 SVG 图像
  */
+export function getDefaultAvatar(username: string): string {
+    const initial = username.at(0)?.toUpperCase() ?? '?';
+    const bgColor = hashToColor(username);
 
-type SVGString = String;
-
-/**
- * 获取默认头像，为一张纯色背景正中为用户名首字母的图像。以SVG图像的形式返回
- * @param username 用户名
- * @returns svg字符串
- */
-export function getDefaultAvatar(username: string) {
-    const fstCharacter = username.at(0);
-
-    const hashToColor = (str: string) => {
-        const mappingTable = {
-            '0': '#FFC0CB', // 粉红色
-            '1': '#ADD8E6', // 淡蓝色
-            '2': '#90EE90', // 淡绿色
-            '3': '#FFD700', // 金色
-            '4': '#FFA07A', // 浅鲑色
-            '5': '#9370DB', // 紫罗兰色
-            '6': '#00FA9A', // 薄荷绿
-            '7': '#FF6347', // 番茄红
-            '8': '#00CED1', // 深天蓝
-            '9': '#FF69B4', // 石榴红
-        };
-
-        const index: keyof typeof mappingTable = (
-            str.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 10
-        ).toString() as keyof typeof mappingTable;
-        return mappingTable[index];
-    };
-
-    const template = `
-    <svg width="300" height="200" xmlns="http://www.w3.org/2000/svg">
-            <rect width="100%" height="100%" fill="${hashToColor(username)}" />
-            <text x="50%" y="50%" fill="#FFFFFF" font-size="90" text-anchor="middle" dy=".3em">
-                ${fstCharacter}
-            </text>
-        </svg>
-    `;
-
-    return template;
+    return `<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="${bgColor}" rx="100"/>
+  <text x="50%" y="50%" fill="#FFF" font-size="90" font-weight="600" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" text-anchor="middle" dy=".35em">${initial}</text>
+</svg>`;
 }
