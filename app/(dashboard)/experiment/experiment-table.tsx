@@ -5,6 +5,7 @@ import { DataTable } from '@/components/data-table';
 import { State } from '@/components/state';
 import { ExperimentDetailButton } from '@/components/experiment/experiment-detail-button';
 import { dateFormat } from '@/lib/date';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const columns: ColumnDef<any, any>[] = [
     {
@@ -39,9 +40,13 @@ const columns: ColumnDef<any, any>[] = [
         header: () => '使用引擎',
         cell: ({ row }) => {
             const engines = row.original.engines;
+            const maxVisible = 2;
+            const visibleEngines = engines.slice(0, maxVisible);
+            const hiddenEngines = engines.slice(maxVisible);
+
             return (
                 <div className="flex flex-col gap-2">
-                    {engines.map((engine: any) => (
+                    {visibleEngines.map((engine: any) => (
                         <div key={engine.engine_id} className="flex gap-1 items-center">
                             <img
                                 src={engine.engine_image}
@@ -53,6 +58,36 @@ const columns: ColumnDef<any, any>[] = [
                             <span>{engine.engine_name}</span>
                         </div>
                     ))}
+                    {hiddenEngines.length > 0 && (
+                        <TooltipProvider delayDuration={200}>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <span className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
+                                        +{hiddenEngines.length} 更多...
+                                    </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" align="start">
+                                    <div className="flex flex-col gap-2">
+                                        {hiddenEngines.map((engine: any) => (
+                                            <div
+                                                key={engine.engine_id}
+                                                className="flex gap-1 items-center"
+                                            >
+                                                <img
+                                                    src={engine.engine_image}
+                                                    alt={engine.engine_name}
+                                                    width={20}
+                                                    height={20}
+                                                    className="rounded-full"
+                                                />
+                                                <span>{engine.engine_name}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
                 </div>
             );
         },
