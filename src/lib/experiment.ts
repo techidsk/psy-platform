@@ -167,8 +167,9 @@ function getEncodedCallbackUrl(
     if (userExperimentNanoId) {
         baseParams += `&nano_id=${encodeURIComponent(userExperimentNanoId)}`;
     }
-    // 保证路径以 "/" 结尾
-    const normalizedPath = _ensureTrailingSlash(callback);
+    // 先解码（调用方可能已经编码过），再规范化路径，最后统一编码一次
+    const decoded = decodeURIComponent(callback);
+    const normalizedPath = _ensureTrailingSlash(decoded);
     const callbackUrl = `${encodeURIComponent(normalizedPath)}?${baseParams}`;
     logger.info(`callbackUrl: ${callbackUrl}`);
     return callbackUrl;
