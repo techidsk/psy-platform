@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getId } from '@/lib/nano-id';
 import { logger } from '@/lib/logger';
+import { analyzeAndSaveIntentProfile } from '@/lib/prompt-preprocess';
 
 /**
  * /api/experiment/steps/add
@@ -70,6 +71,19 @@ export async function POST(request: Request) {
                 nano_id: getId(),
             },
         });
+        // 步骤添加后异步重新分析实验意图
+        if (experimentId) {
+            db.experiment
+                .findFirst({ where: { id: experimentId }, select: { nano_id: true } })
+                .then((exp) => {
+                    if (exp?.nano_id) {
+                        analyzeAndSaveIntentProfile(exp.nano_id).catch((err) =>
+                            logger.warn({ error: String(err) }, '步骤添加后意图分析失败')
+                        );
+                    }
+                })
+                .catch((err) => logger.warn({ error: String(err) }, '查询实验失败'));
+        }
     } catch (e) {
         logger.error(`添加实验步骤失败：${e}`);
         return NextResponse.json({ msg: '添加实验步骤失败', error: e }, { status: 500 });

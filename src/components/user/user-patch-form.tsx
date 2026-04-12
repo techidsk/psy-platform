@@ -16,8 +16,17 @@ interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
     edit?: boolean;
     userId?: number;
     nano_id?: string;
+    currentUserRole?: string;
 }
 type FormData = z.infer<typeof userPatchFormSchema>;
+
+const roleOptions = [
+    { value: 'SUPERADMIN', label: '超级管理员' },
+    { value: 'ADMIN', label: '管理员' },
+    { value: 'ASSISTANT', label: '助教' },
+    { value: 'USER', label: '测试者' },
+    { value: 'GUEST', label: '访客' },
+];
 
 export function UserPatchForm({
     className,
@@ -25,6 +34,7 @@ export function UserPatchForm({
     closeModal,
     edit,
     userId,
+    currentUserRole,
     ...props
 }: UserAuthFormProps) {
     const {
@@ -113,6 +123,7 @@ export function UserPatchForm({
             .then((data) => {
                 setValue('email', data.email);
                 setValue('tel', data.tel);
+                if (data.user_role) setValue('user_role', data.user_role);
                 setUserName(data.username);
             });
     }
@@ -196,6 +207,24 @@ export function UserPatchForm({
                             {...register('tel')}
                         />
                     </div>
+                    {currentUserRole === 'SUPERADMIN' && (
+                        <div className="grid gap-1">
+                            <label className="text-sm font-medium" htmlFor="user_role">
+                                用户角色
+                            </label>
+                            <select
+                                className="select w-full"
+                                disabled={isLoading}
+                                {...register('user_role')}
+                            >
+                                {roleOptions.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>
+                                        {opt.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
                     <button className={'btn btn-primary'} type="submit">
                         {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
                         保存

@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getId } from '@/lib/nano-id';
 import { logger } from '@/lib/logger';
+import { analyzeAndSaveIntentProfile } from '@/lib/prompt-preprocess';
 
 /**
  * /api/experiment/add
@@ -17,12 +18,20 @@ export async function POST(request: Request) {
     }
 
     try {
-        await db.experiment.create({
+        const experiment = await db.experiment.create({
             data: {
                 ...data,
                 creator: parseInt(currentUser.id),
             },
         });
+
+        // 异步触发意图分析（fire-and-forget）
+        if (experiment.nano_id) {
+            analyzeAndSaveIntentProfile(experiment.nano_id).catch((err) =>
+                logger.warn({ error: String(err) }, '意图分析失败，不影响创建')
+            );
+        }
+
         return NextResponse.json({ msg: '成功添加实验' });
     } catch (error) {
         logger.error(`添加实验失败, ${error}`);

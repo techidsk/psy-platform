@@ -11,6 +11,7 @@ import { UserDeleteModal } from './user-delete-modal';
 
 interface UserTableEditButtonsProps extends React.HTMLAttributes<HTMLButtonElement> {
     userId: number;
+    currentUserRole?: string;
 }
 
 /**
@@ -19,7 +20,12 @@ interface UserTableEditButtonsProps extends React.HTMLAttributes<HTMLButtonEleme
  * @param param0
  * @returns
  */
-export function UserTableEditButtons({ className, userId, ...props }: UserTableEditButtonsProps) {
+export function UserTableEditButtons({
+    className,
+    userId,
+    currentUserRole,
+    ...props
+}: UserTableEditButtonsProps) {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [open, setOpen] = useState(false);
@@ -91,7 +97,12 @@ export function UserTableEditButtons({ className, userId, ...props }: UserTableE
                     disableClickOutside={!open}
                 >
                     <h1 className="text-xl">编辑用户</h1>
-                    <UserPatchForm closeModal={close} edit={true} userId={userId} />
+                    <UserPatchForm
+                        closeModal={close}
+                        edit={true}
+                        userId={userId}
+                        currentUserRole={currentUserRole}
+                    />
                 </Modal>
             )}
             {openDelete && (

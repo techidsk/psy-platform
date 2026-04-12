@@ -44,6 +44,7 @@ model experiment {
   intro           String?   @db.Text
   engine_ids      Json?
   lock            Int?      @default(0) @db.TinyInt
+  intent_profile  String?   @db.Text
 
   @@index([engine_id], map: "idx_engine_id")
 }
@@ -111,6 +112,7 @@ model user_experiments {
   state            String?   @default("IN_EXPERIMENT") @db.VarChar(16)
   part             Int?      @default(1)
   is_deleted       Int?      @default(0) @db.TinyInt
+  context_summary  String?   @db.Text
 
   @@unique([nano_id, part], map: "user_experiments_nano_id_part_uindex")
   @@index([user_id], map: "idx_user_id")

@@ -130,16 +130,24 @@ const userColumns: ColumnDef<any, any>[] = [
             </div>
         ),
     },
-    {
-        id: 'actions',
-        header: () => <span className="sr-only">操作</span>,
-        cell: ({ row }) => (
-            <div className="flex gap-4 items-center">
-                <UserTableEditButtons userId={row.original.id} />
-            </div>
-        ),
-    },
+    // actions 列由 getColumns(role) 动态插入
 ];
+
+function getColumns(role: UserRole): ColumnDef<any, any>[] {
+    const allColumns: ColumnDef<any, any>[] = [
+        ...userColumns,
+        {
+            id: 'actions',
+            header: () => <span className="sr-only">操作</span>,
+            cell: ({ row }) => (
+                <div className="flex gap-4 items-center">
+                    <UserTableEditButtons userId={row.original.id} currentUserRole={role} />
+                </div>
+            ),
+        },
+    ];
+    return filterColumnsByRole(allColumns, role);
+}
 
 export function UserList({ role }: { role: UserRole }) {
     const { page, pageSize, total, loading, setPage, setPageSize, setTotal, setLoading } =
@@ -147,7 +155,7 @@ export function UserList({ role }: { role: UserRole }) {
     const [data, setData] = useState<any[]>([]);
     const [searchValues, setSearchValues] = useState<Record<string, string>>({});
 
-    const columns = filterColumnsByRole(userColumns, role);
+    const columns = getColumns(role);
 
     const fetchUsers = useCallback(
         async (p: number, ps: number, search: Record<string, string>) => {

@@ -32,6 +32,16 @@ export async function PATCH(request: Request) {
             return NextResponse.json({ msg: '用户 ID 不能为空' }, { status: 400 });
         }
 
+        // 角色修改仅 SUPERADMIN 可操作
+        if (data.user_role) {
+            if (currentUser.role !== 'SUPERADMIN') {
+                return NextResponse.json(
+                    { msg: '只有超级管理员可以修改用户角色' },
+                    { status: 403 }
+                );
+            }
+        }
+
         if (data.password) {
             const { salt, hashedPassword } = await hash(data.password);
             data.salt = salt;

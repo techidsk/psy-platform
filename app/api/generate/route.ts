@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { generateImage } from '@/lib/generate';
 import { getCurrentUser } from '@/lib/session';
 import { logger } from '@/lib/logger';
+import { assemblePrompt, updateContextSummary } from '@/lib/prompt-preprocess';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { uploadFile } = require('../../../src/lib/upload.js');
@@ -97,11 +98,26 @@ export async function POST(request: Request) {
         return NextResponse.json({ msg: '不需要生成图片' });
     }
 
-    // 组装结构化提示词：风格 + 内容
+    // 并行获取意图画像和上下文摘要
     const templateContent = (engine.template as any)?.prompt || '';
-    const assembledPrompt = templateContent
-        ? `风格：${templateContent}，内容：${trail.prompt}`
-        : trail.prompt;
+    const [experiment, userExpContext] = await Promise.all([
+        db.experiment.findFirst({
+            where: { id: parseInt(userExperiment.experiment_id!) },
+            select: { intent_profile: true },
+        }),
+        db.user_experiments.findFirst({
+            where: { id: userExperiment.id },
+            select: { context_summary: true },
+        }),
+    ]);
+
+    // 组装提示词（纯模板拼接，无 LLM 调用）
+    const assembledPrompt = assemblePrompt({
+        userInput: trail.prompt!,
+        intentProfile: experiment?.intent_profile || null,
+        contextSummary: userExpContext?.context_summary || null,
+        styleTemplate: templateContent,
+    });
 
     logger.info({ promptNanoId, engineId, size }, '开始生成图片任务');
 
@@ -139,6 +155,25 @@ export async function POST(request: Request) {
                 update_time: new Date(),
             },
         });
+
+        // 异步更新上下文摘要（fire-and-forget，不阻塞响应）
+        updateContextSummary(trail.prompt!, userExpContext?.context_summary || null)
+            .then((newSummary) => {
+                db.user_experiments
+                    .update({
+                        where: { id: userExperiment.id },
+                        data: { context_summary: newSummary },
+                    })
+                    .catch((err) =>
+                        logger.warn(
+                            { promptNanoId, error: String(err) },
+                            '更新 context_summary 失败'
+                        )
+                    );
+            })
+            .catch((err) =>
+                logger.warn({ promptNanoId, error: String(err) }, '上下文压缩失败，不影响本次生成')
+            );
 
         logger.info({ promptNanoId, elapsed }, '生成任务完成，图片 URL 已保存');
         return NextResponse.json({

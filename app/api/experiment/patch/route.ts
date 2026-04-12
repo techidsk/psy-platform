@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/session';
 import { logger } from '@/lib/logger';
+import { analyzeAndSaveIntentProfile } from '@/lib/prompt-preprocess';
 
 /**
  * /api/experiment/patch
@@ -34,6 +35,11 @@ export async function PATCH(request: Request) {
             data: { ...params },
         });
         logger.info('已成功更新实验设置');
+
+        // 异步触发意图分析（fire-and-forget）
+        analyzeAndSaveIntentProfile(data.nano_id).catch((err) =>
+            logger.warn({ error: String(err), nano_id: data.nano_id }, '意图分析失败，不影响保存')
+        );
 
         return NextResponse.json({ msg: '添加成功' });
     } catch (error) {

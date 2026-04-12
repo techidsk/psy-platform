@@ -32,6 +32,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
             wechat_id: true,
             manager_id: true,
             avatar: true,
+            user_role: true,
         },
     });
     if (user) {

@@ -89,6 +89,7 @@ export const userPatchFormSchema = z
             .optional()
             .or(z.literal('')),
         tel: z.string().optional(),
+        user_role: z.enum(['SUPERADMIN', 'ADMIN', 'ASSISTANT', 'USER', 'GUEST']).optional(),
     })
     .superRefine(({ password }, checkPassComplexity) => {
         if (!password) return;

@@ -87,6 +87,7 @@ export default async function ExperimentList({
     const params = await searchParams;
     const currentPage = params.page ? parseInt(params.page) || 1 : 1;
     const currentPageSize = params.pagesize ? parseInt(params.pagesize) || 10 : 10;
+    const currentUser = await getCurrentUser();
     const datas = await getExperiments(params, currentPage, currentPageSize);
     let end = currentPage;
     if (datas.length === currentPageSize) {
@@ -102,6 +103,7 @@ export default async function ExperimentList({
                 <div className="w-full overflow-auto">
                     <ExperimentDataTable
                         data={datas}
+                        role={currentUser?.role as any}
                         searchNode={
                             <TableSearch defaultParams={params} searchDatas={searchDatas} />
                         }

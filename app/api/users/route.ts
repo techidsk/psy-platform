@@ -28,8 +28,14 @@ export async function GET(request: NextRequest) {
 
     const qb = new QueryBuilder();
     qb.where('u.deleted = 0');
-    qb.where("u.user_role != 'SUPERADMIN'");
-    if (role !== 'ADMIN') {
+    if (role === 'SUPERADMIN') {
+        // SUPERADMIN 看到所有用户
+    } else if (role === 'ADMIN') {
+        // ADMIN 看到除 SUPERADMIN 外的所有用户
+        qb.where("u.user_role != 'SUPERADMIN'");
+    } else {
+        // 其他角色只看自己管理的用户
+        qb.where("u.user_role != 'SUPERADMIN'");
         qb.where('u.manager_id = ?', currentUser.id);
     }
     if (username) qb.where('u.username LIKE ?', '%' + username + '%');
