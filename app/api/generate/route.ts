@@ -171,30 +171,59 @@ export async function POST(request: Request) {
             },
         });
 
-        // 异步更新上下文摘要（fire-and-forget，不阻塞响应）
-        updateContextSummary(trail.prompt!, userExpContext?.context_summary || null)
-            .then((newSummary) => {
-                db.user_experiments
-                    .update({
+        // 同步更新上下文摘要，带超时保护（避免快速连续提交时读到旧值）
+        const CONTEXT_UPDATE_TIMEOUT = 5000;
+        try {
+            await Promise.race([
+                (async () => {
+                    const newSummary = await updateContextSummary(
+                        trail.prompt!,
+                        userExpContext?.context_summary || null
+                    );
+                    await db.user_experiments.update({
                         where: { id: userExperiment.id },
                         data: { context_summary: newSummary },
-                    })
-                    .catch((err) =>
-                        logger.warn(
-                            { promptNanoId, error: String(err) },
-                            '更新 context_summary 失败'
-                        )
-                    );
-            })
-            .catch((err) =>
-                logger.warn({ promptNanoId, error: String(err) }, '上下文压缩失败，不影响本次生成')
+                    });
+                })(),
+                new Promise((_, reject) =>
+                    setTimeout(
+                        () => reject(new Error('context_summary 更新超时')),
+                        CONTEXT_UPDATE_TIMEOUT
+                    )
+                ),
+            ]);
+        } catch (err) {
+            logger.warn(
+                { promptNanoId, error: String(err) },
+                '上下文摘要更新失败或超时，不影响本次生成'
             );
+        }
 
         logger.info({ promptNanoId, elapsed }, '生成任务完成，图片 URL 已保存');
+
+        // 解析 intentProfile 提取 image_guidance
+        let intentProfileParsed: Record<string, unknown> | null = null;
+        try {
+            if (experiment?.intent_profile) {
+                intentProfileParsed = JSON.parse(experiment.intent_profile);
+            }
+        } catch {
+            // ignore
+        }
+
         return NextResponse.json({
             msg: '发布成功',
             url: finalUrl,
             prompt: assembledPrompt,
+            debug: {
+                styleTemplate: templateContent || null,
+                userInput: trail.prompt,
+                contextSummary: userExpContext?.context_summary || null,
+                intentProfile: intentProfileParsed,
+                imageGuidance: (intentProfileParsed as any)?.image_guidance || null,
+                assembledPrompt,
+                assembledPromptLength: assembledPrompt.length,
+            },
         });
     } catch (error) {
         const elapsed = Date.now() - startTime;

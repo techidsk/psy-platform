@@ -25,7 +25,7 @@ interface StepInfo {
 const INTENT_ANALYSIS_SYSTEM_PROMPT = `你是一个心理学实验分析助手。请分析以下心理学实验的核心目的和意图，输出一个严格的 JSON 对象，包含以下字段：
 - purpose: 一句话描述实验核心目的（不超过50字）
 - emotional_direction: 实验期望引导参与者的情绪方向（如：积极表达、自由探索、情绪宣泄等）
-- image_guidance: 当参与者输入文字后生成图片时，应遵循的视觉指导原则（不超过80字）
+- image_guidance: 生成配图时的整体视觉风格和氛围基调（不超过40字）。只描述色调、画风、氛围等风格方向（如"温暖写实，柔和光线"），不要包含具体意象、物体或场景描述
 - keywords: 3-5个关键词的数组
 
 只输出 JSON，不要包含任何其他文字或 markdown 格式标记。`;
@@ -191,36 +191,59 @@ export function assemblePrompt(params: {
     contextSummary: string | null;
     styleTemplate: string;
 }): string {
-    const parts: string[] = [];
-
-    // 1. 风格模板
-    if (params.styleTemplate) {
-        parts.push(`风格：${params.styleTemplate}`);
-    }
-
-    // 2. 当前用户输入（完整保留，优先级最高）
-    parts.push(`内容：${params.userInput}`);
-
-    // 3. 上下文摘要（已压缩的历史背景）
-    if (params.contextSummary) {
-        parts.push(`背景：${params.contextSummary}`);
-    }
-
-    // 4. 实验意图指导（从预分析中提取 image_guidance，作为补充）
+    // 解析 imageGuidance
     let imageGuidance: string | null = null;
     if (params.intentProfile) {
         try {
             const profile = JSON.parse(params.intentProfile) as ExperimentIntentProfile;
             if (profile.image_guidance) {
                 imageGuidance = profile.image_guidance;
-                parts.push(`指导：${imageGuidance}`);
             }
         } catch {
             // ignore parse errors, skip intent guidance
         }
     }
 
-    const assembled = parts.join('，');
+    // 按优先级构建各段（高 → 低：用户输入 > 风格 > 背景 > 指导）
+    // 超长时从低优先级开始裁剪
+    const SEP = '，';
+    const coreParts: string[] = [];
+
+    // 高优先级：风格 + 用户输入（完整保留）
+    if (params.styleTemplate) {
+        coreParts.push(`风格：${params.styleTemplate}`);
+    }
+    coreParts.push(`内容：${params.userInput}`);
+    const coreStr = coreParts.join(SEP);
+
+    // 低优先级部分：背景、指导（按剩余空间裁剪）
+    let remaining = MAX_PROMPT_LENGTH - coreStr.length;
+    const extraParts: string[] = [];
+
+    if (params.contextSummary && remaining > 0) {
+        const contextPart = `${SEP}背景：${params.contextSummary}`;
+        if (contextPart.length <= remaining) {
+            extraParts.push(contextPart);
+            remaining -= contextPart.length;
+        } else if (remaining > 5) {
+            // 截断背景，保留尽可能多的内容
+            extraParts.push(contextPart.substring(0, remaining));
+            remaining = 0;
+        }
+    }
+
+    if (imageGuidance && remaining > 0) {
+        const guidancePart = `${SEP}指导：${imageGuidance}`;
+        if (guidancePart.length <= remaining) {
+            extraParts.push(guidancePart);
+            remaining -= guidancePart.length;
+        } else if (remaining > 5) {
+            extraParts.push(guidancePart.substring(0, remaining));
+            remaining = 0;
+        }
+    }
+
+    const assembled = coreStr + extraParts.join('');
 
     // 记录各组成部分，方便调试
     logger.info(
@@ -235,7 +258,7 @@ export function assemblePrompt(params: {
         '提示词组装详情'
     );
 
-    // 超长截断，保留完整的最后一个中文句子
+    // 最终安全兜底（理论上不会触发，因为上面已按优先级裁剪）
     if (assembled.length > MAX_PROMPT_LENGTH) {
         const truncated = assembled.substring(0, MAX_PROMPT_LENGTH);
         logger.warn(
@@ -244,7 +267,7 @@ export function assemblePrompt(params: {
                 truncatedLength: truncated.length,
                 maxLength: MAX_PROMPT_LENGTH,
             },
-            `提示词超长，已截断 (${assembled.length} → ${truncated.length})`
+            `提示词超长兜底截断 (${assembled.length} → ${truncated.length})`
         );
         return truncated;
     }

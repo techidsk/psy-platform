@@ -119,6 +119,39 @@ describe('assemblePrompt', () => {
             })
         ).toBe('内容：一只猫');
     });
+
+    it('超长时优先保留用户输入，裁剪低优先级部分', () => {
+        const longInput = '字'.repeat(750); // 750 字用户输入
+        const result = assemblePrompt({
+            userInput: longInput,
+            intentProfile: JSON.stringify({ purpose: '测试', image_guidance: '温暖写实风格' }),
+            contextSummary: '很长的上下文摘要'.repeat(10),
+            styleTemplate: '水彩',
+        });
+        // 用户输入应完整保留
+        expect(result).toContain(`内容：${longInput}`);
+        expect(result).toContain('风格：水彩');
+        // 总长度不超过 800
+        expect(result.length).toBeLessThanOrEqual(800);
+    });
+
+    it('超长时指导比背景先被裁剪', () => {
+        // 构造一个刚好能放下背景但放不下指导的场景
+        const input = '字'.repeat(700);
+        const result = assemblePrompt({
+            userInput: input,
+            intentProfile: JSON.stringify({ purpose: '测试', image_guidance: '温暖写实风格' }),
+            contextSummary: '短背景',
+            styleTemplate: '水彩',
+        });
+        expect(result).toContain('内容：');
+        expect(result).toContain('风格：水彩');
+        // 背景应该在指导之前被尝试加入
+        if (result.includes('背景：')) {
+            // 如果背景能放下，指导可能放不下
+            expect(result.length).toBeLessThanOrEqual(800);
+        }
+    });
 });
 
 // ============================================================

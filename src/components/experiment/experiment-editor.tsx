@@ -12,6 +12,16 @@ import { logger } from '@/lib/logger';
 import { Modal } from '@/components/ui/modal';
 import { Icons } from '@/components/icons';
 
+interface GenerateDebugInfo {
+    styleTemplate: string | null;
+    userInput: string;
+    contextSummary: string | null;
+    intentProfile: Record<string, unknown> | null;
+    imageGuidance: string | null;
+    assembledPrompt: string;
+    assembledPromptLength: number;
+}
+
 interface ExperimentEditorProps {
     nanoId: string;
     back?: string;
@@ -23,6 +33,7 @@ interface ExperimentEditorProps {
     experimentImageList: ImageResponse[];
     stepTitle?: string;
     stepContent?: string;
+    isTestMode?: boolean;
 }
 
 type FetchData = {
@@ -55,6 +66,7 @@ export function ExperimentEditor({
     experimentImageList,
     stepTitle = '',
     stepContent = '',
+    isTestMode = false,
 }: ExperimentEditorProps) {
     const [showTopicModal, setShowTopicModal] = useState<boolean>(false);
     const router = useRouter();
@@ -66,6 +78,8 @@ export function ExperimentEditor({
         []
     );
     const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
+    const [debugInfo, setDebugInfo] = useState<GenerateDebugInfo | null>(null);
+    const [showDebugPanel, setShowDebugPanel] = useState<boolean>(true);
 
     // 用于追踪组件是否已挂载，防止组件卸载后继续更新状态
     const isMountedRef = useRef<boolean>(true);
@@ -168,7 +182,9 @@ export function ExperimentEditor({
 
             if (!trailResponse.ok) {
                 const errorData = await trailResponse.json().catch(() => ({}));
-                logger.error(`创建trail失败: ${trailResponse.status} - ${JSON.stringify(errorData)}`);
+                logger.error(
+                    `创建trail失败: ${trailResponse.status} - ${JSON.stringify(errorData)}`
+                );
                 toast({
                     title: '提交失败',
                     description: errorData.msg || '无法保存内容，请重试',
@@ -232,6 +248,9 @@ export function ExperimentEditor({
                     // 后端已更新 trail，直接刷新页面
                     if (isMountedRef.current) {
                         router.refresh();
+                        if (isTestMode && response_msg.debug) {
+                            setDebugInfo(response_msg.debug);
+                        }
                     }
                 }
             } else {
@@ -514,6 +533,58 @@ export function ExperimentEditor({
                 readOnly={isExperimentFinished || loading}
                 placeholder=""
             />
+
+            {/* 测试模式调试面板 */}
+            {isTestMode && debugInfo && (
+                <div className="mt-2 flex-shrink-0">
+                    <button
+                        className="text-xs text-gray-500 hover:text-gray-700 mb-1"
+                        onClick={() => setShowDebugPanel((v) => !v)}
+                    >
+                        {showDebugPanel ? '▼' : '▶'} 生成调试信息
+                    </button>
+                    {showDebugPanel && (
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs font-mono space-y-2 max-h-[300px] overflow-y-auto">
+                            <div>
+                                <span className="text-gray-500">风格模板：</span>
+                                <span>{debugInfo.styleTemplate || '(空)'}</span>
+                            </div>
+                            <div>
+                                <span className="text-gray-500">用户输入：</span>
+                                <span>{debugInfo.userInput}</span>
+                            </div>
+                            <div>
+                                <span className="text-gray-500">上下文摘要：</span>
+                                <span className={debugInfo.contextSummary ? '' : 'text-orange-500'}>
+                                    {debugInfo.contextSummary || '(空 - 首次提交无历史)'}
+                                </span>
+                            </div>
+                            <div>
+                                <span className="text-gray-500">图像指导(intent)：</span>
+                                <span className={debugInfo.imageGuidance ? 'text-blue-600' : ''}>
+                                    {debugInfo.imageGuidance || '(空)'}
+                                </span>
+                            </div>
+                            {debugInfo.intentProfile && (
+                                <div>
+                                    <span className="text-gray-500">完整意图画像：</span>
+                                    <pre className="mt-1 bg-white p-2 rounded border text-[11px] whitespace-pre-wrap">
+                                        {JSON.stringify(debugInfo.intentProfile, null, 2)}
+                                    </pre>
+                                </div>
+                            )}
+                            <div className="border-t pt-2">
+                                <span className="text-gray-500">
+                                    最终提示词 ({debugInfo.assembledPromptLength}字)：
+                                </span>
+                                <div className="mt-1 bg-white p-2 rounded border whitespace-pre-wrap break-all">
+                                    {debugInfo.assembledPrompt}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

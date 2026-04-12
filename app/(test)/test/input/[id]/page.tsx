@@ -100,6 +100,7 @@ export default async function TestInput({
                         experimentImageList={experimentImageList}
                         stepTitle={stepTitle}
                         stepContent={stepContent}
+                        isTestMode={true}
                     />
                     <div className="flex gap-8 items-center justify-end mt-4 flex-shrink-0">
                         {!isExperimentFinished && countDownTime > 0 && (
