@@ -1,15 +1,11 @@
 import { db, QueryBuilder } from '@/lib/db';
 import { DashboardHeader } from '@/components/dashboard-header';
-import { Table } from '@/components/table/table';
-import { TableConfig } from '@/types/table';
-import { State } from '@/components/state';
 import { getCurrentUser } from '@/lib/session';
 import Pagination from '@/components/pagination';
 import { Prisma } from '@/generated/prisma';
 import { TableSearch } from '@/components/table/table-search';
 import { CreateProjectGroupButton } from '@/components/project/group/project-group-create-button';
-import { ProjectGroupTableEditButtons } from '@/components/project/group/project-group-table-edit-buttons';
-import { error } from 'console';
+import { GroupsDataTable } from './groups-table';
 
 type ProjectGroupState = 'AVAILABLE' | 'UNASSIGNED' | 'DISABLED';
 
@@ -92,122 +88,24 @@ export default async function ProjectGroups({
                     <CreateProjectGroupButton className="btn btn-primary btn-sm" />
                 </DashboardHeader>
                 <div className="w-full overflow-auto">
-                    <Table
-                        configs={projectTableConfig}
-                        datas={datas}
+                    <GroupsDataTable
+                        data={datas}
                         searchNode={
                             <TableSearch defaultParams={params} searchDatas={searchDatas} />
                         }
-                    >
-                        <Pagination current={currentPage} pageSize={currentPageSize} end={end} />
-                    </Table>
+                        pagination={
+                            <Pagination
+                                current={currentPage}
+                                pageSize={currentPageSize}
+                                end={end}
+                            />
+                        }
+                    />
                 </div>
             </div>
         </div>
     );
 }
-
-const projectTableConfig: TableConfig[] = [
-    {
-        key: 'project_name',
-        label: '所属项目',
-        children: (data: any) => {
-            return data.project_name ? (
-                <div className=""> {data.project_name}</div>
-            ) : (
-                <div className="badge badge-error badge-outline">暂未分配</div>
-            );
-        },
-    },
-    {
-        key: 'group_name',
-        label: '分组名称',
-        children: (data: any) => {
-            return <span>{data.group_name}</span>;
-        },
-    },
-    {
-        key: 'description',
-        label: '分组描述',
-        children: (data: any) => {
-            return <span>{data.description}</span>;
-        },
-    },
-    {
-        key: 'user_num',
-        label: '分组人数',
-        children: (data: any) => {
-            return (
-                <div className="flex gap-2">
-                    <span>{`${data.user_num}`}</span>
-                </div>
-            );
-        },
-    },
-    {
-        key: 'gap',
-        label: '实验间隔',
-        children: (data: any) => {
-            const hours = data.gap;
-            const days = Math.floor(hours / 24);
-            const hoursLeft = hours % 24;
-
-            return (
-                <div className="flex gap-2">
-                    {days > 0 && <span>{`${days} 天`}</span>}
-                    <span>{`${hoursLeft} 小时`}</span>
-                </div>
-            );
-        },
-    },
-    {
-        key: 'state',
-        label: '状态',
-        children: (data: ProjectGroupTableProps) => {
-            if (data.experiment_num == 0) {
-                return (
-                    <div className="flex flex-col gap-2 items-start">
-                        <State type={'error'}>暂无实验</State>
-                    </div>
-                );
-            }
-            const projectState: Record<ProjectGroupState, { text: string; state: string }> = {
-                AVAILABLE: {
-                    text: '分组正常',
-                    state: 'success',
-                },
-                UNASSIGNED: {
-                    text: '未分配项目',
-                    state: 'error',
-                },
-                DISABLED: {
-                    text: '已停用',
-                    state: 'error',
-                },
-            };
-
-            let obj = projectState[data.state];
-
-            return (
-                <div className="flex flex-col gap-2 items-start">
-                    <State type={obj.state}>{obj.text}</State>
-                </div>
-            );
-        },
-    },
-    {
-        key: 'id',
-        label: '操作',
-        hidden: true,
-        children: (data: any) => {
-            return (
-                <div className="flex gap-1 items-center">
-                    <ProjectGroupTableEditButtons groupId={data.id} />
-                </div>
-            );
-        },
-    },
-];
 
 const searchDatas = [
     { name: 'project_name', type: 'input', placeholder: '请输入所属项目名称' },

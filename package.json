@@ -19,6 +19,7 @@
     "@prisma/adapter-mariadb": "^7.7.0",
     "@prisma/client": "^7.7.0",
     "@radix-ui/react-toast": "^1.2.15",
+    "@tanstack/react-table": "^8.21.3",
     "@tiptap/extension-bubble-menu": "^3.22.3",
     "@tiptap/extension-placeholder": "^3.22.3",
     "@tiptap/pm": "^3.22.3",

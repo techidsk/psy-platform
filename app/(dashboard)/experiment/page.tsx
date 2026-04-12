@@ -1,16 +1,12 @@
 import { DashboardHeader } from '@/components/dashboard-header';
-import { State } from '@/components/state';
-import { Table } from '@/components/table/table';
-import { dateFormat } from '@/lib/date';
 import { getCurrentUser } from '@/lib/session';
 import { db, QueryBuilder } from '@/lib/db';
-import { TableConfig } from '@/types/table';
-import { ExperimentDetailButton } from '@/components/experiment/experiment-detail-button';
 import { ExperimentCreateButton } from '@/components/experiment/experiment-create-button';
 import { TableSearch } from '@/components/table/table-search';
 import Pagination from '@/components/pagination';
 import { Prisma } from '@/generated/prisma';
 import { cache } from 'react';
+import { ExperimentDataTable } from './experiment-table';
 
 const getExperiments = cache(
     async (
@@ -104,129 +100,24 @@ export default async function ExperimentList({
                     <ExperimentCreateButton className="btn btn-primary btn-sm" />
                 </DashboardHeader>
                 <div className="w-full overflow-auto">
-                    <Table
-                        configs={experimentTableConfig}
-                        datas={datas}
+                    <ExperimentDataTable
+                        data={datas}
                         searchNode={
                             <TableSearch defaultParams={params} searchDatas={searchDatas} />
                         }
-                    >
-                        <Pagination current={currentPage} pageSize={currentPageSize} end={end} />
-                    </Table>
+                        pagination={
+                            <Pagination
+                                current={currentPage}
+                                pageSize={currentPageSize}
+                                end={end}
+                            />
+                        }
+                    />
                 </div>
             </div>
         </div>
     );
 }
-interface Engine {
-    engine_name: string;
-    engine_image: string;
-    engine_id: number;
-}
-
-const experimentTableConfig: TableConfig[] = [
-    {
-        key: 'project_name',
-        label: '所属项目',
-        children: (data: any) => {
-            return (
-                <div className="flex flex-col gap-2">
-                    <span>{data.project_name}</span>
-                </div>
-            );
-        },
-    },
-    {
-        key: 'group_name',
-        label: '所属分组',
-        children: (data: any) => {
-            return (
-                <div className="flex flex-col gap-2">
-                    <span>{data.group_name}</span>
-                </div>
-            );
-        },
-    },
-    {
-        key: 'experiment_name',
-        label: '实验名称',
-        children: (data: any) => {
-            return (
-                <div className="flex flex-col gap-2">
-                    <span>{data.experiment_name}</span>
-                </div>
-            );
-        },
-    },
-    {
-        key: 'engine_id',
-        label: '使用引擎',
-        children: (data: any) => {
-            const engines = data.engines as Engine[];
-
-            return (
-                <div className="flex flex-col gap-2">
-                    {engines.map((engine) => (
-                        <div key={engine.engine_id} className="flex gap-1 items-center">
-                            <img
-                                src={engine.engine_image}
-                                alt={engine.engine_name}
-                                width={24}
-                                height={24}
-                                className="rounded-full"
-                            />
-                            <span>{engine.engine_name}</span>
-                        </div>
-                    ))}
-                </div>
-            );
-        },
-    },
-    {
-        key: 'lock',
-        label: '锁定',
-        children: (data: any) => {
-            let text = Boolean(data.lock) ? '锁定' : '未锁定';
-            let type = Boolean(data.lock) ? 'warn' : 'success';
-            return <State type={type}>{text}</State>;
-        },
-    },
-    // {
-    //     key: 'available',
-    //     label: '状态',
-    //     children: (data: any) => {
-    //         let text = Boolean(data.available) ? '可用' : '暂停';
-    //         let type = Boolean(data.available) ? 'success' : 'warn';
-    //         return <State type={type}>{text}</State>;
-    //     },
-    // },
-    {
-        key: 'create_time',
-        label: '创建时间',
-        children: (data: any) => {
-            const datetimeStr = dateFormat(data.create_time);
-            return (
-                <div className="flex flex-col gap-2">
-                    <span>{datetimeStr.split(' ')[0]}</span>
-                    <span>{datetimeStr.split(' ')[1]}</span>
-                </div>
-            );
-        },
-    },
-    {
-        key: 'id',
-        label: '操作',
-        hidden: true,
-        children: (data: any) => {
-            return (
-                <div className="flex gap-4 items-center">
-                    <ExperimentDetailButton experiment={data} />
-                </div>
-            );
-        },
-    },
-];
-
 const searchDatas = [
     { name: 'project_name', type: 'input', placeholder: '请输入项目名称' },
     { name: 'project_group_name', type: 'input', placeholder: '请输入项目分组名称' },

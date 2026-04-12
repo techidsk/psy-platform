@@ -1,15 +1,11 @@
 import { db } from '@/lib/db';
 import { DashboardHeader } from '@/components/dashboard-header';
-import { Table } from '@/components/table/table';
-import { TableConfig } from '@/types/table';
-import { State } from '@/components/state';
 import { getCurrentUser } from '@/lib/session';
 import Pagination from '@/components/pagination';
-import { ProjectTableEditButtons } from '@/components/project/project-table-edit-buttons';
 import { Prisma } from '@/generated/prisma';
 import SubpageHeader from '@/components/subpage-header';
-import TableCheckbox from '@/components/table/table-checkbox';
 import { ProjectBindGroupButton } from '@/components/project/project-bind-group-button';
+import { GroupDataTable } from './group-table';
 
 type ProjectGroupTableProps = {
     id: string;
@@ -19,7 +15,6 @@ type ProjectGroupTableProps = {
     experiments: Prisma.JsonValue;
 };
 
-const PROJECT_GROUP_IDS_KEY = 'project-group-ids';
 async function getProjectGroups(
     searchParams: { [key: string]: string | undefined },
     page: number = 1,
@@ -65,62 +60,18 @@ export default async function ProjectGroup({
                     <ProjectBindGroupButton className="btn btn-primary btn-sm" />
                 </DashboardHeader>
                 <div className="w-full overflow-auto">
-                    <Table configs={projectTableConfig} datas={datas}>
-                        <Pagination current={currentPage} pageSize={currentPageSize} end={end} />
-                    </Table>
+                    <GroupDataTable
+                        data={datas}
+                        pagination={
+                            <Pagination
+                                current={currentPage}
+                                pageSize={currentPageSize}
+                                end={end}
+                            />
+                        }
+                    />
                 </div>
             </div>
         </div>
     );
 }
-
-const projectTableConfig: TableConfig[] = [
-    {
-        key: 'checkbox',
-        label: '',
-        checkbox_key: PROJECT_GROUP_IDS_KEY,
-        children: (data: any) => {
-            return <TableCheckbox data={data} itemName={PROJECT_GROUP_IDS_KEY} />;
-        },
-    },
-    {
-        key: 'group_name',
-        label: '分组名称',
-        children: (data: any) => {
-            return <span>{data.group_name}</span>;
-        },
-    },
-    {
-        key: 'description',
-        label: '分组描述',
-        children: (data: any) => {
-            return <span>{data.description}</span>;
-        },
-    },
-    {
-        key: 'state',
-        label: '状态',
-        children: (data: ProjectGroupTableProps) => {
-            const text = data.state === 'AVAILABLE' ? '可用' : '未分配';
-            const state = data.state === 'AVAILABLE' ? 'success' : 'warn';
-
-            return (
-                <div className="flex flex-col gap-2 items-start">
-                    <State type={state}>{text}</State>
-                </div>
-            );
-        },
-    },
-    {
-        key: 'id',
-        label: '操作',
-        hidden: true,
-        children: (data: any) => {
-            return (
-                <div className="flex gap-4 items-center">
-                    <ProjectTableEditButtons projectId={data.id} />
-                </div>
-            );
-        },
-    },
-];

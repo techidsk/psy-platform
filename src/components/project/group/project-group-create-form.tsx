@@ -12,7 +12,6 @@ import { getUrl } from '@/lib/url';
 import { useRouter } from 'next/navigation';
 import { experiment, project_group } from '@/generated/prisma';
 import { useTableState } from '@/state/_table_atom';
-import { TableConfig } from '@/types/table';
 import { logger } from '@/lib/logger';
 
 interface ProjectGroupExperiment extends experiment {
@@ -397,43 +396,3 @@ export function ProjectGroupCreateForm({
         </div>
     );
 }
-
-const groupExperimentConfig: TableConfig[] = [
-    {
-        key: 'experiment_name',
-        label: '实验名称',
-        children: (data: any) => <span>{data.experiment_name}</span>,
-    },
-    {
-        key: 'description',
-        label: '实验描述',
-        children: (data: any) => <span>{data.description}</span>,
-    },
-    {
-        key: 'intro',
-        label: '介绍',
-        children: (data: any) => <span>{data.intro}</span>,
-    },
-    {
-        key: 'engine_image',
-        label: '引擎',
-        children: (data: any) => (
-            <div className="flex flex-col gap-2">
-                {data.engine_name ? (
-                    <div className="flex gap-2 items-center">
-                        <img
-                            className="rounded-sm"
-                            src={data.engine_image}
-                            alt={data.engine_name}
-                            width={36}
-                            height={36}
-                        />
-                        <span>{data.engine_name}</span>
-                    </div>
-                ) : (
-                    <span>无</span>
-                )}
-            </div>
-        ),
-    },
-];
