@@ -11,6 +11,7 @@ import { Icons } from '@/components/icons';
 import { getUrl } from '@/lib/url';
 import { enginePatchFormSchema } from '@/lib/validations/engine';
 import { logger } from '@/lib/logger';
+import { FormField } from '@/components/ui/form-field';
 
 interface EngineFormProps extends React.HTMLAttributes<HTMLDivElement> {
     closeModal: Function;
@@ -129,10 +130,7 @@ export function EnginePatchForm({
         <div className="grid gap-6" {...props}>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="grid gap-2">
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="engine_name">
-                            引擎名称
-                        </label>
+                    <FormField label="引擎名称" srOnly error={errors.engine_name}>
                         <input
                             data-name="engine_name"
                             placeholder="请输入引擎名称"
@@ -143,16 +141,8 @@ export function EnginePatchForm({
                             className="input w-full"
                             {...register('engine_name')}
                         />
-                        {errors?.engine_name && (
-                            <p className="px-1 text-xs text-red-600">
-                                {errors.engine_name.message}
-                            </p>
-                        )}
-                    </div>
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="engine_description">
-                            引擎描述
-                        </label>
+                    </FormField>
+                    <FormField label="引擎描述" srOnly error={errors.engine_description}>
                         <input
                             data-name="engine_description"
                             placeholder="请输入引擎描述"
@@ -163,16 +153,8 @@ export function EnginePatchForm({
                             className="input w-full"
                             {...register('engine_description')}
                         />
-                        {errors?.engine_description && (
-                            <p className="px-1 text-xs text-red-600">
-                                {errors.engine_description.message}
-                            </p>
-                        )}
-                    </div>
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="gpt_prompt">
-                            GPT提示词
-                        </label>
+                    </FormField>
+                    <FormField label="GPT提示词" srOnly error={errors.gpt_prompt}>
                         <textarea
                             data-name="gpt_prompt"
                             placeholder="请输入GPT提示词"
@@ -183,10 +165,7 @@ export function EnginePatchForm({
                             rows={15}
                             {...register('gpt_prompt')}
                         />
-                        {errors?.gpt_prompt && (
-                            <p className="px-1 text-xs text-red-600">{errors.gpt_prompt.message}</p>
-                        )}
-                    </div>
+                    </FormField>
                     <button className="btn btn-primary" type="submit">
                         {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
                         保存

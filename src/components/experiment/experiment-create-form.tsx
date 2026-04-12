@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { exprimentSchema } from '@/lib/validations/experiment';
 import { Icons } from '@/components/icons';
 import { getUrl } from '@/lib/url';
+import { FormField } from '@/components/ui/form-field';
 
 import type { experiment, experiment_steps, engine as experimentEngine } from '@/generated/prisma';
 import { ExperimentStepTab } from './experiment-step-tab';
@@ -182,10 +183,7 @@ export function ExperimentCreateForm({
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <div className="grid gap-2">
                         <>
-                            <div className="grid gap-1">
-                                <label className="sr-only" htmlFor="experiment_name">
-                                    实验名称
-                                </label>
+                            <FormField label="实验名称" srOnly error={errors.experiment_name}>
                                 <input
                                     data-name="experiment_name"
                                     placeholder="请输入实验名称"
@@ -197,16 +195,8 @@ export function ExperimentCreateForm({
                                     className="input w-full"
                                     {...register('experiment_name')}
                                 />
-                                {errors?.experiment_name && (
-                                    <p className="px-1 text-xs text-red-600">
-                                        {errors.experiment_name.message}
-                                    </p>
-                                )}
-                            </div>
-                            <div className="grid gap-1">
-                                <label className="sr-only" htmlFor="description">
-                                    实验描述
-                                </label>
+                            </FormField>
+                            <FormField label="实验描述" srOnly>
                                 <textarea
                                     data-name="description"
                                     placeholder="请输入实验描述"
@@ -218,11 +208,8 @@ export function ExperimentCreateForm({
                                     rows={2}
                                     {...register('description')}
                                 />
-                            </div>
-                            <div className="grid gap-1">
-                                <label className="sr-only" htmlFor="intro">
-                                    项目介绍
-                                </label>
+                            </FormField>
+                            <FormField label="项目介绍" srOnly>
                                 <textarea
                                     data-name="intro"
                                     placeholder="请输入项目介绍"
@@ -234,7 +221,7 @@ export function ExperimentCreateForm({
                                     rows={8}
                                     {...register('intro')}
                                 />
-                            </div>
+                            </FormField>
                             <div className="grid gap-2">
                                 <label className="text-lg" htmlFor="engine_id">
                                     选择引擎

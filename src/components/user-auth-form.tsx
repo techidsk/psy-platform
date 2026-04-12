@@ -12,6 +12,7 @@ import store from 'store2';
 import { cn } from '@/lib/utils';
 import { loginSchema } from '@/lib/validations/auth';
 import { Icons } from '@/components/icons';
+import { FormField } from '@/components/ui/form-field';
 const crypto = require('crypto');
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
@@ -86,10 +87,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         <div className={cn('grid gap-6', className)} {...props}>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="grid gap-2">
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="username">
-                            用户名
-                        </label>
+                    <FormField label="用户名" srOnly error={errors.username}>
                         <input
                             data-name="username"
                             placeholder="请输入用户名"
@@ -101,14 +99,8 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                             className="input w-full"
                             {...register('username')}
                         />
-                        {errors?.username && (
-                            <p className="px-1 text-xs text-red-600">{errors.username.message}</p>
-                        )}
-                    </div>
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="password">
-                            密码
-                        </label>
+                    </FormField>
+                    <FormField label="密码" srOnly error={errors.password}>
                         <input
                             data-name="password"
                             placeholder="请输入密码"
@@ -120,10 +112,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                             className="input w-full"
                             {...register('password')}
                         />
-                        {errors?.password && (
-                            <p className="px-1 text-xs text-red-600">{errors.password.message}</p>
-                        )}
-                    </div>
+                    </FormField>
                     <div className="flex gap-2 mb-2">
                         <input
                             type="checkbox"

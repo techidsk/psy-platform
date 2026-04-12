@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import { experiment, project_group } from '@/generated/prisma';
 import { useTableState } from '@/state/_table_atom';
 import { logger } from '@/lib/logger';
+import { FormField } from '@/components/ui/form-field';
 
 interface ProjectGroupExperiment extends experiment {
     engine_name: string;
@@ -219,10 +220,7 @@ export function ProjectGroupCreateForm({
         <div className={cn('grid gap-6', className)} {...props}>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="grid gap-4">
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="group_name">
-                            项目分组名称
-                        </label>
+                    <FormField label="项目分组名称" srOnly error={errors.group_name}>
                         <input
                             data-name="group_name"
                             placeholder="请输入项目分组名称"
@@ -233,14 +231,8 @@ export function ProjectGroupCreateForm({
                             className="input w-full"
                             {...register('group_name')}
                         />
-                        {errors?.group_name && (
-                            <p className="px-1 text-xs text-red-600">{errors.group_name.message}</p>
-                        )}
-                    </div>
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="description">
-                            项目分组描述
-                        </label>
+                    </FormField>
+                    <FormField label="项目分组描述" srOnly error={errors.description}>
                         <textarea
                             data-name="description"
                             placeholder="请输入项目分组描述"
@@ -250,16 +242,8 @@ export function ProjectGroupCreateForm({
                             className="textarea w-full"
                             {...register('description')}
                         />
-                        {errors?.description && (
-                            <p className="px-1 text-xs text-red-600">
-                                {errors.description.message}
-                            </p>
-                        )}
-                    </div>
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="gap">
-                            实验间隔
-                        </label>
+                    </FormField>
+                    <FormField label="实验间隔" srOnly error={errors.gap}>
                         <input
                             data-name="gap"
                             placeholder="请输入项目实验间隔（单位：小时）"
@@ -268,10 +252,7 @@ export function ProjectGroupCreateForm({
                             className="input w-full"
                             {...register('gap', { valueAsNumber: true })}
                         />
-                        {errors?.gap && (
-                            <p className="px-1 text-xs text-red-600">{errors.gap.message}</p>
-                        )}
-                    </div>
+                    </FormField>
                     {projectGroupId && (
                         <div className="grid gap-2">
                             <div className="flex gap-2 items-center">

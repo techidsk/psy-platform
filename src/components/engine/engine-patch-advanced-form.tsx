@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 import { getUrl } from '@/lib/url';
 import { engineFormSchema } from '@/lib/validations/engine';
+import { FormField } from '@/components/ui/form-field';
 
 interface EngineFormProps extends React.HTMLAttributes<HTMLDivElement> {
     closeModal: Function;
@@ -135,10 +136,7 @@ export function EnginePatchAdvancedForm({
         <div className={cn('grid gap-6', className)} {...props}>
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="grid gap-2">
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="engine_name">
-                            引擎名称
-                        </label>
+                    <FormField label="引擎名称" srOnly error={errors.engine_name}>
                         <input
                             data-name="engine_name"
                             placeholder="请输入引擎名称"
@@ -149,16 +147,8 @@ export function EnginePatchAdvancedForm({
                             className="input w-full"
                             {...register('engine_name')}
                         />
-                        {errors?.engine_name && (
-                            <p className="px-1 text-xs text-red-600">
-                                {errors.engine_name.message}
-                            </p>
-                        )}
-                    </div>
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="engine_description">
-                            引擎描述
-                        </label>
+                    </FormField>
+                    <FormField label="引擎描述" srOnly error={errors.engine_description}>
                         <input
                             data-name="engine_description"
                             placeholder="请输入引擎描述"
@@ -169,16 +159,8 @@ export function EnginePatchAdvancedForm({
                             className="input w-full"
                             {...register('engine_description')}
                         />
-                        {errors?.engine_description && (
-                            <p className="px-1 text-xs text-red-600">
-                                {errors.engine_description.message}
-                            </p>
-                        )}
-                    </div>
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="gpt_prompt">
-                            GPT提示词
-                        </label>{' '}
+                    </FormField>
+                    <FormField label="GPT提示词" srOnly error={errors.gpt_prompt}>
                         <textarea
                             data-name="gpt_prompt"
                             placeholder="请输入GPT提示词"
@@ -189,14 +171,8 @@ export function EnginePatchAdvancedForm({
                             rows={15}
                             {...register('gpt_prompt')}
                         />
-                        {errors?.gpt_prompt && (
-                            <p className="px-1 text-xs text-red-600">{errors.gpt_prompt.message}</p>
-                        )}
-                    </div>
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="temperature">
-                            GPT Temperature
-                        </label>
+                    </FormField>
+                    <FormField label="GPT Temperature" srOnly error={errors.temperature}>
                         <input
                             data-name="temperature"
                             placeholder="请输入GPT temperature"
@@ -209,18 +185,10 @@ export function EnginePatchAdvancedForm({
                             className="input w-full"
                             {...register('temperature')}
                         />
-                        {errors?.temperature && (
-                            <p className="px-1 text-xs text-red-600">
-                                {errors.temperature.message}
-                            </p>
-                        )}
-                    </div>
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="max_tokens">
-                            GPT最大tokens
-                        </label>
+                    </FormField>
+                    <FormField label="GPT最大tokens" srOnly error={errors.max_tokens}>
                         <input
-                            data-name="temperature"
+                            data-name="max_tokens"
                             placeholder="请输入GPT最大tokens"
                             type="number"
                             autoCapitalize="none"
@@ -231,14 +199,8 @@ export function EnginePatchAdvancedForm({
                             className="input w-full"
                             {...register('max_tokens')}
                         />
-                        {errors?.max_tokens && (
-                            <p className="px-1 text-xs text-red-600">{errors.max_tokens.message}</p>
-                        )}
-                    </div>
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="prompt">
-                            SDXL提示词
-                        </label>{' '}
+                    </FormField>
+                    <FormField label="SDXL提示词" srOnly error={errors.prompt}>
                         <textarea
                             data-name="prompt"
                             placeholder="请输入SDXL提示词"
@@ -249,15 +211,8 @@ export function EnginePatchAdvancedForm({
                             rows={6}
                             {...register('prompt')}
                         />
-                        {errors?.prompt && (
-                            <p className="px-1 text-xs text-red-600">{errors.prompt.message}</p>
-                        )}
-                    </div>
-
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="negative_prompt">
-                            SDXL负面提示词
-                        </label>{' '}
+                    </FormField>
+                    <FormField label="SDXL负面提示词" srOnly error={errors.negative_prompt}>
                         <textarea
                             data-name="negative_prompt"
                             placeholder="请输入SDXL负面提示词"
@@ -268,12 +223,7 @@ export function EnginePatchAdvancedForm({
                             rows={6}
                             {...register('negative_prompt')}
                         />
-                        {errors?.negative_prompt && (
-                            <p className="px-1 text-xs text-red-600">
-                                {errors.negative_prompt.message}
-                            </p>
-                        )}
-                    </div>
+                    </FormField>
                     <button className={'btn btn-primary'} type="submit">
                         {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
                         保存

@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { userPatchFormSchema } from '@/lib/validations/auth';
 import { Icons } from '@/components/icons';
 import { getUrl } from '@/lib/url';
+import { FormField } from '@/components/ui/form-field';
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
     closeModal: Function;
@@ -141,9 +142,6 @@ export function UserPatchForm({
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="grid gap-2">
                     <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="username">
-                            用户名
-                        </label>
                         <input
                             data-name="username"
                             placeholder="请输入用户名"
@@ -155,10 +153,7 @@ export function UserPatchForm({
                             className="input w-full"
                         />
                     </div>
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="password">
-                            登录密码
-                        </label>
+                    <FormField label="登录密码" srOnly error={errors.password}>
                         <input
                             data-name="password"
                             placeholder="请输入登录密码"
@@ -170,14 +165,8 @@ export function UserPatchForm({
                             className="input w-full"
                             {...register('password')}
                         />
-                        {errors?.password && (
-                            <p className="px-1 text-xs text-red-600">{errors.password.message}</p>
-                        )}
-                    </div>
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="email">
-                            Email
-                        </label>
+                    </FormField>
+                    <FormField label="Email" srOnly error={errors.email}>
                         <input
                             data-name="email"
                             placeholder="请输入email"
@@ -188,14 +177,8 @@ export function UserPatchForm({
                             className="input w-full"
                             {...register('email')}
                         />
-                        {errors?.email && (
-                            <p className="px-1 text-xs text-red-600">{errors.email.message}</p>
-                        )}
-                    </div>
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="tel">
-                            联系电话
-                        </label>
+                    </FormField>
+                    <FormField label="联系电话" srOnly>
                         <input
                             data-name="tel"
                             placeholder="请输入联系电话"
@@ -206,12 +189,9 @@ export function UserPatchForm({
                             className="input w-full"
                             {...register('tel')}
                         />
-                    </div>
+                    </FormField>
                     {currentUserRole === 'SUPERADMIN' && (
-                        <div className="grid gap-1">
-                            <label className="text-sm font-medium" htmlFor="user_role">
-                                用户角色
-                            </label>
+                        <FormField label="用户角色">
                             <select
                                 className="select w-full"
                                 disabled={isLoading}
@@ -223,7 +203,7 @@ export function UserPatchForm({
                                     </option>
                                 ))}
                             </select>
-                        </div>
+                        </FormField>
                     )}
                     <button className={'btn btn-primary'} type="submit">
                         {isLoading && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}

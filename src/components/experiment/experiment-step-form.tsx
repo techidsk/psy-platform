@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import * as z from 'zod';
+import { FormField } from '@/components/ui/form-field';
 
 import { exprimentStepSchema } from '@/lib/validations/experiment';
 import { Icons } from '@/components/icons';
@@ -39,19 +40,17 @@ export function ExperimentStepForm({
     ...props
 }: ExperimentStepFormProps) {
     const {
-        register: register,
-        handleSubmit: handleSubmit,
+        register,
+        handleSubmit,
         formState: { errors: stepErrors },
-        reset: reset,
-        setValue: setValue,
+        reset,
+        setValue,
+        control,
     } = useForm<FormData>({
         resolver: zodResolver(exprimentStepSchema),
     });
 
     const [isUploading, setIsUploading] = useState<boolean>(false);
-    // const [dispatch, setDispatch] = useState<string>('CREATE');
-
-    const [stepContent, setStepContent] = useState<string>('');
 
     const [stepType, setStepType] = useState<number>(1);
     const [init, setInit] = useState(false);
@@ -62,19 +61,11 @@ export function ExperimentStepForm({
         setValue('type', stepType);
     };
 
-    const updateStepContent = (value: string) => {
-        setStepContent(value);
-        setValue('step_content', value);
-    };
-
     // 添加实验步骤
     const addExperimentStep = async (data: FormData) => {
         // 根据 dispatch 进行划分
         if (dispatch === 'UPDATE') {
-            return updateExperimentStep({
-                ...data,
-                step_content: stepContent,
-            });
+            return updateExperimentStep(data);
         }
         const content = {
             content: data.step_content,
@@ -178,7 +169,7 @@ export function ExperimentStepForm({
             setStepType(step?.type || 1);
 
             const content = step.content as any;
-            setStepContent(content?.content || '');
+            setValue('step_content', content?.content || '');
             setValue('step_image', content?.image || '');
             setValue('redirect_url', content?.redirect_url || undefined);
             setValue('pic_mode', content?.pic_mode || true);
@@ -189,9 +180,7 @@ export function ExperimentStepForm({
             reset();
             setStepType(1);
             setValue('type', 1);
-            const defaultStepContent = '';
-            setStepContent(defaultStepContent);
-            setValue('step_content', defaultStepContent);
+            setValue('step_content', '');
             setValue('redirect_url', '');
         }
     }
@@ -237,10 +226,7 @@ export function ExperimentStepForm({
                                 </p>
                             )}
                         </div>
-                        <div className="grid gap-1">
-                            <label className="sr-only" htmlFor="step_name">
-                                步骤名称
-                            </label>
+                        <FormField label="步骤名称" srOnly error={stepErrors.step_name}>
                             <input
                                 data-name="step_name"
                                 placeholder="请输入步骤名称（被试可见，实验进度标题）"
@@ -250,17 +236,9 @@ export function ExperimentStepForm({
                                 className="input w-full"
                                 {...register('step_name')}
                             />
-                            {stepErrors?.step_name && (
-                                <p className="px-1 text-xs text-red-600">
-                                    {stepErrors.step_name.message}
-                                </p>
-                            )}
-                        </div>
+                        </FormField>
                         {stepTypes.find((type) => type.id === stepType && type.title) && (
-                            <div className="grid gap-1">
-                                <label className="sr-only" htmlFor="title">
-                                    标题
-                                </label>
+                            <FormField label="标题" srOnly error={stepErrors.title}>
                                 <input
                                     data-name="title"
                                     placeholder="请输入步骤标题（被试可见，单页标题）"
@@ -270,79 +248,52 @@ export function ExperimentStepForm({
                                     className="input w-full"
                                     {...register('title')}
                                 />
-                                {stepErrors?.title && (
-                                    <p className="px-1 text-xs text-red-600">
-                                        {stepErrors.title.message}
-                                    </p>
-                                )}
-                            </div>
+                            </FormField>
                         )}
                         {stepTypes.find((type) => type.id === stepType && type.content) && (
-                            <div className="grid gap-1">
-                                <label className="sr-only" htmlFor="step_content">
-                                    内容
-                                </label>
-                                <div className="grid gap-1 border border-solid border-neutral-200 rounded-md overflow-y-auto max-h-64">
-                                    <TiptapEditor
-                                        placeholder="请输入显示内容（被试可见，详细内容，支持Markdown格式）"
-                                        content={stepContent}
-                                        onChange={(value) => updateStepContent(value)}
-                                    />
-                                </div>
-                                {stepErrors?.step_content && (
-                                    <p className="px-1 text-xs text-red-600">
-                                        {stepErrors.step_content.message}
-                                    </p>
+                            <Controller
+                                control={control}
+                                name="step_content"
+                                render={({ field }) => (
+                                    <FormField label="内容" srOnly error={stepErrors.step_content}>
+                                        <div className="border border-solid border-neutral-200 rounded-md overflow-y-auto max-h-64">
+                                            <TiptapEditor
+                                                placeholder="请输入显示内容（被试可见，详细内容，支持Markdown格式）"
+                                                content={field.value ?? ''}
+                                                onChange={field.onChange}
+                                            />
+                                        </div>
+                                    </FormField>
                                 )}
-                            </div>
+                            />
                         )}
                         {stepTypes.find((type) => type.id === stepType && type.redirect) && (
-                            <>
-                                <div className="grid gap-1">
-                                    <label className="sr-only" htmlFor="redirect_url">
-                                        跳转地址
-                                    </label>
-                                    <input
-                                        data-name="redirect_url"
-                                        placeholder="请输入跳转地址"
-                                        type="text"
-                                        autoCapitalize="none"
-                                        autoCorrect="off"
-                                        className="input w-full"
-                                        {...register('redirect_url')}
-                                    />
-                                </div>
-                                {stepErrors?.redirect_url && (
-                                    <p className="px-1 text-xs text-red-600">
-                                        {stepErrors.redirect_url.message}
-                                    </p>
-                                )}
-                            </>
+                            <FormField label="跳转地址" srOnly error={stepErrors.redirect_url}>
+                                <input
+                                    data-name="redirect_url"
+                                    placeholder="请输入跳转地址"
+                                    type="text"
+                                    autoCapitalize="none"
+                                    autoCorrect="off"
+                                    className="input w-full"
+                                    {...register('redirect_url')}
+                                />
+                            </FormField>
                         )}
                         {stepTypes.find((type) => type.id === stepType && type.countdown) && (
-                            <>
-                                <div className="grid gap-1">
-                                    <label className="sr-only" htmlFor="countdown">
-                                        实验时间
-                                    </label>
-                                    <input
-                                        data-name="countdown"
-                                        placeholder="请输入实验时间（分钟），如不需要实验时间，请填写0"
-                                        type="number"
-                                        autoCapitalize="none"
-                                        min={0}
-                                        max={120}
-                                        autoCorrect="off"
-                                        className="input w-full"
-                                        {...register('countdown', { valueAsNumber: true })}
-                                    />
-                                </div>
-                                {stepErrors?.countdown && (
-                                    <p className="px-1 text-xs text-red-600">
-                                        {stepErrors.countdown.message}
-                                    </p>
-                                )}
-                            </>
+                            <FormField label="实验时间" srOnly error={stepErrors.countdown}>
+                                <input
+                                    data-name="countdown"
+                                    placeholder="请输入实验时间（分钟），如不需要实验时间，请填写0"
+                                    type="number"
+                                    autoCapitalize="none"
+                                    min={0}
+                                    max={120}
+                                    autoCorrect="off"
+                                    className="input w-full"
+                                    {...register('countdown', { valueAsNumber: true })}
+                                />
+                            </FormField>
                         )}
                         {stepTypes.find((type) => type.id === stepType && type.pic_mode) && (
                             <>

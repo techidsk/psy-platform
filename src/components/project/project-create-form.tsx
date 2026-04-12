@@ -6,7 +6,7 @@ import { zhCN } from 'date-fns/locale';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import * as z from 'zod';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,7 @@ import { projectFormSchema } from '@/lib/validations/project';
 import { getUrl } from '@/lib/url';
 import { Icons } from '@/components/icons';
 import { DatePickerComponent } from '@/components/datepicker/datepicker';
+import { FormField } from '@/components/ui/form-field';
 import { projects, project_group, Prisma } from '@/generated/prisma';
 import { useTableState } from '@/state/_table_atom';
 import { useProjectState } from '@/state/_project_atoms';
@@ -49,18 +50,19 @@ export function ProjectCreateForm({
         formState: { errors },
         reset,
         setValue,
+        control,
     } = useForm<FormData>({
         resolver: zodResolver(projectFormSchema),
         defaultValues: {
             project_name: '',
             project_description: '',
+            start_time: new Date(),
+            end_time: dayjs().add(1, 'day').toDate(),
         },
     });
     const router = useRouter();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [startDate, setStartDate] = useState(new Date());
-    const [endDate, setEndDate] = useState(dayjs().add(1, 'day').toDate());
     const [dispatch, setDispatch] = useState<string>('CREATE');
 
     const setSelectIds = useTableState((state) => state.setSelectIds);
@@ -151,20 +153,6 @@ export function ProjectCreateForm({
                 variant: 'destructive',
                 duration: 5000,
             });
-        }
-    }
-
-    function pickStartDate(day: Date | undefined) {
-        if (day) {
-            setStartDate(day);
-            setValue('start_time', day);
-        }
-    }
-
-    function pickEndDate(day: Date | undefined) {
-        if (day) {
-            setEndDate(day);
-            setValue('end_time', day);
         }
     }
 
@@ -285,8 +273,8 @@ export function ProjectCreateForm({
             setValue('project_name', project.project_name || '');
             setValue('project_description', project.project_description || '');
             setValue('state', project.state || 'AVAILABLE');
-            setStartDate(project.start_time || new Date());
-            setEndDate(project.end_time || new Date());
+            setValue('start_time', project.start_time || new Date());
+            setValue('end_time', project.end_time || new Date());
         }
     }
 
@@ -307,10 +295,7 @@ export function ProjectCreateForm({
         <div className={cn('grid gap-6', className)} {...props}>
             <form onSubmit={handleSubmit((data) => onSubmit(data, true))}>
                 <div className="grid gap-4">
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="project_name">
-                            项目名称
-                        </label>
+                    <FormField label="项目名称" srOnly error={errors.project_name}>
                         <input
                             data-name="project_name"
                             placeholder="请输入项目名称"
@@ -321,16 +306,8 @@ export function ProjectCreateForm({
                             className="input w-full"
                             {...register('project_name')}
                         />
-                        {errors?.project_name && (
-                            <p className="px-1 text-xs text-red-600">
-                                {errors.project_name.message}
-                            </p>
-                        )}
-                    </div>
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="project_description">
-                            项目描述
-                        </label>
+                    </FormField>
+                    <FormField label="项目描述" srOnly error={errors.project_description}>
                         <textarea
                             data-name="project_description"
                             placeholder="请输入项目描述"
@@ -340,16 +317,8 @@ export function ProjectCreateForm({
                             className="textarea w-full"
                             {...register('project_description')}
                         />
-                        {errors?.project_description && (
-                            <p className="px-1 text-xs text-red-600">
-                                {errors.project_description.message}
-                            </p>
-                        )}
-                    </div>
-                    <div className="grid gap-1">
-                        <label className="sr-only" htmlFor="state">
-                            项目状态
-                        </label>
+                    </FormField>
+                    <FormField label="项目状态" srOnly error={errors.state}>
                         <select
                             className="select w-full max-w-xs"
                             defaultValue={project?.state || 'AVAILABLE'}
@@ -363,62 +332,86 @@ export function ProjectCreateForm({
                             <option value={'DRAFT'}>未激活</option>
                             <option value={'ACHIVED'}>已归档</option>
                         </select>
-                        {errors?.state && (
-                            <p className="px-1 text-xs text-red-600">{errors.state.message}</p>
+                    </FormField>
+                    <Controller
+                        control={control}
+                        name="start_time"
+                        render={({ field }) => (
+                            <div className="grid gap-2">
+                                <div className="flex gap-2 items-center">
+                                    <label className="flex items-center" htmlFor="start_time">
+                                        项目开始时间
+                                    </label>
+                                    <input
+                                        disabled={true}
+                                        className="input input-sm"
+                                        value={
+                                            field.value
+                                                ? format(field.value, 'PP', { locale: zhCN })
+                                                : ''
+                                        }
+                                        onChange={() => {}}
+                                    />
+                                    {edit && (
+                                        <details className="dropdown dropdown-end">
+                                            <summary className="m-1 btn btn-sm">
+                                                选择开始日期
+                                            </summary>
+                                            <div className="p-2 shadow-sm menu dropdown-content z-1 bg-base-100 rounded-box w-[320px]">
+                                                <DatePickerComponent
+                                                    selected={field.value ?? new Date()}
+                                                    setSelected={(day) =>
+                                                        day && field.onChange(day)
+                                                    }
+                                                />
+                                            </div>
+                                        </details>
+                                    )}
+                                </div>
+                            </div>
                         )}
-                    </div>
-                    <div className="grid gap-2">
-                        <div className="flex gap-2 items-center">
-                            <label className="flex items-center" htmlFor="start_time">
-                                项目开始时间
-                            </label>
-                            <input
-                                disabled={true}
-                                className="input input-sm"
-                                value={format(startDate, 'PP', { locale: zhCN })}
-                                onChange={(e) => {}}
-                            />
-                            {edit && (
-                                <details className="dropdown dropdown-end">
-                                    <summary className="m-1 btn btn-sm">选择开始日期</summary>
-                                    <div className="p-2 shadow-sm menu dropdown-content z-1 bg-base-100 rounded-box w-[320px]">
-                                        <DatePickerComponent
-                                            selected={startDate}
-                                            setSelected={(day: Date | undefined) =>
-                                                pickStartDate(day)
-                                            }
-                                        />
-                                    </div>
-                                </details>
-                            )}
-                        </div>
-                    </div>
-                    <div className="grid gap-2">
-                        <div className="flex gap-2 items-center">
-                            <label className="flex items-center" htmlFor="end_time">
-                                项目结束时间
-                            </label>
-                            <input
-                                disabled={true}
-                                className="input input-sm"
-                                value={format(endDate, 'PP', { locale: zhCN })}
-                                onChange={() => {}}
-                            />
-                            {edit && (
-                                <details className="dropdown dropdown-end">
-                                    <summary className="m-1 btn btn-sm">选择结束日期</summary>
-                                    <div className="p-2 shadow-sm menu dropdown-content z-1 bg-base-100 rounded-box w-[320px]">
-                                        <DatePickerComponent
-                                            selected={endDate}
-                                            setSelected={(day: Date | undefined) =>
-                                                pickEndDate(day)
-                                            }
-                                        />
-                                    </div>
-                                </details>
-                            )}
-                        </div>
-                    </div>
+                    />
+                    <Controller
+                        control={control}
+                        name="end_time"
+                        render={({ field }) => (
+                            <div className="grid gap-2">
+                                <div className="flex gap-2 items-center">
+                                    <label className="flex items-center" htmlFor="end_time">
+                                        项目结束时间
+                                    </label>
+                                    <input
+                                        disabled={true}
+                                        className="input input-sm"
+                                        value={
+                                            field.value
+                                                ? format(field.value, 'PP', { locale: zhCN })
+                                                : ''
+                                        }
+                                        onChange={() => {}}
+                                    />
+                                    {edit && (
+                                        <details className="dropdown dropdown-end">
+                                            <summary className="m-1 btn btn-sm">
+                                                选择结束日期
+                                            </summary>
+                                            <div className="p-2 shadow-sm menu dropdown-content z-1 bg-base-100 rounded-box w-[320px]">
+                                                <DatePickerComponent
+                                                    selected={
+                                                        field.value ??
+                                                        dayjs().add(1, 'day').toDate()
+                                                    }
+                                                    setSelected={(day) =>
+                                                        day && field.onChange(day)
+                                                    }
+                                                />
+                                            </div>
+                                        </details>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    />
                     <div className="grid gap-2">
                         <div className="flex gap-2 items-center">
                             <label className="" htmlFor="project_groups">
