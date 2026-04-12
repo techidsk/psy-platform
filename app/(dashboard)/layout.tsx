@@ -97,15 +97,17 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
         user.role !== 'SUPERADMIN' ? authSidebar(sidebarNav, user.role as UserRole) : sidebarNav;
 
     return (
-        <div className="mx-auto flex flex-col space-y-2 md:space-y-4 items-center bg-white min-h-screen pb-8">
-            <header className="sticky top-0 w-full z-10 bg-white/80 backdrop-blur-sm">
+        <div className="mx-auto flex flex-col items-center bg-base-200 min-h-screen">
+            <header className="sticky top-0 w-full z-10">
                 <Header user={dbUser} />
             </header>
-            <div className="container grid gap-4 md:gap-6 md:grid-cols-[200px_1fr] flex-1">
+            <div className="container grid gap-4 md:gap-6 md:grid-cols-[200px_1fr] flex-1 py-4 md:py-6">
                 <aside className="hidden w-[200px] flex-col md:flex">
-                    <DashboardNav items={authedSidebar} />
+                    <div className="sticky top-16">
+                        <DashboardNav items={authedSidebar} />
+                    </div>
                 </aside>
-                <main className="flex w-full flex-1 flex-col overflow-hidden">
+                <main className="flex w-full flex-1 flex-col overflow-hidden bg-base-100 rounded-box p-4 md:p-6 shadow-sm">
                     <Suspense fallback={<Loading />}>{children}</Suspense>
                 </main>
             </div>

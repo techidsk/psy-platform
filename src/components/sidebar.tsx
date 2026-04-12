@@ -104,7 +104,7 @@ export function DashboardNav({ items }: DashboardNavProps) {
     }
 
     return (
-        <ul className="menu rounded-md w-full h-full gap-y-1">
+        <ul className="menu bg-base-100 rounded-box w-full h-full gap-y-1 p-2 shadow-sm">
             {groupedItems.map((group, groupIndex) => (
                 <React.Fragment key={groupIndex}>
                     {group.category && <li className="menu-title select-none">{group.category}</li>}

@@ -22,7 +22,7 @@ export default function Header({ user }: HeaderProps) {
     const resultAvatarUrl = getAvatarUrl(user.avatar || '', user.username || '');
 
     return (
-        <div className="w-full bg-white/80 backdrop-blur-sm border-b border-slate-200/60">
+        <div className="w-full bg-base-100 shadow-sm">
             <div className="container mx-auto px-4 md:px-6 lg:px-8">
                 <div className="flex flex-row justify-between py-2 md:py-2.5 lg:py-3">
                     <Link href="/dashboard">
@@ -32,18 +32,18 @@ export default function Header({ user }: HeaderProps) {
                                 alt=""
                                 className="h-7 w-7 md:h-8 md:w-8 lg:h-9 lg:w-9 transition-transform group-hover:scale-105"
                             />
-                            <span className="text-xs md:text-sm font-semibold tracking-widest text-slate-600 uppercase">
+                            <span className="text-xs md:text-sm font-semibold tracking-widest text-base-content/70 uppercase">
                                 EL PSY
                             </span>
                         </div>
                     </Link>
                     <div className="flex gap-2 md:gap-3 items-center">
-                        <span className="hidden md:inline text-xs md:text-sm text-slate-500">
+                        <span className="hidden md:inline text-xs md:text-sm text-base-content/60">
                             {user.username}
                         </span>
                         <Avatar src={resultAvatarUrl} size="sm" ring />
                         <button
-                            className="text-xs md:text-sm text-slate-400 hover:text-slate-600 transition-colors ml-1"
+                            className="btn btn-ghost btn-xs text-base-content/50 hover:text-base-content transition-colors"
                             onClick={logout}
                         >
                             登出
