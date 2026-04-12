@@ -60,10 +60,12 @@ export default async function ExperimentDetail({ params }: { params: Promise<{ i
     }
 
     const canUserEdit = canEdit(user?.role);
+    const isSuperAdmin = user?.role === 'SUPERADMIN';
 
     return (
         <ExperimentDetailView
             canEdit={canUserEdit}
+            isSuperAdmin={isSuperAdmin}
             lock={experiment?.lock === 1}
             experiment={experiment}
             nano_id={id}

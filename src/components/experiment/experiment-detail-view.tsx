@@ -5,10 +5,12 @@ import { Icons } from '@/components/icons';
 import { toast } from '@/hooks/use-toast';
 import SubpageHeader, { SubpageContentHeader } from '@/components/subpage-header';
 import { ExperimentCreateForm } from '@/components/experiment/experiment-create-form';
+import { RegenerateIntentButton } from '@/components/experiment/regenerate-intent-button';
 import type { experiment, experiment_steps, engine as experimentEngine } from '@/generated/prisma';
 
 interface ExperimentDetailViewProps {
     canEdit: boolean;
+    isSuperAdmin?: boolean;
     lock: boolean;
     experiment: experiment | null;
     nano_id: string;
@@ -18,6 +20,7 @@ interface ExperimentDetailViewProps {
 
 export function ExperimentDetailView({
     canEdit,
+    isSuperAdmin,
     lock,
     experiment,
     nano_id,
@@ -42,6 +45,7 @@ export function ExperimentDetailView({
     return (
         <div className="container lg:max-w-none bg-white">
             <SubpageHeader>
+                {isSuperAdmin && nano_id && <RegenerateIntentButton nanoId={nano_id} />}
                 {canEdit && !isEditing && (
                     <button onClick={handleEdit} className="btn btn-primary btn-sm">
                         <Icons.edit className="h-4 w-4" />
