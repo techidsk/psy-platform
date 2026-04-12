@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -14,7 +15,7 @@ import { logger } from '@/lib/logger';
 import { FormField } from '@/components/ui/form-field';
 
 interface EngineFormProps extends React.HTMLAttributes<HTMLDivElement> {
-    closeModal: Function;
+    onSuccess?: () => void;
     edit?: boolean;
     engineId?: number;
     nano_id?: string;
@@ -24,7 +25,7 @@ type FormData = z.infer<typeof enginePatchFormSchema>;
 export function EnginePatchForm({
     className,
     nano_id,
-    closeModal,
+    onSuccess,
     edit,
     engineId,
     ...props
@@ -44,6 +45,7 @@ export function EnginePatchForm({
         },
     });
 
+    const router = useRouter();
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
     async function saveEngine(data: FormData) {
@@ -59,11 +61,15 @@ export function EnginePatchForm({
             if (result.ok) {
                 const responseBody = await result.json();
                 toast({
-                    title: '创建成功',
-                    description: responseBody.msg || '已成功创建新用户',
+                    title: '保存成功',
+                    description: responseBody.msg || '已成功保存引擎配置',
                     duration: 3000,
                 });
-                closeModal();
+                if (onSuccess) {
+                    onSuccess();
+                } else {
+                    router.refresh();
+                }
             } else {
                 const responseBody = await result.json();
                 toast({
