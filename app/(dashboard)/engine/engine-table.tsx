@@ -20,13 +20,11 @@ const columns: ColumnDef<EngineRecord, any>[] = [
         accessorKey: 'engine_image',
         header: () => '引擎',
         cell: ({ row }) => (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-row gap-2 items-center">
                 <img
-                    className="rounded-sm"
+                    className="w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-sm object-cover"
                     src={row.original.engine_image}
                     alt={row.original.engine_name}
-                    width={96}
-                    height={96}
                 />
                 <span>{row.original.engine_name}</span>
             </div>

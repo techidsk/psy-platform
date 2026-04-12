@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import { getAvatarUrl } from '@/lib/logic/avatar';
 import { type HeaderUserInfo } from '@/lib/logic/user';
+import { Avatar } from '@/components/ui/avatar';
 
 interface HeaderProps {
     user: HeaderUserInfo;
@@ -21,30 +22,30 @@ export default function Header({ user }: HeaderProps) {
     const resultAvatarUrl = getAvatarUrl(user.avatar || '', user.username || '');
 
     return (
-        <div className="w-full bg-white border-b border-slate-300">
-            <div className="container mx-auto px-8">
-                <div className="flex flex-row justify-between py-4">
+        <div className="w-full bg-white/80 backdrop-blur-sm border-b border-slate-200/60">
+            <div className="container mx-auto px-4 md:px-6 lg:px-8">
+                <div className="flex flex-row justify-between py-2 md:py-2.5 lg:py-3">
                     <Link href="/dashboard">
-                        <div className="flex gap-4 items-center">
-                            <img src="/logo-xs.png" alt="" height={45} width={45} />
-                            <div>EL PSY</div>
+                        <div className="flex gap-2 md:gap-3 items-center group">
+                            <img
+                                src="/logo-xs.png"
+                                alt=""
+                                className="h-7 w-7 md:h-8 md:w-8 lg:h-9 lg:w-9 transition-transform group-hover:scale-105"
+                            />
+                            <span className="text-xs md:text-sm font-semibold tracking-widest text-slate-600 uppercase">
+                                EL PSY
+                            </span>
                         </div>
                     </Link>
-                    <div className="flex gap-4 items-center">
-                        <div className="avatar">
-                            <div className="rounded-full w-12 h-12">
-                                {/* 使用原生 img 标签，因为头像 URL 是动态 API 路由 */}
-                                <img
-                                    src={resultAvatarUrl}
-                                    alt=""
-                                    width={48}
-                                    height={48}
-                                    className="w-12 h-12 rounded-full object-cover"
-                                    loading="lazy"
-                                />
-                            </div>
-                        </div>
-                        <button className="btn btn-ghost btn-sm" onClick={logout}>
+                    <div className="flex gap-2 md:gap-3 items-center">
+                        <span className="hidden md:inline text-xs md:text-sm text-slate-500">
+                            {user.username}
+                        </span>
+                        <Avatar src={resultAvatarUrl} size="sm" ring />
+                        <button
+                            className="text-xs md:text-sm text-slate-400 hover:text-slate-600 transition-colors ml-1"
+                            onClick={logout}
+                        >
                             登出
                         </button>
                     </div>

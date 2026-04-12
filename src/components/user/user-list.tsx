@@ -8,6 +8,7 @@ import { UserTableEditButtons } from '@/components/user/user-table-edit-buttons'
 import Pagination from '@/components/pagination';
 import { createPaginationStore } from '@/state/_pagination_atom';
 import { UserRole } from '@/types/user';
+import { Avatar } from '@/components/ui/avatar';
 import { filterColumnsByRole } from '@/lib/table-utils';
 
 const useUserPagination = createPaginationStore(10);
@@ -45,17 +46,12 @@ const userColumns: ColumnDef<any, any>[] = [
         accessorKey: 'username',
         header: () => '用户名',
         cell: ({ row }) => (
-            <div className="flex flex-col gap-2 items-center">
-                <div className="avatar">
-                    <div className="rounded-full">
-                        <img
-                            src="https://techidsk.oss-cn-hangzhou.aliyuncs.com/project/_psy_/avatar.avif"
-                            alt={row.original.username}
-                            width={48}
-                            height={48}
-                        />
-                    </div>
-                </div>
+            <div className="flex flex-row gap-2 items-center">
+                <Avatar
+                    src="https://techidsk.oss-cn-hangzhou.aliyuncs.com/project/_psy_/avatar.avif"
+                    alt={row.original.username}
+                    size="xs"
+                />
                 <span>{row.original.username}</span>
             </div>
         ),

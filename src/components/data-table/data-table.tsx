@@ -65,7 +65,7 @@ export function DataTable<TData>({
                                 {headerGroup.headers.map((header) => (
                                     <th
                                         key={header.id}
-                                        className="px-4 py-2 text-left text-xs font-medium text-gray-500 tracking-wider"
+                                        className="px-2 py-1.5 md:px-3 md:py-2 lg:px-4 lg:py-2 text-left text-xs font-medium text-gray-500 tracking-wider"
                                     >
                                         {header.isPlaceholder
                                             ? null
@@ -85,7 +85,7 @@ export function DataTable<TData>({
                                     {row.getVisibleCells().map((cell) => (
                                         <td
                                             key={cell.id}
-                                            className={`px-4 py-2 whitespace-nowrap text-sm text-gray-500 ${
+                                            className={`px-2 py-1 md:px-3 md:py-1.5 lg:px-4 lg:py-2 whitespace-nowrap text-xs md:text-sm text-gray-500 ${
                                                 (cell.column.columnDef.meta as any)?.className ?? ''
                                             }`}
                                         >

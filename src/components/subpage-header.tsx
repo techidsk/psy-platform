@@ -2,6 +2,8 @@
 import { useRouter } from 'next/navigation';
 import { Icons } from '@/components/icons';
 
+export { PageHeader as SubpageContentHeader } from '@/components/ui/page-header';
+
 interface BackHeaderProp extends React.HTMLAttributes<HTMLDivElement> {
     back?: string;
 }
@@ -34,24 +36,6 @@ export default function SubpageHeader({ back, children }: BackHeaderProp) {
                 </div>
                 <div data-name="right-part">{children}</div>
             </div>
-        </div>
-    );
-}
-
-interface SubpageContentHeaderProps {
-    heading: string;
-    text?: string;
-    children?: React.ReactNode;
-}
-
-export function SubpageContentHeader({ heading, text, children }: SubpageContentHeaderProps) {
-    return (
-        <div className="flex justify-between px-2 items-center">
-            <div className="grid gap-1">
-                <h1 className="text-xl font-bold tracking-wide text-slate-900">{heading}</h1>
-                {text && <p className="text-sm text-neutral-500">{text}</p>}
-            </div>
-            {children}
         </div>
     );
 }

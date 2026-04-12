@@ -3,6 +3,7 @@ import { UserAvatarUploadButton } from '@/components/user/user-avatar-upload-but
 import { useState } from 'react';
 import { getAvatarUrl } from '@/lib/logic/avatar';
 import { type HeaderUserInfo } from '@/lib/logic/user';
+import { Avatar } from '@/components/ui/avatar';
 interface UserSetttingAvatar extends React.HTMLAttributes<HTMLButtonElement> {
     user: HeaderUserInfo;
 }
@@ -24,20 +25,10 @@ export async function UserSetttingAvatar({ user }: UserSetttingAvatar) {
 
     return (
         <>
-            <img
-                src={resultAvatarUrl}
-                alt=""
-                height={96}
-                width={96}
-                className="rounded-full align-middle"
-                // 默认height会是auto，导致计算结果不与width一致，导致图像未能呈圆框
-                style={{ height: 96 }}
-                loading="lazy"
-            />
+            <Avatar src={resultAvatarUrl} size="lg" />
             <div
-                className="flex flex-col align-middle"
+                className="flex flex-col align-middle w-16 md:w-18 lg:w-20"
                 data-id="upload-button"
-                style={{ width: 96 }}
             >
                 <UserAvatarUploadButton user={user} updateFuc={updateImage} />
             </div>

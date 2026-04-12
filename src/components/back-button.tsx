@@ -14,7 +14,7 @@ export function BackButton({ back }: BackButtonProp) {
     }
 
     return (
-        <button className="btn btn-ghost w-[96px]" onClick={onClick}>
+        <button className="btn btn-ghost btn-sm" onClick={onClick}>
             <Icons.chevronLeft className="mr-2 h-4 w-4" />
             返回
         </button>
