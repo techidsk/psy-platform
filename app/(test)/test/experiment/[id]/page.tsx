@@ -21,6 +21,11 @@ export default async function TestExperimentPage({
         redirect('/');
     }
 
+    if (user.role !== 'SUPERADMIN') {
+        logger.error(`[测试模式] 用户 ${user.id} 无权限访问测试页面`);
+        redirect('/dashboard');
+    }
+
     // 通过 nano_id 直接查找实验，跳过 project/group 链路
     const experiment = await db.experiment.findFirst({
         where: { nano_id: experimentNanoId },

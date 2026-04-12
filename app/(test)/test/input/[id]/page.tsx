@@ -7,9 +7,9 @@ import { getAccessKey } from '@/lib/platform';
 import {
     getExperimentStepSetting,
     getEncodedCallbackUrl,
-    getCurrentUserExperiment,
     getExperimentInfos,
 } from '@/lib/experiment';
+import { db } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { redirect } from 'next/navigation';
 
@@ -29,6 +29,11 @@ export default async function TestInput({
         redirect('/');
     }
 
+    if (user.role !== 'SUPERADMIN') {
+        logger.error(`[测试模式] 用户 ${user.id} 无权限访问测试页面`);
+        redirect('/dashboard');
+    }
+
     const experimentStepIndex = searchParams['p'] as any as string;
     const callbackPath = searchParams['callback'];
 
@@ -43,11 +48,10 @@ export default async function TestInput({
         userExperimentId
     );
 
-    const userExperiment = await getCurrentUserExperiment(
-        user?.id,
-        userExperimentId,
-        experimentStepIndex
-    );
+    // SUPERADMIN 直接通过 nano_id 查询，跳过用户归属校验
+    const userExperiment = await db.user_experiments.findFirst({
+        where: { nano_id: userExperimentId, part: parseInt(experimentStepIndex) },
+    });
     if (!userExperiment?.experiment_id) {
         logger.error('[测试模式] 未找到用户实验中的关联的experimentId');
         redirect('/dashboard');

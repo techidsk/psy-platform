@@ -96,11 +96,8 @@ export default async function ExperimentTimeline({
         redirect('/');
     }
 
-    if (!user.nano_id) {
+    if (!user.nano_id && !test) {
         logger.warn(`用户${userId}没有绑定nano_id`);
-        if (test) {
-            redirect('/dashboard');
-        }
         if (guest) {
             redirect('/guest/closed/30002');
         }
@@ -124,7 +121,7 @@ export default async function ExperimentTimeline({
     }
 
     const userNanoId = await getUserNanoId(userId);
-    if (!userNanoId) {
+    if (!userNanoId && !test) {
         logger.error(`[实验${nextExperimentId}] 用户${userId}没有绑定nano_id`);
         toast({
             title: '无法实验',
@@ -132,9 +129,6 @@ export default async function ExperimentTimeline({
             variant: 'destructive',
             duration: 5000,
         });
-        if (test) {
-            redirect('/dashboard');
-        }
         if (guest) {
             redirect('/guest/closed/30002');
         }
@@ -151,7 +145,7 @@ export default async function ExperimentTimeline({
                 guest={guest}
                 test={test}
                 testExperimentNanoId={testExperimentNanoId}
-                userNanoId={userNanoId}
+                userNanoId={userNanoId ?? ''}
                 targetStepIndex={stepIndex}
                 userExperimentNanoId={userExperimentNanoId}
                 user={user}
