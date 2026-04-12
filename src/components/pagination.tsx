@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Icons } from './icons';
 
 interface PaginationProps extends React.HTMLAttributes<HTMLElement> {
@@ -66,6 +66,8 @@ export default function Pagination({
     onPageSizeChange,
 }: PaginationProps) {
     const router = useRouter();
+    const currentSearchParams = useSearchParams();
+    const pathname = usePathname();
     const isCallbackMode = typeof onPageChange === 'function';
     const totalPages = total !== undefined ? Math.max(1, Math.ceil(total / pageSize)) : end;
 
@@ -76,11 +78,10 @@ export default function Pagination({
         if (isCallbackMode) {
             onPageChange(target);
         } else {
-            const searchParams = new URLSearchParams(window.location.search);
-            searchParams.set('page', target.toString());
-            searchParams.set('pagesize', pageSize.toString());
-            const pathname = window.location.pathname;
-            router.push(`${pathname}?${searchParams.toString()}`);
+            const params = new URLSearchParams(currentSearchParams.toString());
+            params.set('page', target.toString());
+            params.set('pagesize', pageSize.toString());
+            router.replace(`${pathname}?${params.toString()}`);
         }
     };
 
@@ -89,11 +90,10 @@ export default function Pagination({
         if (isCallbackMode && onPageSizeChange) {
             onPageSizeChange(newSize);
         } else {
-            const searchParams = new URLSearchParams(window.location.search);
-            searchParams.set('page', '1');
-            searchParams.set('pagesize', newSize.toString());
-            const pathname = window.location.pathname;
-            router.push(`${pathname}?${searchParams.toString()}`);
+            const params = new URLSearchParams(currentSearchParams.toString());
+            params.set('page', '1');
+            params.set('pagesize', newSize.toString());
+            router.replace(`${pathname}?${params.toString()}`);
         }
     };
 

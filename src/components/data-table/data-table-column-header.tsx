@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Icons } from '@/components/icons';
 
 interface DataTableColumnHeaderProps {
@@ -17,15 +17,17 @@ export function DataTableColumnHeader({
     sortOrder = 'desc',
 }: DataTableColumnHeaderProps) {
     const router = useRouter();
+    const currentSearchParams = useSearchParams();
+    const pathname = usePathname();
     const isActive = sortBy === sortKey;
     const nextOrder = isActive && sortOrder === 'desc' ? 'asc' : 'desc';
 
     const handleSort = () => {
-        const searchParams = new URLSearchParams(window.location.search);
-        searchParams.set('sort_by', sortKey);
-        searchParams.set('sort_order', nextOrder);
-        searchParams.set('page', '1');
-        router.push(`${window.location.pathname}?${searchParams.toString()}`);
+        const params = new URLSearchParams(currentSearchParams.toString());
+        params.set('sort_by', sortKey);
+        params.set('sort_order', nextOrder);
+        params.set('page', '1');
+        router.replace(`${pathname}?${params.toString()}`);
     };
 
     return (

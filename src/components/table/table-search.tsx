@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Icons } from '../icons';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
@@ -30,6 +30,8 @@ export function TableSearch({
     actionNode?: React.ReactNode;
 }) {
     const router = useRouter();
+    const currentSearchParams = useSearchParams();
+    const pathname = usePathname();
     const initialValues = {
         ...defaultParams,
         ...Object.fromEntries(
@@ -137,8 +139,7 @@ export function TableSearch({
     };
 
     const search = (reset: boolean = false) => {
-        let oldSearchParams = new URLSearchParams(window.location.search);
-        const pathname = window.location.pathname;
+        let oldSearchParams = new URLSearchParams(currentSearchParams.toString());
 
         // 如果是通过搜索按钮触发的，重置页码为1
         if (!reset && oldSearchParams.has('page')) {
@@ -150,7 +151,7 @@ export function TableSearch({
             emptySearchParams.set('page', '1');
             emptySearchParams.set('pagesize', '10');
             const newUrl = `${pathname}?${emptySearchParams.toString()}`;
-            router.push(newUrl);
+            router.replace(newUrl);
         } else {
             let hasChanged = false;
 
@@ -163,7 +164,7 @@ export function TableSearch({
 
             if (hasChanged) {
                 const newUrl = `${pathname}?${oldSearchParams.toString()}`;
-                router.push(newUrl);
+                router.replace(newUrl);
             }
         }
     };
