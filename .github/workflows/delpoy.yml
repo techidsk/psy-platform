@@ -61,6 +61,8 @@ jobs:
           ssh-private-key: ${{ secrets.WENDAO_CI }}
 
       - name: Deploy to server
+        env:
+          RSYNC_RSH: "ssh -o StrictHostKeyChecking=no"
         run: |
           # 将 standalone 产物同步到服务器
           rsync -azP --delete \
