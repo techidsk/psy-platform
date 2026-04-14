@@ -27,9 +27,6 @@ const nextConfig = {
         ],
         dangerouslyAllowSVG: true,
     },
-    env: {
-        NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-    },
     serverExternalPackages: ['pino', 'pino-pretty', 'bull', 'node-cron'],
 
     // 生产环境优化
