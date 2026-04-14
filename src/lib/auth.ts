@@ -2,11 +2,12 @@ import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { db } from './db';
 import { logger } from './logger';
+import { authConfig } from './auth.config';
 const crypto = require('crypto');
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+    ...authConfig,
     secret: process.env.JWT_SECRET,
-    trustHost: true,
     logger: {
         error(error) {
             logger.error(error.message, error);
@@ -17,12 +18,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         debug(code) {
             logger.debug(code);
         },
-    },
-    session: {
-        strategy: 'jwt',
-    },
-    pages: {
-        signIn: '/',
     },
     providers: [
         Credentials({
@@ -60,30 +55,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             },
         }),
     ],
-    callbacks: {
-        async session({ session, token }) {
-            if (token) {
-                session.user.id = token.id as string;
-                session.user.username = (token.name as string) || '';
-                session.user.role = token.role as string;
-                session.user.image = token.picture as string;
-            }
-            return session;
-        },
-        async jwt({ token, user }) {
-            if (user) {
-                return {
-                    ...token,
-                    id: user.id,
-                    name: user.username,
-                    picture: user.avatar,
-                    role: user.user_role,
-                };
-            }
-            // 超时判断
-            return token;
-        },
-    },
 });
 
 async function verify(password: string, salt: string, hash: string) {

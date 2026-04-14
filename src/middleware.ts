@@ -1,5 +1,8 @@
-import { auth } from '@/lib/auth';
+import NextAuth from 'next-auth';
+import { authConfig } from '@/lib/auth.config';
 import { NextResponse } from 'next/server';
+
+const { auth } = NextAuth(authConfig);
 
 function checkAuthPage(pathname: string) {
     // 首页 '/' 需要精确匹配，其他页面使用前缀匹配
