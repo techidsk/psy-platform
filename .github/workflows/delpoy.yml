@@ -61,32 +61,36 @@ jobs:
           ssh-private-key: ${{ secrets.WENDAO_CI }}
 
       - name: Deploy to server
-        env:
-          RSYNC_RSH: "ssh -o StrictHostKeyChecking=no"
         run: |
-          # 将 standalone 产物同步到服务器
-          rsync -azP --delete \
-            --exclude='.env*' \
-            .next/standalone/ \
-            root@139.196.216.224:/root/code/psy-platform/
+          SSH_OPTS="-o StrictHostKeyChecking=no"
+          SERVER="root@139.196.216.224"
+          DEPLOY_DIR="/root/code/psy-platform"
 
-          # 单独同步 static 和 public（standalone 不自动包含这些）
-          rsync -azP --delete \
-            .next/static/ \
-            root@139.196.216.224:/root/code/psy-platform/.next/static/
+          # 打包产物（排除 .env 文件）
+          tar -czf deploy.tar.gz \
+            -C .next/standalone . \
+            --transform='s,^,$DEPLOY_DIR/,' 2>/dev/null || true
 
-          rsync -azP \
-            public/ \
-            root@139.196.216.224:/root/code/psy-platform/public/
+          # 先清理服务器上旧的产物（保留 .env 文件）
+          ssh $SSH_OPTS $SERVER "
+            cd $DEPLOY_DIR && \
+            find . -maxdepth 1 -not -name '.env*' -not -name '.' -not -name '..' -exec rm -rf {} + 2>/dev/null || true
+          "
 
-          # 同步 PM2 配置和 prisma schema
-          rsync -azP \
-            ecosystem.config.js \
-            root@139.196.216.224:/root/code/psy-platform/
+          # 上传 standalone 产物
+          scp -r $SSH_OPTS .next/standalone/* $SERVER:$DEPLOY_DIR/
 
-          rsync -azP \
-            prisma/ \
-            root@139.196.216.224:/root/code/psy-platform/prisma/
+          # 上传 static 资源
+          ssh $SSH_OPTS $SERVER "mkdir -p $DEPLOY_DIR/.next/static"
+          scp -r $SSH_OPTS .next/static/* $SERVER:$DEPLOY_DIR/.next/static/
+
+          # 上传 public 目录
+          ssh $SSH_OPTS $SERVER "mkdir -p $DEPLOY_DIR/public"
+          scp -r $SSH_OPTS public/* $SERVER:$DEPLOY_DIR/public/
+
+          # 上传 PM2 配置和 prisma
+          scp $SSH_OPTS ecosystem.config.js $SERVER:$DEPLOY_DIR/
+          scp -r $SSH_OPTS prisma $SERVER:$DEPLOY_DIR/
 
       - name: Restart PM2
         run: |
