@@ -3,10 +3,17 @@ import { logger } from './logger';
 
 require('dotenv').config();
 
-const client = new OpenAI({
-    baseURL: 'https://ark.cn-beijing.volces.com/api/v3',
-    apiKey: process.env.ARK_API_KEY,
-});
+let _client: OpenAI | null = null;
+
+function getClient(): OpenAI {
+    if (!_client) {
+        _client = new OpenAI({
+            baseURL: 'https://ark.cn-beijing.volces.com/api/v3',
+            apiKey: process.env.ARK_API_KEY,
+        });
+    }
+    return _client;
+}
 
 const DOUBAO_MODEL = 'doubao-seedream-3-0-t2i-250415';
 const DEFAULT_SIZE = '1024x1024';
@@ -22,7 +29,7 @@ async function generateImage(prompt: string, size: string = DEFAULT_SIZE): Promi
     const startTime = Date.now();
     logger.info({ promptLength: prompt.length, prompt, size }, '开始调用 Doubao 生成图片');
     try {
-        const response = await client.images.generate(
+        const response = await getClient().images.generate(
             {
                 model: DOUBAO_MODEL,
                 prompt,
