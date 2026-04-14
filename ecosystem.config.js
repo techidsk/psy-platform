@@ -7,6 +7,7 @@ module.exports = {
             env: {
                 NODE_ENV: 'production',
                 PORT: 4545,
+                HOSTNAME: '0.0.0.0',
                 // 限制 Node.js 最大内存为 2GB，给系统和其他进程留空间
                 NODE_OPTIONS: '--max-old-space-size=2048',
             },
