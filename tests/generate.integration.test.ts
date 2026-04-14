@@ -18,9 +18,9 @@ const OSS = _require('ali-oss');
 const hasApiKey = Boolean(process.env.ARK_API_KEY);
 const hasOssConfig = Boolean(
     process.env.OSS_BUCKET &&
-        process.env.ACCESS_KEY_ID &&
-        process.env.ACCESS_KEY_SECRET &&
-        process.env.OSS_REGION
+    process.env.ACCESS_KEY_ID &&
+    process.env.ACCESS_KEY_SECRET &&
+    process.env.OSS_REGION
 );
 
 describe.skipIf(!hasApiKey)('Doubao API 集成测试（需要 ARK_API_KEY）', () => {
@@ -52,43 +52,45 @@ describe.skipIf(!hasApiKey)('Doubao API 集成测试（需要 ARK_API_KEY）', (
     }, 90000);
 });
 
-describe.skipIf(!hasApiKey || !hasOssConfig)('OSS 转存集成测试（需要 ARK_API_KEY + OSS 配置）', () => {
-    it('应生成图片并成功转存到 OSS，返回 OSS 域名地址', async () => {
-        // 1. 生成图片，获取 Doubao 临时 URL
-        const doubaoUrl = await generateImage('一朵向日葵，水彩画风格');
-        expect(doubaoUrl).toMatch(/^https?:\/\//);
+describe.skipIf(!hasApiKey || !hasOssConfig)(
+    'OSS 转存集成测试（需要 ARK_API_KEY + OSS 配置）',
+    () => {
+        it('应生成图片并成功转存到 OSS，返回 OSS 域名地址', async () => {
+            // 1. 生成图片，获取 Doubao 临时 URL
+            const doubaoUrl = await generateImage('一朵向日葵，水彩画风格');
+            expect(doubaoUrl).toMatch(/^https?:\/\//);
 
-        // 2. 下载图片
-        const imgBuffer = Buffer.from(await fetch(doubaoUrl).then((r) => r.arrayBuffer()));
-        expect(imgBuffer.length).toBeGreaterThan(0);
+            // 2. 下载图片
+            const arrayBuffer = await fetch(doubaoUrl).then((r) => r.arrayBuffer());
+            const imgBuffer = Buffer.from(arrayBuffer as ArrayBuffer);
+            expect(imgBuffer.length).toBeGreaterThan(0);
 
-        // 3. 上传到 OSS
-        const ossClient = new OSS({
-            region: process.env.OSS_REGION,
-            accessKeyId: process.env.ACCESS_KEY_ID,
-            accessKeySecret: process.env.ACCESS_KEY_SECRET,
-            bucket: process.env.OSS_BUCKET,
-            endpoint: process.env.ENDPOINT,
-        });
+            // 3. 上传到 OSS
+            const ossClient = new OSS({
+                region: process.env.OSS_REGION,
+                accessKeyId: process.env.ACCESS_KEY_ID,
+                accessKeySecret: process.env.ACCESS_KEY_SECRET,
+                bucket: process.env.OSS_BUCKET,
+                endpoint: process.env.ENDPOINT,
+            });
 
-        const ossPath = `trail/test-${Date.now()}.png`;
-        const result = await ossClient.put(ossPath, imgBuffer);
+            const ossPath = `trail/test-${Date.now()}.png`;
+            const result = await ossClient.put(ossPath, imgBuffer);
 
-        console.log('[集成测试] Doubao URL:', doubaoUrl.substring(0, 80) + '...');
-        console.log('[集成测试] OSS URL:', result.url);
+            console.log('[集成测试] Doubao URL:', doubaoUrl.substring(0, 80) + '...');
+            console.log('[集成测试] OSS URL:', result.url);
 
-        // 4. 验证 OSS URL
-        expect(result.url).toBeTruthy();
-        expect(result.url).toMatch(/^https?:\/\//);
-        expect(result.url).toContain(process.env.OSS_BUCKET);
-    }, 90000);
-});
+            // 4. 验证 OSS URL
+            expect(result.url).toBeTruthy();
+            expect(result.url).toMatch(/^https?:\/\//);
+            expect(result.url).toContain(process.env.OSS_BUCKET);
+        }, 90000);
+    }
+);
 
 describe.skipIf(hasApiKey)('集成测试跳过提示', () => {
     it('未配置 ARK_API_KEY，跳过集成测试', () => {
-        console.warn(
-            '[集成测试] 跳过：请在 .env.local 中设置 ARK_API_KEY 以运行真实 API 测试。'
-        );
+        console.warn('[集成测试] 跳过：请在 .env.local 中设置 ARK_API_KEY 以运行真实 API 测试。');
         expect(true).toBe(true);
     });
 });
