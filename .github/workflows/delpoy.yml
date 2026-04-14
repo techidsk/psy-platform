@@ -84,6 +84,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no root@139.196.216.224 << 'EOF'
             cd /root/code/psy-platform
-            pm2 restart psy
+            pm2 delete psy 2>/dev/null || true
+            pm2 start ecosystem.config.js
             pm2 save
           EOF
