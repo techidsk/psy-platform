@@ -11,17 +11,25 @@ function createClient() {
     return new PrismaClient({ adapter });
 }
 
-let prisma: PrismaClient;
-if (process.env.NODE_ENV === 'production') {
-    prisma = createClient();
-} else {
-    if (!global.cachedPrisma) {
-        global.cachedPrisma = createClient();
+function getClient(): PrismaClient {
+    if (process.env.NODE_ENV === 'production') {
+        if (!global.cachedPrisma) {
+            global.cachedPrisma = createClient();
+        }
+        return global.cachedPrisma;
+    } else {
+        if (!global.cachedPrisma) {
+            global.cachedPrisma = createClient();
+        }
+        return global.cachedPrisma;
     }
-    prisma = global.cachedPrisma;
 }
 
-export const db = prisma;
+export const db = new Proxy({} as PrismaClient, {
+    get(_target, prop) {
+        return getClient()[prop as keyof PrismaClient];
+    },
+});
 
 /**
  * 构建动态 WHERE 子句，兼容 adapter-mariadb 驱动适配器。
