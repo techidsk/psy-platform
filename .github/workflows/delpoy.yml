@@ -72,10 +72,8 @@ jobs:
             find . -maxdepth 1 -not -name '.env*' -not -name '.' -not -name '..' -exec rm -rf {} + 2>/dev/null || true
           "
 
-          # 打包所有产物并通过 ssh 管道一次性传输解压
-          tar -cf - \
-            -C .next/standalone . \
-            --transform='s,^\./,./' \
+          # standalone 产物传输
+          tar -cf - -C .next/standalone . \
             | ssh $SSH_OPTS $SERVER "cd $DEPLOY_DIR && tar -xf -"
 
           # static 和 public 单独传（standalone 不包含这些）
