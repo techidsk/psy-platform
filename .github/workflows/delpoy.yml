@@ -66,10 +66,10 @@ jobs:
           SERVER="root@139.196.216.224"
           DEPLOY_DIR="/root/code/psy-platform"
 
-          # 清理服务器上旧产物（保留 .env 文件）
+          # 清理服务器上旧产物（只删部署相关目录，保留 .env 等配置）
           ssh $SSH_OPTS $SERVER "
             cd $DEPLOY_DIR && \
-            find . -maxdepth 1 -not -name '.env*' -not -name '.' -not -name '..' -exec rm -rf {} + 2>/dev/null || true
+            rm -rf .next node_modules server.js package.json public prisma ecosystem.config.js 2>/dev/null || true
           "
 
           # standalone 产物传输
