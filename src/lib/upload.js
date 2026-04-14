@@ -2,13 +2,21 @@ const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fet
 require('dotenv').config();
 
 const OSS = require('ali-oss');
-const client = new OSS({
-    region: process.env.OSS_REGION,
-    accessKeyId: process.env.ACCESS_KEY_ID,
-    accessKeySecret: process.env.ACCESS_KEY_SECRET,
-    bucket: process.env.OSS_BUCKET,
-    endpoint: process.env.ENDPOINT,
-});
+
+let _client = null;
+
+function getClient() {
+    if (!_client) {
+        _client = new OSS({
+            region: process.env.OSS_REGION,
+            accessKeyId: process.env.ACCESS_KEY_ID,
+            accessKeySecret: process.env.ACCESS_KEY_SECRET,
+            bucket: process.env.OSS_BUCKET,
+            endpoint: process.env.ENDPOINT,
+        });
+    }
+    return _client;
+}
 
 async function downloadImage(url) {
     console.log('开始下载: ', url);
@@ -27,7 +35,7 @@ async function uploadImage(url, object) {
         const buffer = await downloadImage(url);
         console.log('开始上传: ', url, object);
         if (buffer) {
-            await client.put(object, buffer);
+            await getClient().put(object, buffer);
             return true;
         } else {
             return false;
@@ -42,7 +50,7 @@ async function uploadFile(buffer, object) {
     try {
         console.log('开始上传文件: ', object);
         if (buffer) {
-            const result = await client.put(object, buffer);
+            const result = await getClient().put(object, buffer);
             console.log('上传成功: ', result.url);
             return result.url; // Return the OSS URL
         } else {

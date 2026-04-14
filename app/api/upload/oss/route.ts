@@ -3,17 +3,19 @@ import { NextResponse } from 'next/server';
 const OSS = require('ali-oss');
 require('dotenv').config();
 
-const REGION = process.env.REGION || '';
-const ACCESS_KEY = process.env.ACCESS_KEY || '';
-const SECRET_KEY = process.env.SECRET_KEY || '';
-const BUCKET_NAME = process.env.BUCKET_NAME || '';
+let _client: any = null;
 
-const client = new OSS({
-    region: REGION,
-    accessKeyId: ACCESS_KEY,
-    accessKeySecret: SECRET_KEY,
-    bucket: BUCKET_NAME,
-});
+function getClient() {
+    if (!_client) {
+        _client = new OSS({
+            region: process.env.REGION || '',
+            accessKeyId: process.env.ACCESS_KEY || '',
+            accessKeySecret: process.env.SECRET_KEY || '',
+            bucket: process.env.BUCKET_NAME || '',
+        });
+    }
+    return _client;
+}
 
 /**
  * /api/upload/oss
