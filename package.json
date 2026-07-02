@@ -62,7 +62,7 @@
     "tailwind-merge": "^1.14.0",
     "typescript": "5.4.5",
     "usehooks-ts": "^3.1.1",
-    "ws": "^8.20.0",
+    "ws": "^8.21.0",
     "zod": "^3.25.76",
     "zustand": "^5.0.12"
   },
