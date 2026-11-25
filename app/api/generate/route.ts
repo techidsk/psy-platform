@@ -10,7 +10,7 @@ const { uploadFile } = require('../../../src/lib/upload.js');
 
 /**
  * /api/generate
- * 生成图片（同步调用 Doubao API）
+ * 生成图片（同步调用阿里云百炼 Z-Image Turbo）
  *
  * @returns
  */
@@ -139,7 +139,7 @@ export async function POST(request: Request) {
     try {
         const imageUrl = await generateImage(assembledPrompt, size);
 
-        // 转存到 OSS，防止 Doubao 临时 URL 过期
+        // 转存到 OSS，防止百炼临时 URL 过期
         let finalUrl: string = imageUrl;
         try {
             const ossPath = `trail/${promptNanoId}.png`;
@@ -150,12 +150,12 @@ export async function POST(request: Request) {
                 finalUrl = ossUrl;
                 logger.info({ promptNanoId, ossPath }, 'OSS 转存成功');
             } else {
-                logger.warn({ promptNanoId }, 'OSS 转存返回空 URL，使用 Doubao 原始 URL');
+                logger.warn({ promptNanoId }, 'OSS 转存返回空 URL，使用百炼原始 URL');
             }
         } catch (ossError) {
             logger.warn(
                 { promptNanoId, error: String(ossError) },
-                'OSS 转存失败，使用 Doubao 原始 URL'
+                'OSS 转存失败，使用百炼原始 URL'
             );
         }
 

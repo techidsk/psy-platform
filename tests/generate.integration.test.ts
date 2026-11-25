@@ -1,7 +1,7 @@
 /**
- * Doubao API 集成测试
+ * 百炼 Z-Image Turbo 集成测试
  *
- * 需要在 .env.local 中配置 ARK_API_KEY 才能运行。
+ * 需要在 .env.local 中配置 DASHSCOPE_API_KEY 才能运行。
  * OSS 转存测试额外需要配置 OSS_BUCKET、ACCESS_KEY_ID 等环境变量。
  *
  * 运行方式：
@@ -15,7 +15,7 @@ import { generateImage } from '../src/lib/generate';
 const _require = createRequire(import.meta.url);
 const OSS = _require('ali-oss');
 
-const hasApiKey = Boolean(process.env.ARK_API_KEY);
+const hasApiKey = Boolean(process.env.DASHSCOPE_API_KEY);
 const hasOssConfig = Boolean(
     process.env.OSS_BUCKET &&
     process.env.ACCESS_KEY_ID &&
@@ -23,7 +23,7 @@ const hasOssConfig = Boolean(
     process.env.OSS_REGION
 );
 
-describe.skipIf(!hasApiKey)('Doubao API 集成测试（需要 ARK_API_KEY）', () => {
+describe.skipIf(!hasApiKey)('百炼 API 集成测试（需要 DASHSCOPE_API_KEY）', () => {
     it('应成功生成图片并返回有效 HTTPS URL', async () => {
         const url = await generateImage('一只橘猫坐在窗台上，阳光照射，写实风格');
 
@@ -53,15 +53,15 @@ describe.skipIf(!hasApiKey)('Doubao API 集成测试（需要 ARK_API_KEY）', (
 });
 
 describe.skipIf(!hasApiKey || !hasOssConfig)(
-    'OSS 转存集成测试（需要 ARK_API_KEY + OSS 配置）',
+    'OSS 转存集成测试（需要 DASHSCOPE_API_KEY + OSS 配置）',
     () => {
         it('应生成图片并成功转存到 OSS，返回 OSS 域名地址', async () => {
-            // 1. 生成图片，获取 Doubao 临时 URL
-            const doubaoUrl = await generateImage('一朵向日葵，水彩画风格');
-            expect(doubaoUrl).toMatch(/^https?:\/\//);
+            // 1. 生成图片，获取百炼临时 URL
+            const imageUrl = await generateImage('一朵向日葵，水彩画风格');
+            expect(imageUrl).toMatch(/^https?:\/\//);
 
             // 2. 下载图片
-            const arrayBuffer = await fetch(doubaoUrl).then((r) => r.arrayBuffer());
+            const arrayBuffer = await fetch(imageUrl).then((r) => r.arrayBuffer());
             const imgBuffer = Buffer.from(arrayBuffer as ArrayBuffer);
             expect(imgBuffer.length).toBeGreaterThan(0);
 
@@ -77,7 +77,7 @@ describe.skipIf(!hasApiKey || !hasOssConfig)(
             const ossPath = `trail/test-${Date.now()}.png`;
             const result = await ossClient.put(ossPath, imgBuffer);
 
-            console.log('[集成测试] Doubao URL:', doubaoUrl.substring(0, 80) + '...');
+            console.log('[集成测试] 百炼 URL:', imageUrl.substring(0, 80) + '...');
             console.log('[集成测试] OSS URL:', result.url);
 
             // 4. 验证 OSS URL
@@ -89,8 +89,10 @@ describe.skipIf(!hasApiKey || !hasOssConfig)(
 );
 
 describe.skipIf(hasApiKey)('集成测试跳过提示', () => {
-    it('未配置 ARK_API_KEY，跳过集成测试', () => {
-        console.warn('[集成测试] 跳过：请在 .env.local 中设置 ARK_API_KEY 以运行真实 API 测试。');
+    it('未配置 DASHSCOPE_API_KEY，跳过集成测试', () => {
+        console.warn(
+            '[集成测试] 跳过：请在 .env.local 中设置 DASHSCOPE_API_KEY 以运行真实 API 测试。'
+        );
         expect(true).toBe(true);
     });
 });

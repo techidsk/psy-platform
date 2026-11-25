@@ -1,13 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// vi.hoisted 确保变量在 vi.mock 提升时已可用
-const mockImagesGenerate = vi.hoisted(() => vi.fn());
+const mockFetch = vi.hoisted(() => vi.fn());
 
-vi.mock('openai', () => ({
-    default: class MockOpenAI {
-        images = { generate: mockImagesGenerate };
-    },
-}));
+vi.stubGlobal('fetch', mockFetch);
 
 vi.mock('@/lib/logger', () => ({
     logger: {
@@ -20,67 +15,84 @@ vi.mock('@/lib/logger', () => ({
 
 import { generateImage } from '../src/lib/generate';
 
+function jsonResponse(body: unknown, status = 200) {
+    return {
+        ok: status >= 200 && status < 300,
+        status,
+        json: async () => body,
+    };
+}
+
+function imageResponse(url: string | null) {
+    return jsonResponse({
+        output: {
+            choices: [{ message: { content: url ? [{ image: url }] : [{ image: null }] } }],
+        },
+    });
+}
+
+function requestBody() {
+    return JSON.parse(mockFetch.mock.calls[0][1].body as string);
+}
+
 describe('generateImage 单元测试', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        process.env.DASHSCOPE_API_KEY = 'test-key';
+        process.env.DASHSCOPE_BASE_URL = 'https://dashscope.aliyuncs.com/api/v1';
     });
 
     it('成功时返回图片 URL', async () => {
         const mockUrl = 'https://example.com/generated-image.png';
-        mockImagesGenerate.mockResolvedValueOnce({
-            data: [{ url: mockUrl }],
-        });
+        mockFetch.mockResolvedValueOnce(imageResponse(mockUrl));
 
         const result = await generateImage('一只可爱的橘猫');
         expect(result).toBe(mockUrl);
-        expect(mockImagesGenerate).toHaveBeenCalledOnce();
+        expect(mockFetch).toHaveBeenCalledOnce();
+        expect(requestBody()).toMatchObject({
+            model: 'z-image-turbo',
+            input: { messages: [{ role: 'user', content: [{ text: '一只可爱的橘猫' }] }] },
+            parameters: { size: '1024*1024', prompt_extend: false },
+        });
     });
 
-    it('size 参数默认为 1024x1024', async () => {
-        mockImagesGenerate.mockResolvedValueOnce({
-            data: [{ url: 'https://example.com/image.png' }],
-        });
+    it('size 参数默认转换为 1024*1024', async () => {
+        mockFetch.mockResolvedValueOnce(imageResponse('https://example.com/image.png'));
 
         await generateImage('测试提示词');
-        expect(mockImagesGenerate).toHaveBeenCalledWith(
-            expect.objectContaining({ size: '1024x1024' }),
-            expect.anything()
-        );
+        expect(requestBody().parameters.size).toBe('1024*1024');
     });
 
     it('支持自定义 size 参数', async () => {
-        mockImagesGenerate.mockResolvedValueOnce({
-            data: [{ url: 'https://example.com/image.png' }],
-        });
+        mockFetch.mockResolvedValueOnce(imageResponse('https://example.com/image.png'));
 
         await generateImage('测试提示词', '512x512');
-        expect(mockImagesGenerate).toHaveBeenCalledWith(
-            expect.objectContaining({ size: '512x512' }),
-            expect.anything()
-        );
+        expect(requestBody().parameters.size).toBe('512*512');
     });
 
-    it('API 返回空 data 数组时抛出错误', async () => {
-        mockImagesGenerate.mockResolvedValueOnce({ data: [] });
+    it('API 返回空 content 时抛出错误', async () => {
+        mockFetch.mockResolvedValueOnce(
+            jsonResponse({ output: { choices: [{ message: { content: [] } }] } })
+        );
 
-        await expect(generateImage('测试提示词')).rejects.toThrow('Doubao API 未返回图片 URL');
+        await expect(generateImage('测试提示词')).rejects.toThrow('百炼 API 未返回图片 URL');
     });
 
     it('API 返回 null URL 时抛出错误', async () => {
-        mockImagesGenerate.mockResolvedValueOnce({ data: [{ url: null }] });
+        mockFetch.mockResolvedValueOnce(imageResponse(null));
 
-        await expect(generateImage('测试提示词')).rejects.toThrow('Doubao API 未返回图片 URL');
+        await expect(generateImage('测试提示词')).rejects.toThrow('百炼 API 未返回图片 URL');
     });
 
-    it('API 返回 undefined data 时抛出错误', async () => {
-        mockImagesGenerate.mockResolvedValueOnce({ data: undefined });
+    it('API 返回缺少 output 时抛出错误', async () => {
+        mockFetch.mockResolvedValueOnce(jsonResponse({}));
 
-        await expect(generateImage('测试提示词')).rejects.toThrow('Doubao API 未返回图片 URL');
+        await expect(generateImage('测试提示词')).rejects.toThrow('百炼 API 未返回图片 URL');
     });
 
     it('API 调用失败时透传错误', async () => {
         const networkError = new Error('connection refused');
-        mockImagesGenerate.mockRejectedValueOnce(networkError);
+        mockFetch.mockRejectedValueOnce(networkError);
 
         await expect(generateImage('测试提示词')).rejects.toThrow('connection refused');
     });
@@ -89,21 +101,33 @@ describe('generateImage 单元测试', () => {
         const timeoutError = Object.assign(new Error('The operation was aborted'), {
             name: 'TimeoutError',
         });
-        mockImagesGenerate.mockRejectedValueOnce(timeoutError);
+        mockFetch.mockRejectedValueOnce(timeoutError);
 
         await expect(generateImage('测试提示词')).rejects.toThrow('图片生成超时');
     });
 
     it('提示词正确传递到 API', async () => {
         const prompt = '风格：噪点渐变插画，内容：一只猫';
-        mockImagesGenerate.mockResolvedValueOnce({
-            data: [{ url: 'https://example.com/image.png' }],
-        });
+        mockFetch.mockResolvedValueOnce(imageResponse('https://example.com/image.png'));
 
         await generateImage(prompt);
-        expect(mockImagesGenerate).toHaveBeenCalledWith(
-            expect.objectContaining({ prompt }),
-            expect.anything()
+        const body = requestBody();
+        expect(body.input.messages[0].content).toEqual([{ text: prompt }]);
+        expect(mockFetch.mock.calls[0][0]).toBe(
+            'https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation'
         );
+    });
+
+    it('接口返回业务错误码时抛出错误', async () => {
+        mockFetch.mockResolvedValueOnce(
+            jsonResponse({ code: 'InvalidParameter', message: 'size invalid' }, 400)
+        );
+
+        await expect(generateImage('测试提示词')).rejects.toThrow('百炼图片生成失败: size invalid');
+    });
+
+    it('非法尺寸在出网前拒绝', async () => {
+        await expect(generateImage('测试提示词', '100x100')).rejects.toThrow('图片尺寸不合法');
+        expect(mockFetch).not.toHaveBeenCalled();
     });
 });

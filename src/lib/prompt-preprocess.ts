@@ -182,7 +182,7 @@ export async function updateContextSummary(
  * 拼接顺序：风格 + 当前用户输入 + 上下文摘要
  * 意图画像作为隐式指导融入风格和上下文中，不单独暴露
  */
-// Doubao seedream 提示词最大长度（字符数），超出会被截断
+// 百炼 Z-Image Turbo 提示词最大长度（字符数），超出会被截断
 const MAX_PROMPT_LENGTH = 800;
 
 export function assemblePrompt(params: {
