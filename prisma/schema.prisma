@@ -15,6 +15,7 @@ model platform_setting {
   access_end_date      DateTime? @db.Date
   guest_mode           Boolean?
   guest_experiment_ids Json?
+  image_size           Int       @default(512)
   display_num          Int?
   min_words            Int?      @default(5)
 }
@@ -58,7 +59,10 @@ model trail {
   state              String?   @db.VarChar(15)
   create_time        DateTime? @default(now()) @db.DateTime(0)
   generate_prompt    String?   @db.VarChar(2000)
-  image_url          String?   @db.VarChar(200)
+  image_url          String?   @db.Text
+  archive_retry_at   DateTime?
+
+  @@index([archive_retry_at])
   update_time        DateTime? @db.DateTime(0)
   nano_id            String?   @unique(map: "psy_trail_nano_id_uindex") @db.VarChar(16)
   part               Int?

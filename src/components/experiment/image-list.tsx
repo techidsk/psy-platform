@@ -1,7 +1,7 @@
 'use client';
 import LoadingSpin from '@/components/common/loading-spin';
 import { ImageResponse } from '@/types/experiment';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Icons } from '../icons';
 import { useExperimentState } from '@/state/_experiment_atoms';
 import classNames from 'classnames';
@@ -24,6 +24,21 @@ export function ImageList({
     const [useFullSize, setUseFullSize] = useState(true);
 
     const setCurrentImages = useExperimentState((state) => state.setCurrentImages);
+
+    const previewUrls = useExperimentState((state) => state.previewUrls);
+    const imageUrl = useCallback(
+        (item: ImageResponse) => {
+            if (!isPicMode) return DEFAULT_IMAGE;
+            return (
+                (item.state === 'GENERATING' && previewUrls[item.nano_id || '']) || item.image_url
+            );
+        },
+        [isPicMode, previewUrls]
+    );
+
+    useEffect(() => {
+        setCurrentImages(list.map(imageUrl));
+    }, [list, imageUrl, setCurrentImages]);
 
     function prev() {
         if (experimentImageList.length > displayNum) {
@@ -48,7 +63,6 @@ export function ImageList({
             .map((item: ImageResponse, idx: number) => ({ ...item, idx: idx + s }));
 
         setList(imageList);
-        setCurrentImages(imageList.map((item) => (isPicMode ? item.image_url : DEFAULT_IMAGE)));
         setIndex(Math.max(newIndex, 0));
     }
 
@@ -60,7 +74,6 @@ export function ImageList({
         const imageList = temp.slice(-1 * displayNum);
         setList(imageList);
         setIndex(experimentImageList.length);
-        setCurrentImages(imageList.map((item) => (isPicMode ? item.image_url : DEFAULT_IMAGE)));
     }, [experimentImageList, displayNum]);
 
     useEffect(() => {
@@ -96,14 +109,16 @@ export function ImageList({
                     ) : (
                         list.map((item) => (
                             <div key={item.id} className="w-full h-full relative">
-                                {isPicMode && item.state === 'GENERATING' ? (
+                                {isPicMode &&
+                                item.state === 'GENERATING' &&
+                                !previewUrls[item.nano_id || ''] ? (
                                     <div className="absolute inset-0 flex items-center justify-center">
                                         <LoadingSpin displayNum={displayNum} />
                                     </div>
                                 ) : (
                                     <img
                                         className="object-contain w-full h-full absolute inset-0"
-                                        src={isPicMode ? item.image_url : DEFAULT_IMAGE}
+                                        src={imageUrl(item)}
                                         alt=""
                                     />
                                 )}

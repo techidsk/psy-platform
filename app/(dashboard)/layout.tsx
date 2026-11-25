@@ -69,13 +69,13 @@ const sidebarNav: SidebarNavItem[] = [
     //     icon: 'usergroup',
     //     auth: ['ADMIN', 'ASSISTANT'],
     // },
-    // {
-    //     title: '平台设置',
-    //     href: '/platform/settings',
-    //     icon: 'wrench',
-    //     auth: ['ADMIN', 'ASSISTANT'],
-    //     category: '其他',
-    // },
+    {
+        title: '平台设置',
+        href: '/platform/settings',
+        icon: 'settings',
+        auth: ['ADMIN'],
+        category: '其他',
+    },
     {
         title: '引擎管理',
         href: '/engine',

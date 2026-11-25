@@ -1,12 +1,12 @@
 import { db } from '@/lib/db';
-import { NextResponse } from 'next/server';
+import { after, NextResponse } from 'next/server';
 import { generateImage } from '@/lib/generate';
 import { getCurrentUser } from '@/lib/session';
 import { logger } from '@/lib/logger';
 import { assemblePrompt, updateContextSummary } from '@/lib/prompt-preprocess';
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { uploadFile } = require('../../../src/lib/upload.js');
+import { archiveImage } from '@/lib/image-archive';
+import { DEFAULT_IMAGE_SIZE } from '@/lib/image-size';
 
 /**
  * /api/generate
@@ -100,7 +100,8 @@ export async function POST(request: Request) {
 
     // 并行获取意图画像和上下文摘要
     const templateContent = (engine.template as any)?.prompt || '';
-    const [experiment, userExpContext] = await Promise.all([
+    const [setting, experiment, userExpContext] = await Promise.all([
+        db.platform_setting.findUnique({ where: { id: 1 }, select: { image_size: true } }),
         db.experiment.findFirst({
             where: { id: parseInt(userExperiment.experiment_id!) },
             select: { intent_profile: true },
@@ -137,69 +138,32 @@ export async function POST(request: Request) {
     );
 
     try {
-        const imageUrl = await generateImage(assembledPrompt, size);
-
-        // 转存到 OSS，防止百炼临时 URL 过期
-        let finalUrl: string = imageUrl;
-        try {
-            const ossPath = `trail/${promptNanoId}.png`;
-            const ab = await fetch(imageUrl).then((r) => r.arrayBuffer());
-            const imgBuffer = Buffer.from(ab as ArrayBuffer);
-            const ossUrl = await uploadFile(imgBuffer, ossPath);
-            if (ossUrl) {
-                finalUrl = ossUrl;
-                logger.info({ promptNanoId, ossPath }, 'OSS 转存成功');
-            } else {
-                logger.warn({ promptNanoId }, 'OSS 转存返回空 URL，使用百炼原始 URL');
-            }
-        } catch (ossError) {
-            logger.warn(
-                { promptNanoId, error: String(ossError) },
-                'OSS 转存失败，使用百炼原始 URL'
-            );
-        }
-
-        const elapsed = Date.now() - startTime;
-
+        const side = setting?.image_size ?? DEFAULT_IMAGE_SIZE;
+        const imageUrl = await generateImage(assembledPrompt, size ?? `${side}x${side}`);
         await db.trail.update({
             where: { nano_id: promptNanoId },
             data: {
                 state: 'SUCCESS',
-                image_url: finalUrl,
+                image_url: imageUrl,
+                archive_retry_at: new Date(Date.now() + 2 * 60000),
                 generate_prompt: assembledPrompt,
                 update_time: new Date(),
             },
         });
 
-        // 同步更新上下文摘要，带超时保护（避免快速连续提交时读到旧值）
-        const CONTEXT_UPDATE_TIMEOUT = 5000;
-        try {
-            await Promise.race([
-                (async () => {
-                    const newSummary = await updateContextSummary(
-                        trail.prompt!,
-                        userExpContext?.context_summary || null
-                    );
-                    await db.user_experiments.update({
-                        where: { id: userExperiment.id },
-                        data: { context_summary: newSummary },
-                    });
-                })(),
-                new Promise((_, reject) =>
-                    setTimeout(
-                        () => reject(new Error('context_summary 更新超时')),
-                        CONTEXT_UPDATE_TIMEOUT
-                    )
-                ),
-            ]);
-        } catch (err) {
-            logger.warn(
-                { promptNanoId, error: String(err) },
-                '上下文摘要更新失败或超时，不影响本次生成'
-            );
-        }
-
-        logger.info({ promptNanoId, elapsed }, '生成任务完成，图片 URL 已保存');
+        after(() => archiveImage(promptNanoId, imageUrl));
+        after(async () => {
+            try {
+                const previous = userExpContext?.context_summary ?? null;
+                const summary = await updateContextSummary(trail.prompt!, previous);
+                await db.user_experiments.updateMany({
+                    where: { id: userExperiment.id, context_summary: previous },
+                    data: { context_summary: summary },
+                });
+            } catch {
+                logger.warn({ promptNanoId }, '上下文摘要更新失败');
+            }
+        });
 
         // 解析 intentProfile 提取 image_guidance
         let intentProfileParsed: Record<string, unknown> | null = null;
@@ -213,7 +177,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json({
             msg: '发布成功',
-            url: finalUrl,
+            url: imageUrl,
             prompt: assembledPrompt,
             debug: {
                 styleTemplate: templateContent || null,

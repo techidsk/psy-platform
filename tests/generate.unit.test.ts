@@ -52,15 +52,15 @@ describe('generateImage 单元测试', () => {
         expect(requestBody()).toMatchObject({
             model: 'z-image-turbo',
             input: { messages: [{ role: 'user', content: [{ text: '一只可爱的橘猫' }] }] },
-            parameters: { size: '1024*1024', prompt_extend: false },
+            parameters: { size: '512*512', prompt_extend: false },
         });
     });
 
-    it('size 参数默认转换为 1024*1024', async () => {
+    it('size 参数默认转换为 512*512', async () => {
         mockFetch.mockResolvedValueOnce(imageResponse('https://example.com/image.png'));
 
         await generateImage('测试提示词');
-        expect(requestBody().parameters.size).toBe('1024*1024');
+        expect(requestBody().parameters.size).toBe('512*512');
     });
 
     it('支持自定义 size 参数', async () => {

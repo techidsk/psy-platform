@@ -83,6 +83,7 @@ export function ExperimentEditor({
 
     // 用于追踪组件是否已挂载，防止组件卸载后继续更新状态
     const isMountedRef = useRef<boolean>(true);
+    const activePreviews = useRef(new Set<string>());
 
     function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
         // 检查 loading (短暂的文本提交状态) 或 generatingIds 的数量
@@ -227,6 +228,7 @@ export function ExperimentEditor({
             setIsGenerating(true);
         }
 
+        let previewReceived = false;
         try {
             // 发送请求生成图片（同步调用，后端直接返回结果）
             const response = await fetch(getUrl(`/api/generate`), {
@@ -244,6 +246,13 @@ export function ExperimentEditor({
 
             if (response.ok) {
                 const response_msg = await response.json();
+                const preview = response_msg.url;
+                previewReceived = Boolean(preview);
+                if (preview && isMountedRef.current) {
+                    activePreviews.current.add(promptNanoId);
+                    useExperimentState.getState().setPreviewUrl(promptNanoId, preview);
+                }
+
                 if (response_msg.msg !== '不需要生成图片') {
                     // 后端已更新 trail，直接刷新页面
                     if (isMountedRef.current) {
@@ -272,6 +281,15 @@ export function ExperimentEditor({
                 }
             }
         } catch (error) {
+            if (previewReceived) {
+                activePreviews.current.delete(promptNanoId);
+                useExperimentState.getState().setPreviewUrl(promptNanoId, null);
+                if (isMountedRef.current) {
+                    router.refresh();
+                    toast({ title: '图片保存状态待确认，请查看历史记录', variant: 'destructive' });
+                }
+                return;
+            }
             if (retryCount < MAX_RETRIES) {
                 logger.warn(`生成请求网络错误，第 ${retryCount + 1} 次重试: ${error}`);
                 await new Promise((resolve) => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
@@ -342,6 +360,16 @@ export function ExperimentEditor({
         }
     }
 
+    useEffect(() => {
+        const { previewUrls, setPreviewUrl } = useExperimentState.getState();
+        for (const item of experimentImageList) {
+            if (item.nano_id && item.state !== 'GENERATING' && previewUrls[item.nano_id]) {
+                activePreviews.current.delete(item.nano_id);
+                setPreviewUrl(item.nano_id, null);
+            }
+        }
+    }, [experimentImageList]);
+
     // 获取未完成的图片id
     useEffect(() => {
         if (experimentImageList.length > 0) {
@@ -363,6 +391,10 @@ export function ExperimentEditor({
         return () => {
             // 组件卸载时设置标识
             isMountedRef.current = false;
+            for (const id of activePreviews.current) {
+                useExperimentState.getState().setPreviewUrl(id, null);
+            }
+            activePreviews.current.clear();
             logger.info('组件卸载，停止所有生成任务');
         };
     }, []);

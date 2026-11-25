@@ -1,9 +1,10 @@
+import { DEFAULT_IMAGE_SIZE } from './image-size';
 import { logger } from './logger';
 
 require('dotenv').config();
 
 const MODEL = 'z-image-turbo';
-const DEFAULT_SIZE = '1024x1024';
+const DEFAULT_SIZE = `${DEFAULT_IMAGE_SIZE}x${DEFAULT_IMAGE_SIZE}`;
 const GENERATE_TIMEOUT = 60000;
 const DEFAULT_BASE_URL = 'https://dashscope.aliyuncs.com/api/v1';
 const MIN_PIXELS = 512 * 512;

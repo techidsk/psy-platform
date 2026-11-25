@@ -1,4 +1,5 @@
 import { db } from '@/lib/db';
+import { retryImageArchives } from './image-archive';
 import { logger } from '@/lib/logger';
 
 // 长时间 GENERATING 状态的超时时间（5分钟）
@@ -80,6 +81,7 @@ export async function runExperimentJobs() {
 
         // 补偿机制：检查长时间处于 GENERATING 状态的 trail
         await checkStaleGeneratingTrails();
+        await retryImageArchives();
     } catch (error) {
         logger.error('执行实验状态清理任务失败:', error);
         throw error;
