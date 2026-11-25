@@ -135,6 +135,17 @@ describe('assemblePrompt', () => {
         expect(result.length).toBeLessThanOrEqual(800);
     });
 
+    it('超长风格模板仍完整保留短正文', () => {
+        const result = assemblePrompt({
+            userInput: '我的写作内容',
+            styleTemplate: '红'.repeat(900),
+            contextSummary: null,
+            intentProfile: null,
+        });
+        expect(result).toHaveLength(800);
+        expect(result.endsWith('内容：我的写作内容')).toBe(true);
+    });
+
     it('超长时指导比背景先被裁剪', () => {
         // 构造一个刚好能放下背景但放不下指导的场景
         const input = '字'.repeat(700);

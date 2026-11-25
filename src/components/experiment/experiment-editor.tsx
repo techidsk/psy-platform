@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import store from 'store2';
+import { waitForGeneration } from '@/lib/wait-for-generation';
 import { uploadLogBatch } from '@/lib/upload-log-batch';
 import { getId } from '@/lib/nano-id';
 import { toast } from '@/hooks/use-toast';
@@ -73,11 +74,9 @@ export function ExperimentEditor({
     const router = useRouter();
     const ref = useRef<HTMLTextAreaElement>(null);
     const [loading, setLoading] = useState<boolean>(false);
-    const [isGenerating, setIsGenerating] = useState<boolean>(false);
     const [experimentId, setExperimentId] = useState<string>();
-    const [generatingIds, setGeneratingIds] = useState<{ nano_id: string; request_id: string }[]>(
-        []
-    );
+    const localTasks = useRef(new Set<string>());
+    const submitting = useRef(false);
     const [lastSubmitTime, setLastSubmitTime] = useState<number>(0);
     const [debugInfo, setDebugInfo] = useState<GenerateDebugInfo | null>(null);
     const [showDebugPanel, setShowDebugPanel] = useState<boolean>(true);
@@ -87,44 +86,19 @@ export function ExperimentEditor({
     const activePreviews = useRef(new Set<string>());
 
     function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
-        // 检查 loading (短暂的文本提交状态) 或 generatingIds 的数量
-        // 如果 loading 为 true 或同时有两个任务在轮询，则阻止 Enter 键触发新的提交
-        if (event.key === 'Enter' && (loading || generatingIds.length >= 2)) {
-            event.preventDefault(); // 阻止 Enter 键的默认行为（换行）和我们的 submit 调用
-            console.warn('Previous submission loading or 2 tasks are polling. Cannot submit now.'); // 临时log
-            toast({
-                title: loading ? '正在提交上一个请求' : '处理任务已达上限',
-                description: loading ? '请稍后再试' : '最多同时处理 2 个生成任务，请稍后再试。',
-                variant: 'destructive',
-                duration: 3000,
-            });
+        if (
+            event.key !== 'Enter' ||
+            event.nativeEvent.isComposing ||
+            event.nativeEvent.keyCode === 229
+        )
             return;
-        }
-
-        // 如果是 Enter 键，并且不是 loading 且轮询任务少于2个，则正常提交
-        if (event.key === 'Enter') {
-            event.preventDefault(); // 阻止默认的换行行为
-            if (Date.now() - lastSubmitTime < 3000) {
-                toast({
-                    title: '操作过于频繁',
-                    description: '请等待3秒后再提交。',
-                    variant: 'destructive',
-                    duration: 3000,
-                });
-                return;
-            }
-            setLoading(true); // 开始短暂的文本提交 loading
-            submit();
-        }
-
-        // 对于非 Enter 键，不做任何阻止，允许用户自由输入
+        event.preventDefault();
+        if (event.repeat || isExperimentFinished || submitting.current) return;
+        void submit();
     }
 
     async function submit() {
-        if (!nanoId) {
-            return;
-        }
-
+        if (!nanoId) return;
         if (Date.now() - lastSubmitTime < 3000) {
             toast({
                 title: '操作过于频繁',
@@ -132,11 +106,14 @@ export function ExperimentEditor({
                 variant: 'destructive',
                 duration: 3000,
             });
-            setLoading(false);
             return;
         }
 
-        if (generatingIds.length >= 2) {
+        const pending = new Set(localTasks.current);
+        for (const item of experimentImageList) {
+            if (item.state === 'GENERATING' && item.nano_id) pending.add(item.nano_id);
+        }
+        if (pending.size >= 2) {
             toast({
                 title: '处理任务已达上限',
                 description: '最多同时处理 2 个生成任务，请稍后再试。',
@@ -146,13 +123,12 @@ export function ExperimentEditor({
             return;
         }
 
-        let value = ref.current?.value.trim();
+        const value = ref.current?.value.trim();
         if (!value) {
             return;
         }
 
         if (value.length < 5) {
-            setLoading(false);
             return toast({
                 title: '输入文字过少',
                 description: '请至少输入5个字符',
@@ -161,8 +137,10 @@ export function ExperimentEditor({
             });
         }
 
-        let promptNanoId = getId();
-        let data: FetchData = {
+        submitting.current = true;
+        setLoading(true);
+        const promptNanoId = getId();
+        const data: FetchData = {
             prompt: value,
             nano_id: nanoId,
             promptNanoId: promptNanoId,
@@ -206,9 +184,12 @@ export function ExperimentEditor({
             });
             setLoading(false);
             return;
+        } finally {
+            submitting.current = false;
         }
 
-        ref.current!.value = '';
+        if (!isMountedRef.current || !ref.current) return;
+        ref.current.value = '';
         setLoading(false);
         router.refresh();
         setLastSubmitTime(Date.now());
@@ -216,117 +197,47 @@ export function ExperimentEditor({
         await generate(promptNanoId, data.nano_id);
     }
 
-    async function generate(promptNanoId: string, expNanoId: string, retryCount: number = 0) {
-        const MAX_RETRIES = 3;
-
-        if (isMountedRef.current) {
-            setGeneratingIds((prev) => {
-                if (!prev.some((id) => id.nano_id === promptNanoId)) {
-                    return [...prev, { nano_id: promptNanoId, request_id: '' }];
-                }
-                return prev;
-            });
-            setIsGenerating(true);
-        }
-
-        let previewReceived = false;
+    async function generate(promptNanoId: string, expNanoId: string) {
+        localTasks.current.add(promptNanoId);
         try {
-            // 发送请求生成图片（同步调用，后端直接返回结果）
-            const response = await fetch(getUrl(`/api/generate`), {
-                method: 'POST',
-                body: JSON.stringify({
-                    id: promptNanoId,
-                    experimentId: expNanoId,
-                    experimentNanoId: experimentNanoId,
-                    guest: guest,
-                    guestNanoId: guestNanoId,
-                    part: part,
-                }),
-                headers: { 'Content-Type': 'application/json' },
-            });
-
-            if (response.status === 202) {
-                if (retryCount < MAX_RETRIES && isMountedRef.current) {
-                    await new Promise((resolve) => setTimeout(resolve, 1000 * 2 ** retryCount));
-                    return await generate(promptNanoId, expNanoId, retryCount + 1);
-                }
-                if (isMountedRef.current) {
-                    router.refresh();
-                    toast({ title: '图片仍在生成，可稍后查看历史记录' });
-                }
-                return;
+            const result = await waitForGeneration(
+                () =>
+                    fetch(getUrl('/api/generate'), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            id: promptNanoId,
+                            experimentId: expNanoId,
+                            experimentNanoId,
+                            guest,
+                            guestNanoId,
+                            part,
+                        }),
+                    }),
+                () => isMountedRef.current
+            );
+            if (!isMountedRef.current || !result) return;
+            if (result.url) {
+                activePreviews.current.add(promptNanoId);
+                useExperimentState.getState().setPreviewUrl(promptNanoId, result.url);
             }
-            if (response.ok) {
-                const response_msg = await response.json();
-                const preview = response_msg.url;
-                previewReceived = Boolean(preview);
-                if (preview && isMountedRef.current) {
-                    activePreviews.current.add(promptNanoId);
-                    useExperimentState.getState().setPreviewUrl(promptNanoId, preview);
-                }
-
-                if (response_msg.msg !== '不需要生成图片') {
-                    // 后端已更新 trail，直接刷新页面
-                    if (isMountedRef.current) {
-                        router.refresh();
-                        if (isTestMode && response_msg.debug) {
-                            setDebugInfo(response_msg.debug);
-                        }
-                    }
-                }
-            } else {
-                if (response.status >= 500 && retryCount < MAX_RETRIES) {
-                    logger.warn(`生成请求失败，第 ${retryCount + 1} 次重试...`);
-                    await new Promise((resolve) =>
-                        setTimeout(resolve, 1000 * Math.pow(2, retryCount))
-                    );
-                    return await generate(promptNanoId, expNanoId, retryCount + 1);
-                }
-                logger.error(`生成请求失败，HTTP ${response.status}`);
-                if (isMountedRef.current) {
-                    toast({
-                        title: '生成失败',
-                        description: '图片生成失败，请重试',
-                        variant: 'destructive',
-                        duration: 3000,
-                    });
-                }
-            }
+            if (isTestMode && result.debug) setDebugInfo(result.debug);
         } catch (error) {
-            if (previewReceived) {
-                activePreviews.current.delete(promptNanoId);
-                useExperimentState.getState().setPreviewUrl(promptNanoId, null);
-                if (isMountedRef.current) {
-                    router.refresh();
-                    toast({ title: '图片保存状态待确认，请查看历史记录', variant: 'destructive' });
-                }
-                return;
-            }
-            if (retryCount < MAX_RETRIES) {
-                logger.warn(`生成请求网络错误，第 ${retryCount + 1} 次重试: ${error}`);
-                await new Promise((resolve) => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
-                return await generate(promptNanoId, expNanoId, retryCount + 1);
-            }
-            logger.error(`生成请求网络错误，已重试 ${MAX_RETRIES} 次: ${error}`);
-            if (isMountedRef.current) {
+            if (isMountedRef.current)
                 toast({
-                    title: '网络错误',
-                    description: '无法连接服务器，请检查网络后重试',
+                    title: '图片状态更新失败',
+                    description: error instanceof Error ? error.message : '请查看历史记录',
                     variant: 'destructive',
-                    duration: 3000,
                 });
-            }
         } finally {
-            if (isMountedRef.current) {
-                setGeneratingIds((prev) => prev.filter((id) => id.nano_id !== promptNanoId));
-                setIsGenerating(false);
-            }
+            localTasks.current.delete(promptNanoId);
+            if (isMountedRef.current) router.refresh();
         }
     }
 
     // 记录用户实验日志
     async function logUserInput() {
-        let value = ref.current?.value.trim();
+        const value = ref.current?.value.trim();
         const datetime = new Date();
         const currentImages = useExperimentState.getState().currentImages;
 
@@ -372,19 +283,12 @@ export function ExperimentEditor({
         }
     }, [experimentImageList]);
 
-    // 获取未完成的图片id
+    const hasPending = experimentImageList.some((item) => item.state === 'GENERATING');
     useEffect(() => {
-        if (experimentImageList.length > 0) {
-            setGeneratingIds(
-                experimentImageList
-                    .filter((item) => item.state === 'GENERATING')
-                    .map((item) => ({
-                        nano_id: item.nano_id || '',
-                        request_id: item.request_id || '',
-                    }))
-            );
-        }
-    }, [experimentImageList]);
+        if (!hasPending) return;
+        const timer = setInterval(() => router.refresh(), 8000);
+        return () => clearInterval(timer);
+    }, [hasPending, router]);
 
     // 组件挂载/卸载管理
     useEffect(() => {
@@ -475,32 +379,6 @@ export function ExperimentEditor({
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    // 当 generatingIds 变化时，启动新的轮询任务
-    useEffect(() => {
-        // 在组件加载时，检查是否有未完成的生成任务（页面刷新后恢复 loading 状态）
-        async function checkPendingGenerations() {
-            try {
-                const response = await fetch(getUrl(`/api/trail/pending?nano_id=${nanoId}`));
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data && data.trails && data.trails.length > 0) {
-                        // 仅显示 loading 占位，不重新发起生成（同步调用无法恢复）
-                        // 这些 trail 会由 /api/jobs 定时清理为 FAILED
-                        const pendingTrails = data.trails.map((trail: any) => ({
-                            nano_id: trail.nano_id,
-                            request_id: '',
-                        }));
-                        setGeneratingIds(pendingTrails);
-                    }
-                }
-            } catch (error) {
-                console.error('Failed to check pending generations:', error);
-            }
-        }
-
-        checkPendingGenerations();
-    }, [nanoId]);
 
     return (
         <div className="flex flex-col w-full h-full">

@@ -1,7 +1,7 @@
 import { db } from '@/lib/db';
 import { after, NextResponse } from 'next/server';
 import { generateImage } from '@/lib/generate';
-import { getCurrentUser } from '@/lib/session';
+import { getParticipantId } from '@/lib/experiment-participant';
 import { logger } from '@/lib/logger';
 import { assemblePrompt, updateContextSummary } from '@/lib/prompt-preprocess';
 
@@ -39,30 +39,20 @@ export async function POST(request: Request) {
         );
     }
 
-    if (stepOrder === undefined || stepOrder === 'undefined') {
+    if (!Number.isInteger(stepOrder)) {
         logger.error({ promptNanoId, stepOrder }, 'stepOrder 缺失或无效');
         return NextResponse.json({ msg: '发布失败，步骤参数为undefined或缺失' }, { status: 400 });
     }
 
-    const trail = await db.trail.findFirst({
-        where: { nano_id: promptNanoId },
-    });
-
-    if (!trail || !trail.prompt) {
-        logger.error({ promptNanoId }, '未找到对应 trail 数据');
-        return NextResponse.json({ msg: '发布失败，缺少参数' }, { status: 400 });
-    }
-
-    const currentUser = await getCurrentUser();
+    const userId = await getParticipantId(isGuest, json.guestNanoId);
+    if (!userId) return NextResponse.json({ msg: '参与者身份无效' }, { status: 401 });
     const userExperimentNanoId = isGuest ? experimentNanoId : experimentId;
-
-    if (!userExperimentNanoId || userExperimentNanoId === 'undefined') {
-        logger.error({ promptNanoId, userExperimentNanoId }, 'userExperimentNanoId 无效');
-        return NextResponse.json({ msg: '发布失败，无效的实验ID' }, { status: 400 });
-    }
-
+    const scope = { user_experiment_id: userExperimentNanoId, user_id: userId, part: stepOrder };
+    const record = { ...scope, nano_id: promptNanoId };
+    const trail = await db.trail.findFirst({ where: record });
+    if (!trail?.prompt) return NextResponse.json({ msg: '未找到写作记录' }, { status: 404 });
     const userExperiment = await db.user_experiments.findFirst({
-        where: { nano_id: userExperimentNanoId },
+        where: { nano_id: userExperimentNanoId, user_id: userId, part: stepOrder },
     });
 
     if (!userExperiment || !userExperiment.experiment_id || !userExperiment.engine_id) {
@@ -89,9 +79,9 @@ export async function POST(request: Request) {
     const step = await getExperimentStep(parseInt(userExperiment.experiment_id), stepOrder);
     const picMode = step === null ? true : (step?.pic_mode ?? false);
 
-    const claimFilter = { nano_id: promptNanoId, state: 'GENERATING', request_id: null };
+    const claimFilter = { ...record, state: 'GENERATING', request_id: null };
     async function replay() {
-        const saved = await db.trail.findFirst({ where: { nano_id: promptNanoId } });
+        const saved = await db.trail.findFirst({ where: record });
         if (saved?.state === 'SUCCESS') {
             return NextResponse.json(
                 saved.image_url
@@ -165,7 +155,7 @@ export async function POST(request: Request) {
         const side = setting?.image_size ?? DEFAULT_IMAGE_SIZE;
         const imageUrl = await generateImage(assembledPrompt, size ?? `${side}x${side}`);
         await db.trail.update({
-            where: { nano_id: promptNanoId },
+            where: record,
             data: {
                 state: 'SUCCESS',
                 image_url: imageUrl,
@@ -178,12 +168,35 @@ export async function POST(request: Request) {
         after(() => archiveImage(promptNanoId, imageUrl));
         after(async () => {
             try {
-                const previous = userExpContext?.context_summary ?? null;
-                const summary = await updateContextSummary(trail.prompt!, previous);
-                await db.user_experiments.updateMany({
-                    where: { id: userExperiment.id, context_summary: previous },
-                    data: { context_summary: summary },
-                });
+                // 完成顺序可能与提交顺序不同；按记录顺序重建，并防止较旧快照覆盖新摘要。
+                for (;;) {
+                    const current = await db.user_experiments.findUniqueOrThrow({
+                        where: { id: userExperiment.id },
+                        select: { context_summary: true },
+                    });
+                    const rows = await db.trail.findMany({
+                        where: { ...scope, state: 'SUCCESS', image_url: { not: null } },
+                        select: { prompt: true },
+                        orderBy: { id: 'asc' },
+                    });
+                    let summary: string | null = null;
+                    let chunk = '';
+                    for (const row of rows) {
+                        if (!row.prompt) continue;
+                        if (chunk.length + row.prompt.length > 4000 && chunk) {
+                            summary = await updateContextSummary(chunk, summary);
+                            chunk = '';
+                        }
+                        chunk += (chunk ? '；' : '') + row.prompt;
+                    }
+                    if (!chunk) break;
+                    summary = await updateContextSummary(chunk, summary);
+                    const saved = await db.user_experiments.updateMany({
+                        where: { id: userExperiment.id, context_summary: current.context_summary },
+                        data: { context_summary: summary },
+                    });
+                    if (saved.count) break;
+                }
             } catch {
                 logger.warn({ promptNanoId }, '上下文摘要更新失败');
             }

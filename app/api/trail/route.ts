@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/session';
+import { getParticipantId } from '@/lib/experiment-participant';
 import { logger } from '@/lib/logger';
 
 /**
@@ -11,37 +11,12 @@ import { logger } from '@/lib/logger';
 export async function POST(request: Request) {
     try {
         const data = await request.json();
-        const currentUser = await getCurrentUser();
-        const guest = data['guest'] || false;
-
-        if (!guest) {
-            data['user_id'] = currentUser?.id;
-        } else {
-            const guestNanoId = data['guestNanoId'];
-            if (!guestNanoId) {
-                logger.error('创建trail失败: guestNanoId为空');
-                return NextResponse.json(
-                    { msg: '创建失败，缺少游客ID', error: 'MISSING_GUEST_ID' },
-                    { status: 400 }
-                );
-            }
-            const guestUser = await db.user.findFirst({
-                where: { nano_id: guestNanoId },
-            });
-            if (!guestUser) {
-                logger.error(`创建trail失败: 找不到游客用户 ${guestNanoId}`);
-                return NextResponse.json(
-                    { msg: '创建失败，找不到用户', error: 'USER_NOT_FOUND' },
-                    { status: 404 }
-                );
-            }
-            data['user_id'] = guestUser.id;
-        }
+        const userId = await getParticipantId(Boolean(data.guest), data.guestNanoId);
+        if (!userId) return NextResponse.json({ msg: '参与者身份无效' }, { status: 401 });
 
         const experimentNanoId = data['nano_id']; // 本次实验ID
         const trailNanoId = data['promptNanoId'];
         const prompt = data['prompt'];
-        const userId = data['user_id'];
 
         // 验证必要参数
         if (!experimentNanoId) {
@@ -68,14 +43,6 @@ export async function POST(request: Request) {
             );
         }
 
-        if (!userId || isNaN(Number(userId))) {
-            logger.error(`创建trail失败: userId无效 - ${userId}`);
-            return NextResponse.json(
-                { msg: '创建失败，用户ID无效', error: 'INVALID_USER_ID' },
-                { status: 400 }
-            );
-        }
-
         const partValue = parseInt(data['part']);
         if (isNaN(partValue)) {
             logger.error(`创建trail失败: part无效 - ${data['part']}`);
@@ -85,19 +52,31 @@ export async function POST(request: Request) {
             );
         }
 
-        // 插入用户submit记录用以生成图片
-        await db.trail.create({
-            data: {
-                user_experiment_id: experimentNanoId,
-                user_id: Number(userId),
-                prompt: prompt,
-                state: 'GENERATING',
-                nano_id: trailNanoId,
-                part: partValue,
-            },
+        return await db.$transaction(async (tx) => {
+            // 锁住参与者的实验行，让同一实验的并发提交依次检查可用名额。
+            const parts = await tx.$queryRaw<{ part: number }[]>`
+                SELECT part FROM user_experiments
+                WHERE nano_id = ${experimentNanoId} AND user_id = ${userId} FOR UPDATE
+            `;
+            if (!parts.some((row) => row.part === partValue)) {
+                return NextResponse.json({ msg: '未找到实验步骤' }, { status: 404 });
+            }
+            const scope = { user_experiment_id: experimentNanoId, user_id: userId };
+            const pending = await tx.trail.count({ where: { ...scope, state: 'GENERATING' } });
+            if (pending >= 2) {
+                return NextResponse.json({ msg: '最多同时处理两个生成任务' }, { status: 429 });
+            }
+            await tx.trail.create({
+                data: {
+                    ...scope,
+                    prompt,
+                    state: 'GENERATING',
+                    nano_id: trailNanoId,
+                    part: partValue,
+                },
+            });
+            return NextResponse.json({ msg: '发布成功' });
         });
-
-        return NextResponse.json({ msg: '发布成功' });
     } catch (error) {
         logger.error(`创建trail异常: ${error}`);
         return NextResponse.json(

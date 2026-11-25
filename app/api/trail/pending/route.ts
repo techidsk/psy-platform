@@ -1,5 +1,6 @@
 import { db } from '@/lib/db';
 import { NextResponse } from 'next/server';
+import { getParticipantId } from '@/lib/experiment-participant';
 import { logger } from '@/lib/logger';
 
 /**
@@ -22,8 +23,12 @@ export async function GET(request: Request) {
             );
         }
 
+        const guestId = searchParams.get('guestNanoId');
+        const userId = await getParticipantId(guestId !== null, guestId);
+        if (!userId) return NextResponse.json({ msg: '参与者身份无效' }, { status: 401 });
         const trails = await db.trail.findMany({
             where: {
+                user_id: userId,
                 user_experiment_id: experimentNanoId,
                 state: 'GENERATING',
             },

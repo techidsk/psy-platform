@@ -210,10 +210,12 @@ export function assemblePrompt(params: {
     const coreParts: string[] = [];
 
     // 高优先级：风格 + 用户输入（完整保留）
-    if (params.styleTemplate) {
-        coreParts.push(`风格：${params.styleTemplate}`);
+    const content = `内容：${params.userInput}`.slice(0, MAX_PROMPT_LENGTH);
+    const styleBudget = MAX_PROMPT_LENGTH - content.length - '风格：，'.length;
+    if (params.styleTemplate && styleBudget > 0) {
+        coreParts.push(`风格：${params.styleTemplate.slice(0, styleBudget)}`);
     }
-    coreParts.push(`内容：${params.userInput}`);
+    coreParts.push(content);
     const coreStr = coreParts.join(SEP);
 
     // 低优先级部分：背景、指导（按剩余空间裁剪）
@@ -257,20 +259,6 @@ export function assemblePrompt(params: {
         },
         '提示词组装详情'
     );
-
-    // 最终安全兜底（理论上不会触发，因为上面已按优先级裁剪）
-    if (assembled.length > MAX_PROMPT_LENGTH) {
-        const truncated = assembled.substring(0, MAX_PROMPT_LENGTH);
-        logger.warn(
-            {
-                originalLength: assembled.length,
-                truncatedLength: truncated.length,
-                maxLength: MAX_PROMPT_LENGTH,
-            },
-            `提示词超长兜底截断 (${assembled.length} → ${truncated.length})`
-        );
-        return truncated;
-    }
 
     return assembled;
 }
