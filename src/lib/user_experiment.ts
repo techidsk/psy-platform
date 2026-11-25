@@ -15,7 +15,7 @@ interface projectGroupResult {
 interface experimentState {
     experiment_id: number;
     completion_status: string;
-    finish_time: string; // 时间格式为 2021-08-01 12:00:00
+    finish_time: Date | null;
 }
 
 /**
@@ -74,11 +74,12 @@ async function findGroupExperiments(userProjectGroupId: number) {
 async function getUserExperimentsState(projectGroupId: number, userId: number) {
     const experiments = await db.$queryRaw<experimentState[]>`
         SELECT es.experiment_id,
-            SUBSTRING_INDEX(GROUP_CONCAT(ue.finish_time ORDER BY es.order DESC), ',', 1) AS finish_time,
-            IF(COUNT(*) = COUNT(ue.finish_time), 'COMPLETED', 'NOT COMPLETED') AS completion_status
+            MAX(ue.finish_time) AS finish_time,
+            CASE WHEN COUNT(*) = COUNT(ue.finish_time) THEN 'COMPLETED' ELSE 'NOT COMPLETED' END AS completion_status
         FROM project_group_experiments pge
         LEFT JOIN experiment_steps es ON es.experiment_id = pge.experiment_id
         LEFT JOIN user_experiments ue ON ue.experiment_id = es.experiment_id AND ue.part = es.order AND ue.user_id = ${userId}
+            AND ue.project_group_id = pge.project_group_id
         WHERE pge.project_group_id = ${projectGroupId} AND es.type = 4
         GROUP BY es.experiment_id;
     `;
@@ -92,14 +93,15 @@ async function getUserExperimentsState(projectGroupId: number, userId: number) {
  */
 async function getRandomProjectGroup(projectId: number): Promise<number> {
     // 获取当前项目下的所有可用分组
-    const projectGroups = await db.project_group.findMany({
-        where: {
-            project_id: projectId,
-            state: 'AVAILABLE',
-        },
-    });
+    const projectGroups = await db.$queryRaw<{ id: number }[]>`
+        SELECT pg.id FROM project_group pg
+        WHERE pg.project_id = ${projectId} AND pg.state = 'AVAILABLE'
+          AND EXISTS (
+              SELECT 1 FROM project_group_experiments pge WHERE pge.project_group_id = pg.id
+          )
+    `;
 
-    if (projectGroups?.length === 0) {
+    if (projectGroups.length === 0) {
         throw new Error(`当前时间无可用项目分组 -> ${projectId}`);
     }
 
@@ -110,7 +112,6 @@ async function getRandomProjectGroup(projectId: number): Promise<number> {
 }
 
 /**
- * TODO 这里返回的 experiment_id 是错误的
  * 获取用户项目分组信息
  * @param userId
  * @param projectId
@@ -141,35 +142,25 @@ async function findProjectGroup(
 
         const userExperimentState = await getUserExperimentsState(userProjectGroupId, userId);
         logger.info(`<用户${userId}> 实验进度: ${JSON.stringify(userExperimentState)}`);
-        // 判断用户实验进度, 获得已经完成实验总次数
-        const totalFinishedExperimentCount = userExperimentState.filter(
-            (item) => item.completion_status === 'COMPLETED'
-        ).length;
-
-        // 游客用户只有一次实验
-        if (guest) {
-            if (totalFinishedExperimentCount >= 1) {
-                logger.warn(`<游客${userId}> 已经完成所有实验`);
-
-                // 返回游客用户的上次实验记录
-                return {
-                    status: 200,
-                    message: '已经完成所有实验',
-                    experiment_id: userExperimentState[0].experiment_id, // 为了保证可以跳转到最后的步骤
-                    project_group_id: userProjectGroupId,
-                    experiment_status: 'FINISH',
-                };
-            }
+        const completed = new Set(
+            userExperimentState
+                .filter((item) => item.completion_status === 'COMPLETED')
+                .map((item) => item.experiment_id)
+        );
+        const guestFinished =
+            guest && experimentList.find((item) => completed.has(item.experiment_id));
+        if (guestFinished) {
+            return {
+                status: 200,
+                message: '已经完成所有实验',
+                experiment_id: guestFinished.experiment_id,
+                project_group_id: userProjectGroupId,
+                experiment_status: 'FINISH',
+            };
         }
 
-        logger.info(`<用户${userId}> 已经完成了 ${totalFinishedExperimentCount} 次，剩余实验: `);
-        logger.info(experimentList);
-
-        logger.info(
-            `<用户${userId}> 下一组实验 ${experimentList[totalFinishedExperimentCount]?.experiment_id} `
-        );
-
-        if (!experimentList[totalFinishedExperimentCount]) {
+        const nextExperiment = experimentList.find((item) => !completed.has(item.experiment_id));
+        if (!nextExperiment) {
             return {
                 status: 200,
                 message: '已经完成所有实验',
@@ -181,7 +172,7 @@ async function findProjectGroup(
 
         return {
             status: 200,
-            experiment_id: experimentList[totalFinishedExperimentCount].experiment_id,
+            experiment_id: nextExperiment.experiment_id,
             project_group_id: userProjectGroupId,
             experiment_status: 'NOT_FINISH',
         };
@@ -329,57 +320,13 @@ export async function findLastExperiment(
         };
     }
 
-    // 如果没有 currentExperimentNanoId
-    // 需要获取下一组实验 id
+    const states = await getUserExperimentsState(projectGroupId, userId);
+    const lastExperimentTime = states.reduce((latest, item) => {
+        if (item.completion_status !== 'COMPLETED' || !item.finish_time) return latest;
+        return Math.max(latest, new Date(item.finish_time).getTime());
+    }, 0);
+    if (!lastExperimentTime) return { status: false, timeStamp: 0 };
 
-    // 判断用户是否完成最后一次实验的流程
-    // 获取所有分组中所有实验
-    // const currentExperiment = await db.user_experiments.findFirst({
-    //     where: { nano_id: currentExperimentNanoId },
-    // });
-
-    // if (!currentExperiment || !currentExperiment.id || !currentExperiment.experiment_id) {
-    //     logger.error(`未找到当前实验: ${currentExperimentNanoId} 相关信息，继续实验`);
-    //     return {
-    //         status: false,
-    //         timeStamp: 0,
-    //     };
-    // }
-
-    // 获取当前实验的ID
-    // const currentExperimentId = currentExperiment.experiment_id;
-
-    // 获取用户所有实验进展
-    const userExperimentsState = await getUserExperimentsState(projectGroupId, userId);
-
-    const finishedExperiments = userExperimentsState.find(
-        (item) => item.completion_status === 'COMPLETED'
-    );
-
-    const finishTime = finishedExperiments?.finish_time;
-
-    // 从 experiments 中找到当前实验的状态
-    // const currentExperimentState = userExperimentsState.find(
-    //     (item) => item.experiment_id == parseInt(currentExperimentId)
-    // );
-    // if (!currentExperimentState) {
-    //     logger.error(`未找到当前实验: ${currentExperimentId} 相关信息，继续实验`);
-    //     return {
-    //         status: false,
-    //         timeStamp: 0,
-    //     };
-    // }
-    // // 如果实验还未完成，则继续实验
-    // if (currentExperimentState?.completion_status === 'NOT COMPLETED') {
-    //     logger.error(`当前实验: ${currentExperimentId} 未完成，继续实验`);
-    //     return {
-    //         status: false,
-    //         timeStamp: 0,
-    //     };
-    // }
-
-    // 如果已经完成本组实验，获取最后一个实验的完成时间
-    const lastExperimentTime = finishTime ? new Date(finishTime).getTime() : 0;
     const currentTimeStamp = new Date().getTime();
     const timeStampDiffMinuts = Math.floor((currentTimeStamp - lastExperimentTime) / 1000 / 60); // 分钟数
 
@@ -395,7 +342,7 @@ export async function findLastExperiment(
     const gap =
         projectGroup?.gap !== null && projectGroup?.gap !== undefined ? projectGroup.gap : 3; // 实验间隔默认3小时
 
-    logger.info(`上次实验开始时间: ${finishTime}`);
+    logger.info(`上次实验完成时间: ${dayjs(lastExperimentTime).format('YYYY-MM-DD HH:mm:ss')}`);
     logger.info(`当前访问实验时间: ${dayjs(currentTimeStamp).format('YYYY-MM-DD HH:mm:ss')}`);
     logger.info(`实验间隔时间共计: ${timeStampDiffMinuts} 分, 需要等待时间 ${gap * 60} 分`);
     if (timeStampDiffMinuts < gap * 60) {
