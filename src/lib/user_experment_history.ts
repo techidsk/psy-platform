@@ -109,6 +109,14 @@ export async function getUserExperimentHistory(
 
 // Helper functions for CSV generation and file handling
 
+function serializeJiCsvRow(fields: unknown[]): string {
+    const cells = fields.map((field) => {
+        const value = String(field ?? '');
+        return /[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+    });
+    return cells.join(',') + '\n';
+}
+
 function generateJiCsv(
     user: any,
     project: any,
@@ -128,9 +136,23 @@ function generateJiCsv(
 
     // 首行内容
     csvString += `uniqueID,Projectname,Condition,Trial,gender,agegroup,qualtricsid,writingtime,totalimages,engine,writing content,images,generate time\n`;
-    csvString += `${user?.nano_id},${project?.project_name},${projectGroup?.group_name},${experiment?.experiment_name},${gender},${ages},${user?.qualtrics},${totalTime},${imageNum},${engine?.engine_name}\n`; // 添加标题行
+    csvString += serializeJiCsvRow([
+        user?.nano_id,
+        project?.project_name,
+        projectGroup?.group_name,
+        experiment?.experiment_name,
+        gender,
+        ages,
+        user?.qualtrics,
+        totalTime,
+        imageNum,
+        engine?.engine_name,
+        '',
+        '',
+        '',
+    ]);
 
-    const emptyColumns = new Array(10).fill('').join(',');
+    const emptyColumns = new Array(10).fill('');
     trail.forEach((row) => {
         const input = (row.prompt as string) || '';
         const image = row.image_url as string;
@@ -141,7 +163,7 @@ function generateJiCsv(
                           1000
                   )
                 : 0;
-        csvString += `${emptyColumns},${input},${image},${generateTime}\n`;
+        csvString += serializeJiCsvRow([...emptyColumns, input, image, generateTime]);
     });
     return csvString;
 }
