@@ -12,9 +12,13 @@ export async function getUserExperimentHistory(
     includeInputRecord: boolean = true
 ) {
     // 获取用户实验记录
+    const partNumber = parseInt(part);
     const userExperiment = await db.user_experiments.findFirst({
-        where: { nano_id: userExperimentNanoId },
+        where: { nano_id: userExperimentNanoId, part: partNumber },
     });
+    if (!userExperiment) {
+        return NextResponse.json({ msg: '没有找到对应的实验记录' }, { status: 404 });
+    }
     const { start_timestamp, finish_timestamp } = getTimeStamp(userExperiment);
     const totalTime =
         finish_timestamp - start_timestamp > 0
@@ -58,14 +62,14 @@ export async function getUserExperimentHistory(
 
     const response = includeInputRecord
         ? await db.trail_logger.findMany({
-              where: { experiment_id: userExperimentNanoId, part: parseInt(part) },
+              where: { experiment_id: userExperimentNanoId, part: partNumber },
               select: { input: true, images: true, timestamp: true },
           })
         : [];
 
     const trail = includeExperimentRecord
         ? await db.trail.findMany({
-              where: { user_experiment_id: userExperimentNanoId, part: parseInt(part) },
+              where: { user_experiment_id: userExperimentNanoId, part: partNumber },
               select: { image_url: true, prompt: true, create_time: true, update_time: true },
           })
         : [];
