@@ -2,7 +2,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/session';
-import { logger } from '@/lib/logger';
 
 /**
  * /api/project/group/experiment/bind
@@ -25,7 +24,7 @@ export async function POST(request: Request) {
         where: {
             project_group_id: parseInt(projectGroupId),
         },
-        orderBy: { experiment_id: 'desc' },
+        orderBy: { experiment_index: 'desc' },
     });
 
     const lateIndex = lastExperiment ? lastExperiment.experiment_index + 1 : 0;

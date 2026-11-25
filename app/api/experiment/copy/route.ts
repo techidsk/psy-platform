@@ -33,6 +33,7 @@ export async function POST(request: Request) {
     // 复制步骤
     const steps = await db.experiment_steps.findMany({
         where: { experiment_id: data.id },
+        orderBy: [{ order: 'asc' }, { id: 'asc' }],
     });
 
     await db.experiment_steps.createMany({
