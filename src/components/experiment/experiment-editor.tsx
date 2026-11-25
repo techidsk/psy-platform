@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import store from 'store2';
+import { uploadLogBatch } from '@/lib/upload-log-batch';
 import { getId } from '@/lib/nano-id';
 import { toast } from '@/hooks/use-toast';
 import { ImageResponse } from '@/types/experiment';
@@ -244,6 +245,17 @@ export function ExperimentEditor({
                 headers: { 'Content-Type': 'application/json' },
             });
 
+            if (response.status === 202) {
+                if (retryCount < MAX_RETRIES && isMountedRef.current) {
+                    await new Promise((resolve) => setTimeout(resolve, 1000 * 2 ** retryCount));
+                    return await generate(promptNanoId, expNanoId, retryCount + 1);
+                }
+                if (isMountedRef.current) {
+                    router.refresh();
+                    toast({ title: '图片仍在生成，可稍后查看历史记录' });
+                }
+                return;
+            }
             if (response.ok) {
                 const response_msg = await response.json();
                 const preview = response_msg.url;
@@ -263,14 +275,14 @@ export function ExperimentEditor({
                     }
                 }
             } else {
-                if (retryCount < MAX_RETRIES) {
+                if (response.status >= 500 && retryCount < MAX_RETRIES) {
                     logger.warn(`生成请求失败，第 ${retryCount + 1} 次重试...`);
                     await new Promise((resolve) =>
                         setTimeout(resolve, 1000 * Math.pow(2, retryCount))
                     );
-                    return generate(promptNanoId, expNanoId, retryCount + 1);
+                    return await generate(promptNanoId, expNanoId, retryCount + 1);
                 }
-                logger.error(`生成请求失败，已重试 ${MAX_RETRIES} 次`);
+                logger.error(`生成请求失败，HTTP ${response.status}`);
                 if (isMountedRef.current) {
                     toast({
                         title: '生成失败',
@@ -293,7 +305,7 @@ export function ExperimentEditor({
             if (retryCount < MAX_RETRIES) {
                 logger.warn(`生成请求网络错误，第 ${retryCount + 1} 次重试: ${error}`);
                 await new Promise((resolve) => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
-                return generate(promptNanoId, expNanoId, retryCount + 1);
+                return await generate(promptNanoId, expNanoId, retryCount + 1);
             }
             logger.error(`生成请求网络错误，已重试 ${MAX_RETRIES} 次: ${error}`);
             if (isMountedRef.current) {
@@ -343,20 +355,10 @@ export function ExperimentEditor({
     // 添加日志记录
     async function uploadLogs() {
         const storageLogName = `userLogs_${nanoId}`;
-        const logs = JSON.parse(store(storageLogName) || '[]');
-        if (logs.length > 0) {
-            fetch('/api/log', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(logs),
-            })
-                .then((response) => response.json())
-                .then(() => {
-                    store.remove(storageLogName); // 成功上传后清除本地存储中的日志
-                })
-                .catch((error) => console.error('Error uploading logs:', error));
+        try {
+            await uploadLogBatch(storageLogName);
+        } catch (error) {
+            logger.error(`上传日志失败: ${error}`);
         }
     }
 

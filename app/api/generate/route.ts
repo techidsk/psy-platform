@@ -89,12 +89,30 @@ export async function POST(request: Request) {
     const step = await getExperimentStep(parseInt(userExperiment.experiment_id), stepOrder);
     const picMode = step === null ? true : (step?.pic_mode ?? false);
 
+    const claimFilter = { nano_id: promptNanoId, state: 'GENERATING', request_id: null };
+    async function replay() {
+        const saved = await db.trail.findFirst({ where: { nano_id: promptNanoId } });
+        if (saved?.state === 'SUCCESS') {
+            return NextResponse.json(
+                saved.image_url
+                    ? { msg: '发布成功', url: saved.image_url, prompt: saved.generate_prompt }
+                    : { msg: '不需要生成图片' }
+            );
+        }
+        if (saved?.state === 'GENERATING') {
+            return NextResponse.json({ msg: '图片生成中' }, { status: 202 });
+        }
+        return NextResponse.json({ msg: '生成任务已结束' }, { status: 409 });
+    }
+    if (trail.request_id || trail.state !== 'GENERATING') return replay();
+
     logger.info({ promptNanoId, picMode }, '图像模式检查');
     if (!picMode) {
-        await db.trail.update({
-            where: { nano_id: promptNanoId },
+        const finished = await db.trail.updateMany({
+            where: claimFilter,
             data: { state: 'SUCCESS' },
         });
+        if (!finished.count) return replay();
         return NextResponse.json({ msg: '不需要生成图片' });
     }
 
@@ -136,6 +154,12 @@ export async function POST(request: Request) {
         },
         '开始生成图片任务'
     );
+
+    const claimed = await db.trail.updateMany({
+        where: claimFilter,
+        data: { request_id: promptNanoId },
+    });
+    if (!claimed.count) return replay();
 
     try {
         const side = setting?.image_size ?? DEFAULT_IMAGE_SIZE;
@@ -193,8 +217,8 @@ export async function POST(request: Request) {
         const elapsed = Date.now() - startTime;
         logger.error({ promptNanoId, error: String(error), elapsed }, '生成任务失败');
         try {
-            await db.trail.update({
-                where: { nano_id: promptNanoId },
+            await db.trail.updateMany({
+                where: { nano_id: promptNanoId, state: 'GENERATING', request_id: promptNanoId },
                 data: { state: 'FAILED', update_time: new Date() },
             });
         } catch (updateError) {
