@@ -31,9 +31,7 @@ export const registerSchema = z
                 message: '密码必须包含至少一个大写字母，一个小写字母和一个数字',
                 path: ['password'],
             });
-            return false;
         }
-        return true;
     });
 
 /**

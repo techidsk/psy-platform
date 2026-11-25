@@ -99,7 +99,7 @@ export async function getUserExperimentHistory(
 
     const zipFileContent = await generateZipFile(csvContentJi, csvContentHu);
 
-    return new Response(zipFileContent, {
+    return new Response(new Uint8Array(zipFileContent), {
         headers: {
             'Content-Type': 'application/zip',
             'Content-Disposition': `attachment; filename="files.zip"`,
