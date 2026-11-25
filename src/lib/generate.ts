@@ -10,12 +10,18 @@ const MIN_PIXELS = 512 * 512;
 const MAX_PIXELS = 2048 * 2048;
 const MAX_PROMPT_LENGTH = 800;
 
+/** 用动态读取，避免 Next 在构建时把密钥写死进产物。 */
+function readEnv(name: string): string | undefined {
+    const value = process.env[name];
+    return value && value.length > 0 ? value : undefined;
+}
+
 function getConfig(): { apiKey: string; baseUrl: string } {
-    const apiKey = process.env.DASHSCOPE_API_KEY;
+    const apiKey = readEnv('DASHSCOPE_API_KEY');
     if (!apiKey) {
         throw new Error('未配置 DASHSCOPE_API_KEY');
     }
-    const baseUrl = (process.env.DASHSCOPE_BASE_URL || DEFAULT_BASE_URL).replace(/\/$/, '');
+    const baseUrl = (readEnv('DASHSCOPE_BASE_URL') || DEFAULT_BASE_URL).replace(/\/$/, '');
     return { apiKey, baseUrl };
 }
 

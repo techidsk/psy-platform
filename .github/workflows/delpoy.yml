@@ -53,7 +53,15 @@ jobs:
       - name: Build
         env:
           NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
-        run: pnpm run build
+          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+          DASHSCOPE_BASE_URL: ${{ secrets.DASHSCOPE_BASE_URL }}
+        run: |
+          if [ -z "$DASHSCOPE_API_KEY" ]; then
+            echo "缺少 GitHub secret：DASHSCOPE_API_KEY"
+            exit 1
+          fi
+          export DASHSCOPE_BASE_URL="${DASHSCOPE_BASE_URL:-https://dashscope.aliyuncs.com/api/v1}"
+          pnpm run build
 
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.5.3
@@ -80,10 +88,37 @@ jobs:
           tar -cf - .next/static public ecosystem.config.js prisma \
             | ssh $SSH_OPTS $SERVER "cd $DEPLOY_DIR && tar -xf -"
 
-      - name: Restart PM2
+      - name: Sync DashScope env and restart PM2
+        env:
+          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+          DASHSCOPE_BASE_URL: ${{ secrets.DASHSCOPE_BASE_URL }}
         run: |
-          ssh -o StrictHostKeyChecking=no root@139.196.216.224 << 'EOF'
+          if [ -z "$DASHSCOPE_API_KEY" ]; then
+            echo "缺少 GitHub secret：DASHSCOPE_API_KEY"
+            exit 1
+          fi
+          export DASHSCOPE_BASE_URL="${DASHSCOPE_BASE_URL:-https://dashscope.aliyuncs.com/api/v1}"
+          KEY_Q=$(printf '%q' "$DASHSCOPE_API_KEY")
+          BASE_Q=$(printf '%q' "$DASHSCOPE_BASE_URL")
+          ssh -o StrictHostKeyChecking=no root@139.196.216.224 "bash -s" << EOF
+            set -euo pipefail
+            file=/root/code/psy-platform/.env.production
+            mkdir -p /root/code/psy-platform
+            touch "\$file"
+            upsert() {
+              key="\$1"
+              value="\$2"
+              tmp=\$(mktemp)
+              grep -v "^\${key}=" "\$file" > "\$tmp" || true
+              printf '%s=%s\n' "\$key" "\$value" >> "\$tmp"
+              mv "\$tmp" "\$file"
+              chmod 600 "\$file"
+            }
+            upsert DASHSCOPE_API_KEY $KEY_Q
+            upsert DASHSCOPE_BASE_URL $BASE_Q
             cd /root/code/psy-platform
+            export DASHSCOPE_API_KEY=$KEY_Q
+            export DASHSCOPE_BASE_URL=$BASE_Q
             pm2 delete psy 2>/dev/null || true
             pm2 start ecosystem.config.js
             pm2 save
