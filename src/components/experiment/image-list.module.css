@@ -1,0 +1,59 @@
+.frame,
+.frame img,
+.frame::after {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+.frame img {
+    object-fit: contain;
+    transition:
+        filter 200ms,
+        transform 200ms;
+}
+.frame[data-waiting='true'] img {
+    filter: blur(7px);
+    transform: scale(1.04);
+}
+.frame[data-waiting='true']::after {
+    content: '';
+    background: white;
+    animation: breathe 1.9s ease-in-out infinite;
+}
+.fade {
+    animation: reveal 250ms ease-out;
+}
+@keyframes breathe {
+    0%,
+    100% {
+        opacity: 0.04;
+    }
+    50% {
+        opacity: 0.32;
+    }
+}
+@keyframes reveal {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .frame img,
+    .fade {
+        transition: none;
+        animation: none;
+    }
+    .frame[data-waiting='true']::after {
+        animation: none;
+        opacity: 0.12;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .frame img:not(:last-child) {
+        display: none;
+    }
+}
