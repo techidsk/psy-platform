@@ -14,8 +14,8 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
         const { id: userExperimentNanoId } = await context.params;
         const searchParams = request.nextUrl.searchParams;
         const part = searchParams.get('part') as string;
-        const includeExperimentRecord = searchParams.get('includeExperimentRecord') === 'true';
-        const includeInputRecord = searchParams.get('includeInputRecord') === 'true';
+        const includeExperimentRecord = (searchParams.get('includeExperimentRecord') ?? 'true') === 'true';
+        const includeInputRecord = (searchParams.get('includeInputRecord') ?? 'true') === 'true';
 
         return await getUserExperimentHistory(
             userExperimentNanoId,
