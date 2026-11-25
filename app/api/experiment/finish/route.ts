@@ -1,49 +1,42 @@
-// import dynamic from 'next/dynamic'
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { logger } from '@/lib/logger';
 
-/**
- * /api/experiment/finish
- * @returns
- */
 export async function POST(request: Request) {
-    const data = await request.json();
+    const data = await request.json().catch(() => null);
+    if (
+        typeof data?.id !== 'string' ||
+        !data.id.trim() ||
+        !Number.isSafeInteger(data.part) ||
+        data.part < 0
+    ) {
+        return NextResponse.json({ msg: '参与编号或步骤无效' }, { status: 400 });
+    }
 
-    // 判断用户是否有输入内容
-    const trails = await db.trail.findMany({
-        where: { user_experiment_id: data.id },
-    });
-
-    if (trails.length === 0) {
-        logger.warn(`[实验${data.id}] 无任何输入内容，删除实验记录`);
-        await db.user_experiments.deleteMany({
-            where: {
-                nano_id: data.id,
-                part: data.part,
-            },
+    const step = { nano_id: data.id, part: data.part };
+    const readStep = () =>
+        db.user_experiments.findUnique({
+            where: { nano_id_part: step },
+            select: { state: true },
         });
-        return NextResponse.json({ msg: '用户未输入内容，实验记录已删除' }, { status: 400 });
-    }
+    const duplicate = () => NextResponse.json({ msg: '已完成写作', duplicate: true });
+    const conflict = () => NextResponse.json({ msg: '当前步骤状态无法完成' }, { status: 409 });
 
-    // 只允许从 IN_EXPERIMENT 状态转为 FINISHED，保证幂等性
-    const userExperiment = await db.user_experiments.updateMany({
-        where: {
-            nano_id: data.id,
-            part: data.part,
-            state: 'IN_EXPERIMENT',
-        },
-        data: {
-            finish_time: new Date(),
-            state: 'FINISHED',
-        },
+    const participation = await readStep();
+    if (!participation) return NextResponse.json({ msg: '未找到本次参与步骤' }, { status: 404 });
+    if (participation.state === 'FINISHED') return duplicate();
+    if (participation.state !== 'IN_EXPERIMENT') return conflict();
+
+    const trail = await db.trail.findFirst({
+        where: { user_experiment_id: data.id, part: data.part },
+        select: { id: true },
     });
+    if (!trail) return NextResponse.json({ msg: '当前步骤尚无写作记录' }, { status: 400 });
 
-    if (userExperiment.count === 0) {
-        logger.info(`[实验${data.id}] 已经是完成状态，跳过重复完成`);
-        return NextResponse.json({ msg: '已完成写作', duplicate: true });
-    }
-
-    logger.info(`[实验${data.id}] 已经完成, nano_id: ${data.id}, part: ${data.part}`);
+    const updated = await db.user_experiments.updateMany({
+        where: { ...step, state: 'IN_EXPERIMENT' },
+        data: { finish_time: new Date(), state: 'FINISHED' },
+    });
+    if (updated.count === 0)
+        return (await readStep())?.state === 'FINISHED' ? duplicate() : conflict();
     return NextResponse.json({ msg: '已完成写作' });
 }

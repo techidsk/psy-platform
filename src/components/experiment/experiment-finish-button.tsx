@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ImageResponse } from '@/types/experiment';
-import { getUrl } from '@/lib/url';
 import { useExperimentState } from '@/state/_experiment_atoms';
 import { Modal } from '../ui/modal';
 import { logger } from '@/lib/logger';
@@ -39,24 +38,17 @@ export function ExperimentFinishButton({
     }, [experimentList]);
 
     async function finishExperimentStep() {
-        const won = useExperimentState.getState().setIsFinishing();
-        if (!won) return;
-
-        // 完成写作
-        const result = await fetch(getUrl('/api/experiment/finish'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: userExperimentNanoId, part: part }),
-        });
-
-        if (!result.ok) {
+        try {
+            const finished = await useExperimentState
+                .getState()
+                .finishStep(userExperimentNanoId, part);
+            if (!finished) return;
+        } catch (error) {
             toast({
-                title: '未完成写作任务',
-                description: `未找到任何写作内容，请重新实验`,
+                title: '完成写作失败，请重试',
+                description: error instanceof Error ? error.message : undefined,
                 variant: 'destructive',
-                duration: 3000,
             });
-            router.back();
             return;
         }
 

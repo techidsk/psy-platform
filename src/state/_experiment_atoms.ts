@@ -1,3 +1,4 @@
+import { getUrl } from '@/lib/url';
 import { create } from 'zustand';
 
 interface ExperimentState {
@@ -6,12 +7,12 @@ interface ExperimentState {
     currentImages: string[];
     setCurrentImages: (images: string[]) => void;
     resetCurrentImages: () => void;
-    isFinishing: boolean;
-    /** 原子 check-and-set，返回 true 表示当前调用方"抢到锁" */
-    setIsFinishing: () => boolean;
+    finishStep: (id: string, part: number) => Promise<boolean>;
 }
 
-export const useExperimentState = create<ExperimentState>((set, get) => ({
+const pendingSteps = new Set<string>();
+
+export const useExperimentState = create<ExperimentState>((set) => ({
     previewUrls: {},
     setPreviewUrl: (id, url) =>
         set((state) => {
@@ -23,10 +24,23 @@ export const useExperimentState = create<ExperimentState>((set, get) => ({
     currentImages: [],
     setCurrentImages: (images: string[]) => set((state) => ({ ...state, currentImages: images })),
     resetCurrentImages: () => set((state) => ({ ...state, currentImages: [] })),
-    isFinishing: false,
-    setIsFinishing: () => {
-        if (get().isFinishing) return false;
-        set({ isFinishing: true });
-        return true;
+    finishStep: async (id, part) => {
+        const key = JSON.stringify([id, part]);
+        if (pendingSteps.has(key)) return false;
+        pendingSteps.add(key);
+        try {
+            const response = await fetch(getUrl('/api/experiment/finish'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, part }),
+            });
+            if (!response.ok) {
+                const data = await response.json().catch(() => null);
+                throw new Error(data?.msg || '提交失败，请重试');
+            }
+            return true;
+        } finally {
+            pendingSteps.delete(key);
+        }
     },
 }));

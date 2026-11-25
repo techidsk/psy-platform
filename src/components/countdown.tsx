@@ -5,7 +5,7 @@ import { logger } from '@/lib/logger';
 import { getUrl } from '@/lib/url';
 import { useExperimentState } from '@/state/_experiment_atoms';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface CountDownProp {
     start: number; // 开始的时间戳
@@ -19,60 +19,37 @@ interface CountDownProp {
 export function CountDown({ start, limit, nanoId, part, callbackUrl, mini = true }: CountDownProp) {
     const router = useRouter();
 
-    const calculateTimeLeft = () => {
-        const currentTime = Math.floor(Date.now() / 1000);
-        const endTime = start + limit * 60;
-        const timeLeft = endTime - currentTime;
-        return timeLeft > 0 ? timeLeft : 0;
-    };
-
     const [timeLeft, setTimeLeft] = useState<number | null>(null);
-    const fiveMinWarningShown = useRef(false);
-    const tenSecWarningShown = useRef(false);
-    const finishCalled = useRef(false);
 
-    async function finishExperimentStep() {
-        if (finishCalled.current) return;
-        finishCalled.current = true;
-
-        const won = useExperimentState.getState().setIsFinishing();
-        if (!won) {
-            logger.info('另一个完成请求已经在进行中，跳过');
-            return;
-        }
-
-        const result = await fetch(getUrl('/api/experiment/finish'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: nanoId, part: part }),
-        });
-
-        if (!result.ok) {
-            toast({
-                title: '未完成写作任务',
-                description: `未找到任何写作内容，请重新实验`,
-                variant: 'destructive',
-                duration: 3000,
-            });
-            router.back();
-            return;
-        }
-
-        const decodeUrl = decodeURIComponent(callbackUrl);
-        logger.info(`实验已超时，跳转到${decodeUrl}`);
-        router.push(decodeUrl);
-    }
-
-    // 单一 interval 处理倒计时和 toast 提醒
     useEffect(() => {
+        let active = true;
+        let fiveMinWarningShown = false;
+        let tenSecWarningShown = false;
+        const calculateTimeLeft = () =>
+            Math.max(0, start + limit * 60 - Math.floor(Date.now() / 1000));
+
+        async function finishExperimentStep() {
+            try {
+                const finished = await useExperimentState.getState().finishStep(nanoId, part);
+                if (active && finished) router.push(decodeURIComponent(callbackUrl));
+            } catch (error) {
+                if (active)
+                    toast({
+                        title: '到时提交失败，请点击完成写作重试',
+                        description: error instanceof Error ? error.message : undefined,
+                        variant: 'destructive',
+                    });
+            }
+        }
+
         setTimeLeft(calculateTimeLeft());
 
         const timer = setInterval(() => {
             const newTimeLeft = calculateTimeLeft();
             setTimeLeft(newTimeLeft);
 
-            if (newTimeLeft <= 300 && newTimeLeft > 0 && !fiveMinWarningShown.current) {
-                fiveMinWarningShown.current = true;
+            if (newTimeLeft <= 300 && newTimeLeft > 0 && !fiveMinWarningShown) {
+                fiveMinWarningShown = true;
                 toast({
                     title: '写作倒计时',
                     description: '还剩5分钟结束',
@@ -81,8 +58,8 @@ export function CountDown({ start, limit, nanoId, part, callbackUrl, mini = true
                 });
             }
 
-            if (newTimeLeft <= 10 && newTimeLeft > 0 && !tenSecWarningShown.current) {
-                tenSecWarningShown.current = true;
+            if (newTimeLeft <= 10 && newTimeLeft > 0 && !tenSecWarningShown) {
+                tenSecWarningShown = true;
                 toast({
                     title: '完成任务倒计时',
                     description: `还剩不到10秒钟结束`,
@@ -98,27 +75,11 @@ export function CountDown({ start, limit, nanoId, part, callbackUrl, mini = true
             }
         }, 1000);
 
-        return () => clearInterval(timer);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    // 页面关闭时通过 sendBeacon 发送完成请求
-    useEffect(() => {
-        const handleBeforeUnload = () => {
-            const won = useExperimentState.getState().setIsFinishing();
-            if (!won) return;
-
-            const url = getUrl('/api/experiment/finish');
-            const body = JSON.stringify({ id: nanoId, part: part });
-            const blob = new Blob([body], { type: 'application/json' });
-            navigator.sendBeacon(url, blob);
-        };
-
-        window.addEventListener('beforeunload', handleBeforeUnload);
         return () => {
-            window.removeEventListener('beforeunload', handleBeforeUnload);
+            active = false;
+            clearInterval(timer);
         };
-    }, [nanoId, part]);
+    }, [start, limit, nanoId, part, callbackUrl, router]);
 
     // 询问用户是否离开页面
     useEffect(() => {
