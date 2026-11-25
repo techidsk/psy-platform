@@ -16,8 +16,15 @@ export function RedirectToQualtrics({ qualtricsUrl, userUnqiueId, userQualtrics 
         return null;
     }
 
-    // qualtricsUrl https://survey.smith.queensu.ca/jfe/form/SV_bOycfWfCnnd3fz8?id=xxxx
-    const targetUrl = `${qualtricsUrl}?id=${userUnqiueId}&qualtricsId=${userQualtrics}`;
+    const fragmentStart = qualtricsUrl.indexOf('#');
+    const address = fragmentStart < 0 ? qualtricsUrl : qualtricsUrl.slice(0, fragmentStart);
+    const fragment = fragmentStart < 0 ? '' : qualtricsUrl.slice(fragmentStart);
+    const queryStart = address.indexOf('?');
+    const path = queryStart < 0 ? address : address.slice(0, queryStart);
+    const params = new URLSearchParams(queryStart < 0 ? '' : address.slice(queryStart));
+    params.set('id', userUnqiueId);
+    params.set('qualtricsId', userQualtrics);
+    const targetUrl = `${path}?${params}${fragment}`;
 
     return (
         <div className="flex gap-4 justify-center">
